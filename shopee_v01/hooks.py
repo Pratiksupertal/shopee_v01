@@ -15,7 +15,7 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/shopee_v01/css/shopee_v01.css"
+app_include_css = "/assets/css/min.logo.css"
 # app_include_js = "/assets/shopee_v01/js/shopee_v01.js"
 
 # include js, css files in header of web template
@@ -25,8 +25,10 @@ app_license = "MIT"
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
 
-# include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+# include js in doctype views // /home/abc/workspace/mamba/frappe-bench/apps/shopee_v01/shopee_v01/shopeemarketplace_v01/doctype/custom/item.js
+doctype_js = {
+                "item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js"  
+             }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
