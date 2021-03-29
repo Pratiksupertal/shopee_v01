@@ -27,7 +27,7 @@ app_include_css = "/assets/css/min.logo.css"
 
 # include js in doctype views // /home/abc/workspace/mamba/frappe-bench/apps/shopee_v01/shopee_v01/shopeemarketplace_v01/doctype/custom/item.js
 doctype_js = {
-                "item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js"  
+                "item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js"
              }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -121,7 +121,7 @@ scheduler_events = {
 # -------
 
 # fixtures = ["Custom Field", "Property Setter","Role","Print Format", "Letter Head", "Workflow State", "Workflow Action", "Workflow", "Address Template","Web Page"]
-fixtures = ["Custom Field", "Property Setter"]
+fixtures = ["Custom Field", "Property Setter","Print Format"]
 # before_tests = "shopee_v01.install.before_tests"
 
 # Overriding Methods
