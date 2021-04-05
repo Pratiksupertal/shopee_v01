@@ -72,9 +72,12 @@
 {% set uom.uom_name= row.uom%}
 <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
 <td class="tac" width="15%" >{{ row.qty or ''}}&nbsp;{{ row.uom or ''}}</td>
-<td class="tac" width="15%">{{ row.price_list_rate or ''}}</td>
+<td class="tac" width="15%"> {% if doc.currency == "IDR" %}
+  {{doc.currency}} {{ row.price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %}
+  {{doc.currency}} {{ row.price_list_rate or ''}} {% endif %}
+</td>
 {% set price_tag = row.price_list_rate * row.qty%}
-<td class="tac" width="20%" style="text-align: right;">{{ price_tag  or ''}}</td>
+<td class="tac" width="20%" style="text-align: right;"> {{doc.currency}} {{ price_tag  or ''}}</td>
 {% set amt.price_amount=amt.price_amount+price_tag %}
 {% set discount = row.discount_amount * row.qty%}
 {% set disc.discount=disc.discount+ discount %}
@@ -82,7 +85,7 @@
 {% endfor %}
 <tr>
   <td class="tac" colspan="2">Total </td><td class="tac">{{doc.total_qty}}&nbsp;{{uom.uom_name}}</td><td></td>
-  <td class="tac" style="text-align: right;">{{amt.price_amount}}</td>
+  <td class="tac" style="text-align: right;">{{doc.currency}} {{amt.price_amount}}</td>
 </tr>
 </table>
 <div class="">
@@ -92,11 +95,11 @@
     <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
       <tr>
         <td colspan="6"><b>Cash Discount</b></td>
-        <td colspan="6" style="text-align: right;">{{ disc.discount or '0'}}</td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ disc.discount or '0'}}</td>
       </tr>
       <tr>
         <td colspan="6"><b>Total After Discount</b></td>
-        <td colspan="6" style="text-align: right;">{{ doc.total }}</td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ doc.total }}</td>
       </tr>
       <tr>
         <td colspan="6"><b></b></td>

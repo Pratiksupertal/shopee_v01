@@ -27,7 +27,8 @@ app_include_css = "/assets/css/min.logo.css"
 
 # include js in doctype views // /home/abc/workspace/mamba/frappe-bench/apps/shopee_v01/shopee_v01/shopeemarketplace_v01/doctype/custom/item.js
 doctype_js = {
-                "item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js"
+                "Item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js",
+                "Purchase Order":"shopee_v01/custom_script/purchase_order.js"
              }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -84,6 +85,9 @@ doctype_js = {
 doc_events = {
     "ShopeeAuthorization":{
     # "after_insert":"shopee_v01.shopeemarketplace_v01.doctype.shopeeauthorization.shopeeauthorization.generate_refreshtoken"
+    },
+    "Purchase Order":{
+    "validate":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
     }
 # 	"*": {
 # 		"on_update": "method",
