@@ -116,7 +116,7 @@ scheduler_events = {
 # 		"shopee_v01.tasks.monthly"
 # 	]
     "cron": {
-			"0/1 * * * *": [
+			"0 * * * *": [
 				"shopee_v01.schedular.schedular.refresh_acess_token"
 			]}
 }
