@@ -1,4 +1,6 @@
 from frappe.model.naming import make_autoname
+import frappe
+from frappe.model.document import Document
 
 def test(doc,method):
     print("Hiiiii")
@@ -18,3 +20,11 @@ def autoname(doc,method):
     print("test calling from hooks")
     #shopee_v01.shopee_v01.custom_script.purchase_order.test
     #shopee_v01/shopee_v01/custom_script/purchase_order.js
+
+
+
+@frappe.whitelist()
+def cara_packing(template_name):
+    doc = frappe.get_doc('Cara Packing Template',template_name)
+    template = doc.template_text
+    return template
