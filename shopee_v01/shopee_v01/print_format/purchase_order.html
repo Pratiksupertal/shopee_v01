@@ -1,0 +1,158 @@
+
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+
+  <div class="row section-break f_font">
+    <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
+      <tr>
+        <td colspan="12" class="fsize tac blh brs bbh"><b>Purchase Order</b></td>
+      </tr>
+    </table>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Supplier Name</b></td>
+        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+      </tr>
+      <tr>
+        <td width="40%"><b>Address</b></td>
+        <td width="60%">{{ doc.address_display or '' }}</td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="6"><b>Purchase Order No</b></td>
+        <td colspan="6">{{ doc.name or ''}}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b>Date</b></td>
+        <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('schedule_date'), "dd-mm-yyyy") }}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b></b></td>
+        <td colspan="6">
+      </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<br>
+
+<br>
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;" border="1px" bordercolor="#d1d8dd">
+<tr>
+<td class="tac" width="10%"><b>Sr. No.</b></td>
+<td class="tac" width="50%"><b>Item Code and Description</b></td>
+<!-- <td class="tac" width="15%"> <b>Image</b></td> -->
+<td class="tac" width="15%"><b>Quantity</b></td>
+<td class="tac" width="15%"><b>Rate</b></td>
+<td class="tac" width="20%"><b>Amount</b></td>
+</tr>
+{% set disc=namespace(discount=0) %}
+{% set amt=namespace(price_amount=0) %}
+{% set uom=namespace(uom_name="") %}
+{% for row in doc.items %}
+<tr>
+<td class="tac" width="10%">{{ row.idx or '' }}</td>
+<td width="50%">{{ row.item_code or '' }} <br> {{ row.item_name}} <br>{{ row.description or '' }}</td>
+{% set uom.uom_name= row.uom%}
+<!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+<td class="tac" width="15%" >{{ row.qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="15%"> {% if doc.currency == "IDR" %}
+  {{doc.currency}} {{ row.price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %}
+  {{doc.currency}} {{ row.price_list_rate or ''}} {% endif %}
+</td>
+{% set price_tag = row.price_list_rate * row.qty%}
+<td class="tac" width="20%" style="text-align: right;"> {{doc.currency}} {{ price_tag  or ''}}</td>
+{% set amt.price_amount=amt.price_amount+price_tag %}
+{% set discount = row.discount_amount * row.qty%}
+{% set disc.discount=disc.discount+ discount %}
+</tr>
+{% endfor %}
+<tr>
+  <td class="tac" colspan="2">Total </td><td class="tac">{{doc.total_qty}}&nbsp;{{uom.uom_name}}</td><td></td>
+  <td class="tac" style="text-align: right;">{{doc.currency}} {{amt.price_amount}}</td>
+</tr>
+</table>
+<div class="">
+  <div class="col-xs-8">
+    </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
+      <tr>
+        <td colspan="6"><b>Cash Discount</b></td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ disc.discount or '0'}}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b>Total After Discount</b></td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ doc.total }}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b></b></td>
+        <td colspan="6">
+        </td>
+      </tr>
+    </table>
+
+</div>
+<br><br>
+<div class="col-xs-2">
+  Remarks :
+</div>
+<div class="col-xs-10">
+  {{doc.remarks}}
+</div>
+<br>
+<div class="col-xs-2">
+  Cara Packing :
+</div>
+<div class="col-xs-10">
+  {{doc.cara_packing}}
+</div>
+</div>
+</div>
+<div class="col-xs-12">
+  <div class="col-xs-2">
+    <b>Sample</b>
+  </div>
+    {% for row in doc.items %}
+    <div class="col-xs-2">
+      {% if row.sample_image %}
+      <img id="item_img" src= '{{ row.sample_image }}'>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
+
+<tr><td colspan="12" height="70px"></td></tr>
+<tr>
+<td colspan="4" class="tac color">_________________________</td>
+<td colspan="4" class="tac color">_________________________</td>
+<td colspan="4" class="tac color" style="">_________________________</td>
+</tr>
+<tr>
+<td colspan="4" class="tac"><b>Approved</b></td>
+<td colspan="4" class="tac"><b>Checked By</b></td>
+<td colspan="4" class="tac"><b>Prepared By</b></td>
+</tr>
+</table>
+</div>
+</div>

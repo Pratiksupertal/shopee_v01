@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include shopee_v01 *.css
+recursive-include shopee_v01 *.csv
+recursive-include shopee_v01 *.html
+recursive-include shopee_v01 *.ico
+recursive-include shopee_v01 *.js
+recursive-include shopee_v01 *.json
+recursive-include shopee_v01 *.md
+recursive-include shopee_v01 *.png
+recursive-include shopee_v01 *.py
+recursive-include shopee_v01 *.svg
+recursive-include shopee_v01 *.txt
+recursive-exclude shopee_v01 *.pyc
