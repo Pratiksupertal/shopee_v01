@@ -1,4 +1,3 @@
-console.log("---- purchase order-----console");
 frappe.ui.form.on('Purchase Order', {
 	cara_packing_template : function(frm){
     frappe.call({
