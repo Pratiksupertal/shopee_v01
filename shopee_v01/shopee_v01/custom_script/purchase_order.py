@@ -1,11 +1,8 @@
 from frappe.model.naming import make_autoname
-
-def test(doc,method):
-    print("Hiiiii")
-    print("test calling from hooks")
+import frappe
+from frappe.model.document import Document
 
 def autoname(doc,method):
-    print("Hiiiii")
     if doc.is_new():
         po_type = doc.po_type
         if po_type:
@@ -15,6 +12,13 @@ def autoname(doc,method):
             doc.name = make_autoname(a[1][0]+"PO" + "-.#####")
         else:
             doc.name = make_autoname("PO" + "-.#####")
-    print("test calling from hooks")
     #shopee_v01.shopee_v01.custom_script.purchase_order.test
     #shopee_v01/shopee_v01/custom_script/purchase_order.js
+
+
+
+@frappe.whitelist()
+def cara_packing(template_name):
+    doc = frappe.get_doc('Cara Packing Template',template_name)
+    template = doc.template_text
+    return template
