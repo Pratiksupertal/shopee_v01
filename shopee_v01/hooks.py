@@ -87,7 +87,7 @@ doc_events = {
     # "after_insert":"shopee_v01.shopeemarketplace_v01.doctype.shopeeauthorization.shopeeauthorization.generate_refreshtoken"
     },
     "Purchase Order":{
-    "validate":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
+    "autoname":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
     }
 # 	"*": {
 # 		"on_update": "method",
