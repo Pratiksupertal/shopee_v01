@@ -1,6 +1,38 @@
 [
  {
   "default_value": null,
+  "doc_type": "Purchase Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "section_break_5",
+  "modified": "2021-04-09 13:35:56.495965",
+  "name": "Purchase Order Item-section_break_5-collapsible",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "collapsible",
+  "property_type": "Check",
+  "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Stock Entry",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "additional_costs_section",
+  "modified": "2021-04-09 14:08:40.514755",
+  "name": "Stock Entry-additional_costs_section-hidden",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "hidden",
+  "property_type": "Check",
+  "value": "1"
+ },
+ {
+  "default_value": null,
   "doc_type": "Purchase Order",
   "docstatus": 0,
   "doctype": "Property Setter",

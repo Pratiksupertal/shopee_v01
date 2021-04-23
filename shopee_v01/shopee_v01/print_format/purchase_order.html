@@ -114,14 +114,14 @@
   Remarks :
 </div>
 <div class="col-xs-10">
-  {{doc.remarks}}
+  {{doc.remarks or ""}} <br>
 </div>
 <br>
 <div class="col-xs-2">
   Cara Packing :
 </div>
 <div class="col-xs-10">
-  {{doc.cara_packing}}
+  {{doc.cara_packing or ""}} <br>
 </div>
 </div>
 </div>
@@ -144,12 +144,17 @@
 
 <tr><td colspan="12" height="70px"></td></tr>
 <tr>
-<td colspan="4" class="tac color">_________________________</td>
-<td colspan="4" class="tac color">_________________________</td>
-<td colspan="4" class="tac color" style="">_________________________</td>
+<td colspan="4" class="tac ">{{doc.approve_po or ""}}</td>
+<td colspan="4" class="tac ">{{doc.check_po or ""}}</td>
+<td colspan="4" class="tac " style="">{{ frappe.session.user }}</td>
 </tr>
 <tr>
-<td colspan="4" class="tac"><b>Approved</b></td>
+<td colspan="4" class="tac color">__________________</td>
+<td colspan="4" class="tac color">__________________</td>
+<td colspan="4" class="tac color" style="">__________________</td>
+</tr>
+<tr>
+<td colspan="4" class="tac"><b>Approved By</b></td>
 <td colspan="4" class="tac"><b>Checked By</b></td>
 <td colspan="4" class="tac"><b>Prepared By</b></td>
 </tr>

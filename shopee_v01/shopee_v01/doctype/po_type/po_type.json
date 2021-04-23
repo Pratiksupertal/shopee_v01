@@ -1,5 +1,5 @@
 {
- "autoname": "field:abbreviation",
+ "autoname": "field:po_type",
  "creation": "2021-04-21 17:30:59.807806",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -13,17 +13,19 @@
    "fieldname": "po_type",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "PO Type"
+   "label": "PO Type",
+   "unique": 1
   },
   {
    "fieldname": "abbreviation",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_preview": 1,
    "label": "Abbreviation",
    "unique": 1
   }
  ],
- "modified": "2021-04-21 18:15:15.860688",
+ "modified": "2021-04-22 19:38:26.060405",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "PO Type",
@@ -43,6 +45,7 @@
   }
  ],
  "quick_entry": 1,
+ "search_fields": "abbreviation",
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1

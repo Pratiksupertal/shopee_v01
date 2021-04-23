@@ -6,8 +6,9 @@ from frappe.model.document import Document
 def autoname(doc,method):
     if doc.is_new():
         po_type = doc.po_type
+        potype_abbr = frappe.get_doc("PO Type", {"name": po_type})
         if po_type:
-            doc.name = make_autoname(po_type +".YYYY"+".MM."+ "-.####")
+            doc.name = make_autoname(potype_abbr.abbreviation +".YYYY"+".MM."+ "-.####")
         else:
             doc.name = make_autoname("PO" +".YYYY.MM."+ "-.####")
     #shopee_v01.shopee_v01.custom_script.purchase_order.test
@@ -15,7 +16,16 @@ def autoname(doc,method):
 
 @frappe.whitelist()
 def warehouse_filter(supplier):
-    print("---------------")
+    doc = frappe.get_doc('Supplier',supplier)
+    supplier_group = doc.supplier_group
+    mapper = frappe.get_doc('Supplier Group  Warehouse Mapping')
+    warehouse_list = []
+    for row in mapper.warehouse_mapping:
+        if row.supplier_id == supplier_group:
+            warehouse_list.append(row.warehouse_id)
+
+    # mapper = frappe.db.get_single_value("Supplier Group Warehouse Mapping","warehouse_mapping")
+    return warehouse_list
 
 
 @frappe.whitelist()
