@@ -1,0 +1,38 @@
+{
+ "autoname": "format:{supplier_id}-{warehouse_id}",
+ "creation": "2021-04-21 20:48:53.701249",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier_id",
+  "warehouse_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier Group ID",
+   "options": "Supplier Group"
+  },
+  {
+   "fieldname": "warehouse_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse ID",
+   "options": "Warehouse"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-04-22 10:02:11.960544",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Warehouse mapping",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
