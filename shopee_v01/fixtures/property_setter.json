@@ -17,22 +17,6 @@
  },
  {
   "default_value": null,
-  "doc_type": "Stock Entry",
-  "docstatus": 0,
-  "doctype": "Property Setter",
-  "doctype_or_field": "DocField",
-  "field_name": "additional_costs_section",
-  "modified": "2021-04-09 14:08:40.514755",
-  "name": "Stock Entry-additional_costs_section-hidden",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
-  "property": "hidden",
-  "property_type": "Check",
-  "value": "1"
- },
- {
-  "default_value": null,
   "doc_type": "Purchase Order",
   "docstatus": 0,
   "doctype": "Property Setter",
