@@ -101,9 +101,16 @@
         <td colspan="6"><b>Total setelah Diskon</b></td>
         <td colspan="6" style="text-align: right;">{{doc.currency}} {{ doc.net_total }}</td>
       </tr>
+      {% if doc.taxes_and_charges %}
       <tr>
-        <td colspan="6"><b></b></td>
-        <td colspan="6">
+        <td colspan="6"><b>PPN</b></td>
+        <td colspan="6" style="text-align: right;"> {{doc.currency}} {{doc.total_taxes_and_charges}}
+        </td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td colspan="6"><b>Grand Total</b></td>
+        <td colspan="6" style="text-align: right;"> {{doc.currency}} {{doc.grand_total}}
         </td>
       </tr>
     </table>
