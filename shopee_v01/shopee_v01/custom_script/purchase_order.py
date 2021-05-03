@@ -25,7 +25,7 @@ def warehouse_filter(supplier):
             warehouse_list.append(row.warehouse_id)
 
     # mapper = frappe.db.get_single_value("Supplier Group Warehouse Mapping","warehouse_mapping")
-    return warehouse_list
+    return warehouse_list,supplier_group
 
 
 @frappe.whitelist()
