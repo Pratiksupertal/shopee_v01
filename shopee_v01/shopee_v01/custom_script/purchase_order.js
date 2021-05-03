@@ -6,8 +6,8 @@ frappe.ui.form.on('Purchase Order', {
       args: {"supplier":frm.doc.supplier},
       callback: function(r) {
            var resp = r.message[0]
-					 cur_frm.set_value("supplier_category", r.message[1]);
-					 frm.refresh_field("supplier_category");
+					 cur_frm.set_value("supplier_group", r.message[1]);
+					 frm.refresh_field("supplier_group");
 					 frm.set_query("set_warehouse", function() {
 					 	return {
 					 		"filters": [["Warehouse", "name", "in", resp]]
