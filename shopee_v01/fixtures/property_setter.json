@@ -1,6 +1,22 @@
 [
  {
   "default_value": null,
+  "doc_type": "Sales Order",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "company",
+  "modified": "2021-05-06 18:47:17.685729",
+  "name": "Sales Order-company-default",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "default",
+  "property_type": "Text",
+  "value": "ISS Indonesia"
+ },
+ {
+  "default_value": null,
   "doc_type": "Purchase Order Item",
   "docstatus": 0,
   "doctype": "Property Setter",
@@ -1678,5 +1694,21 @@
   "property": "reqd",
   "property_type": "Check",
   "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Work Order",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "additional_operating_cost",
+  "modified": "2021-05-10 13:22:24.401615",
+  "name": "Work Order-additional_operating_cost-label",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "label",
+  "property_type": "Data",
+  "value": "Fixed Price"
  }
 ]
