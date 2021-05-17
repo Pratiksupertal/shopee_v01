@@ -6,9 +6,12 @@ import requests
 cookie = ''
 base = 'http://localhost:8000'
 
-
+i = 1
 @frappe.whitelist(allow_guest=True)
 def ping():
+    global i
+    i+=1
+    print(i)
     r = json.loads(frappe.request.data) if len(frappe.request.data) > 0 else 'nothing'
     return r
 
