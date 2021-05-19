@@ -5,6 +5,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "item_category_id",
   "item_category"
  ],
  "fields": [
@@ -13,9 +14,14 @@
    "fieldtype": "Data",
    "label": "Item Category",
    "unique": 1
+  },
+  {
+   "fieldname": "item_category_id",
+   "fieldtype": "Data",
+   "label": "Item Category ID"
   }
  ],
- "modified": "2021-02-22 18:42:44.436687",
+ "modified": "2021-05-03 21:26:37.585915",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Item Category",
