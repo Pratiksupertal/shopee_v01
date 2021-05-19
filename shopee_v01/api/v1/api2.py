@@ -3,8 +3,8 @@ import json
 import frappe
 import requests
 
-base = 'http://localhost:8000'
-
+# base = 'http://localhost:8000'
+base = ''
 
 @frappe.whitelist(allow_guest=True)
 def login():
@@ -28,6 +28,11 @@ def login():
     # #     }
     # return res.text
 
+def getUrl(url):
+    if url.startswith("http"):
+        return url.rsplit('/', 3)[0]
+    else:
+        return url.rsplit('/')[0]
 
 def validate_data(req):
     if len(req) == 0 or req is None:
@@ -40,6 +45,7 @@ def validate_data(req):
 
 
 def getDocument(docType, filters=None, fields=None, sql=None, cookies=None):
+    global base
     if not cookies:
         return {'message': 'Credentials not identified. Please login first.'}
 
@@ -66,6 +72,10 @@ def post_processing(res):
 
 @frappe.whitelist()
 def logout():
+    global base
+    # base = frappe.request.url.rsplit('/', 3)[0]
+    base = getUrl(frappe.request.url)
+
     cookies = frappe.request.cookies
     if not cookies:
         raise requests.exceptions.BaseHTTPError
@@ -75,6 +85,9 @@ def logout():
 
 @frappe.whitelist()
 def purchase_order_list():
+    global base
+    # base = frappe.request.url.rsplit('/', 3)[0]
+    base = getUrl(frappe.request.url)
     data = validate_data(frappe.request.data)
     cookies = frappe.request.cookies
     field = ["name", "supplier_name", "transaction_date", "total_qty", "supplier"]
@@ -92,6 +105,9 @@ def purchase_order_list():
 
 @frappe.whitelist()
 def product_list():
+    global base
+    # base = frappe.request.url.rsplit('/', 3)[0]
+    base = getUrl(frappe.request.url)
     data = validate_data(frappe.request.data)
     cookies = frappe.request.cookies
     field = ["item_code", "item_name", "total_projected_qty", "name"]
@@ -114,9 +130,15 @@ def testDoc():
     field = ["*"]
     return getDocument(data['id'], fields=field, cookies=cookies)
 
+@frappe.whitelist(allow_guest=True)
+def test():
+    return 'pong'
 
 @frappe.whitelist()
 def sales_order():
+    global base
+    # base = frappe.request.url.rsplit('/', 3)[0]
+    base = getUrl(frappe.request.url)
     data = validate_data(frappe.request.data)
     cookies = frappe.request.cookies
     field = ["name", "customer_name", "delivery_date", "total_qty"]
@@ -141,6 +163,9 @@ def sales_order():
 
 @frappe.whitelist()
 def product_sales_order():
+    global base
+    # base = frappe.request.url.rsplit('/', 3)[0]
+    base = getUrl(frappe.request.url)
     data = validate_data(frappe.request.data)
 
     if "Invalid" in data:
@@ -167,6 +192,9 @@ def product_sales_order():
 
 @frappe.whitelist()
 def product_purchase_order():
+    global base
+    # base = frappe.request.url.rsplit('/', 3)[0]
+    base = getUrl(frappe.request.url)
     data = validate_data(frappe.request.data)
     if "Invalid" in data:
         return "Invalid JSON body submitted."
