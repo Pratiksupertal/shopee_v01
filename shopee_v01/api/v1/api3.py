@@ -1,15 +1,21 @@
 import json
+from pprint import pprint
 
 import frappe
 import requests
 from PIL import Image, ImageDraw, ImageFont
 import base64
 import os
-import barcode
+# import barcode
 from urllib.parse import urlparse
+from
 
 base = ''
 
+
+@frappe.whitelist(allow_guest=True)
+def ping():
+    return 'pong'
 
 def get_request(request):
     global base
@@ -43,12 +49,23 @@ def post_processing(res):
     return res.json()
 
 
+def post_document(doctype, cookies, data):
+    global base
+    if not cookies:
+        return {'message': 'Credentials not identified. Please login first.'}
+    url = base + '/api/resource/' + doctype
+    print(url)
+    res = requests.post(url.replace("'", '"'), cookies=cookies, data=data)
+    print(res.raw)
+    return post_processing(res)
+
+
 def get_document(doctype, cookies, fields=None, filters=None):
     global base
     if not cookies:
         return {'message': 'Credentials not identified. Please login first.'}
     url = base + '/api/resource/' + doctype
-
+    print(url)
     if filters and fields:
         url += '?filters=' + str(filters)
         url += '&fields=' + str(fields)
@@ -57,6 +74,7 @@ def get_document(doctype, cookies, fields=None, filters=None):
             url += '?fields=' + str(fields)
         elif filters:
             url += '?filters=' + str(filters)
+    print(url)
 
     res = requests.get(url.replace("'", '"'), cookies=cookies)
     print(res)
@@ -318,9 +336,9 @@ def warehouseAreas():
     for i in warehouse_areas_list['data']:
         temp_dict = {
             "id": i['idx'],
-            "warehouse_id": i['warehouse_name'],
+            "warehouse_id": i['name'],
             "usage_type_id": None,
-            "name": i['name'],
+            "name": i['warehouse_name'],
             "description": None,
             "storages": None
         }
@@ -334,50 +352,76 @@ def warehouseAreas():
 @frappe.whitelist()
 def purchaseReceive():
 
-    '''
-    {
-    "purchase_id":"41",
-    "warehouse_id":"1",
-    "warehouse_area_id":"1",
-    "create_user_id":"2",
-    "supplier_do_number":"REFERENCE#1938764",
-    "products":
-    [
-        {
-            "purchase_product_id":"96",
-            "quantity":"100",
-            "warehouse_area_storage_id": ""
-        },
-        {
-            "purchase_product_id":"97",
-            "quantity":"250",
-            "warehouse_area_storage_id": ""
-        },
-        {
-            "purchase_product_id":"98",
-            "quantity":"2500",
-            "warehouse_area_storage_id": ""
-        },
-        {
-            "purchase_product_id":"99",
-            "quantity":"750",
-            "warehouse_area_storage_id": ""
-        }
-    ]
-}
-
-    '''
-
+    cookies = get_request(frappe.request)
     data = validate_data(frappe.request.data)
+    purchase_order_items = frappe.get_doc(
+        'Purchase Order',
+        data['purchase_id']
+    ).items
+    print('-----------------1')
+    purchase_receipt = frappe.new_doc(
+        'Purchase Receipt'
+    )
+    print('-----------------2')
+    pprint(dir(purchase_receipt))
+    dic = {item.item_name: item for item in purchase_order_items}
+    for i in data["products"]:
+        print(i)
+        dic[i['name']].qty = i['qty']
+        print('-----------------yo')
+        # purchase_receipt.items.append(dic[i['name']])
+    print('------------------------------3')
+    purchase_receipt.insert()
+    print('-----------------4')
+
+    return 'done'
+    # temp_dict = {
+    #     # "doctype" : "Purchase Order",
+    #     "naming_series": "PUR-ORD-.YYYY.-",
+    #     "supplier": "ALVINDO 2",
+    #     "company": "ISS",
+    #     "transaction_date": "2021-05-26",
+    #     "currency": "IDR",
+    #     "conversion_rate": "1.0",
+    #     "items": [],
+    #     "status": "0",
+    #     "name": "BLDG202105-0008"
+    # }
+    # print('sent')
 
 
-    temp_dict = {
-        "supplier": data['supplier_do_number'],
-        "": data["purchase_id"],
-        "set_warehouse": data["warehouse_id"],
-        "": data["warehouse_area_id"],
-        "": data["create_user_id"],
-    }
+    # Approach - get_doc to create
+    # doc = frappe.get_doc(temp_dict)
+    # doc.insert()
+    # doc.save()
+    # print(res)
+    # return 'done'
+
+
+    # Approach - new_doc
+    # doc = frappe.new_doc('Purchase Receipt')
+    # print('--------------------------------')
+    # doc.name = ''
+    # doc.items = []
+    # doc.supplier = 'Supplier 3 Raw'
+    # doc.currency = 'USD'
+    # print('--------------------->>>>>>>>>>>>>>')
+    # res = doc.insert(
+    #     ignore_permissions=True, # ignore write permissions during insert
+    #     ignore_links=True, # ignore Link validation in the document
+    #     ignore_if_duplicate=True, # dont insert if DuplicateEntryError is thrown
+    #     ignore_mandatory=True # insert even if mandatory fields are not set
+    # )
+    # return doc.as_dict()
+
+
+    # Approach - test get last doc
+    # doc = frappe.get_last_doc('Purchase Receipt')
+    # print(doc)
+    # return doc.as_dict()
+
+    # Approach - 4
+    # return post_document('Purchase Order', cookies=cookies, data=temp_dict)
 
 
 @frappe.whitelist()
@@ -466,3 +510,54 @@ def orders():
     return {
         "data": result
     }
+
+
+@frappe.whitelist()
+def deliveryOrders():
+    cookies = get_request(frappe.request)
+
+    delivery_order_ids = get_document('Delivery Note', cookies=cookies)
+    result = []
+
+    for i in delivery_order_ids['data']:
+        each_data = frappe.get_doc(
+            'Delivery Note',
+            i['name']
+        )
+
+        temp_dict = {
+            "id": each_data.idx,
+            "order_id": each_data.name,
+            "warehouse_id": each_data.set_warehouse,
+            "warehouse_name": "GUDANG PUSAT",
+            "order_number": "AAIJDAJ33929",
+            "do_number": "DO-200600008",
+            "order_date": each_data.creation,
+            "customer_name": each_data.customer_name,
+            "status": each_data.status,
+            "delivery_date": each_data.lr_date,
+            "pretax_amount": each_data.net_total,
+            "tax_amount": each_data.total_taxes_and_charges,
+            "discount_amount": each_data.discount_amount,
+            "extra_discount_amount": each_data.additional_discount_percentage * each_data.net_total,
+            "total_amount": each_data.grand_total,
+            "products": [{
+                "id": i.idx,
+                "delivery_order_id": i.against_sales_order,
+                "product_id": i.item_code,
+                "product_name": i.item_name,
+                "product_code": i.item_code,
+                "price": i.price_list_rate,
+                "quantity": i.qty,
+                "unit_id": i.item_group,
+                "discount": i.discount_amount,
+                "subtotal_amount": i.amount,
+                "notes": None
+            } for i in each_data.items]
+        }
+        result.append(temp_dict)
+
+    return {
+        "data": result
+    }
+
