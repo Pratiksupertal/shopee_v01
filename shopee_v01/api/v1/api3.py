@@ -6,9 +6,8 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 import base64
 import os
-# import barcode
+import barcode
 from urllib.parse import urlparse
-from
 
 base = ''
 
@@ -16,6 +15,7 @@ base = ''
 @frappe.whitelist(allow_guest=True)
 def ping():
     return 'pong'
+
 
 def get_request(request):
     global base
