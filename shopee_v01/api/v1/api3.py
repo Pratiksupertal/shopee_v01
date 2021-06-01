@@ -54,9 +54,9 @@ def post_document(doctype, cookies, data):
     if not cookies:
         return {'message': 'Credentials not identified. Please login first.'}
     url = base + '/api/resource/' + doctype
-    print(url)
+    # print(url)
     res = requests.post(url.replace("'", '"'), cookies=cookies, data=data)
-    print(res.raw)
+    # print(res.raw)
     return post_processing(res)
 
 
@@ -65,7 +65,7 @@ def get_document(doctype, cookies, fields=None, filters=None):
     if not cookies:
         return {'message': 'Credentials not identified. Please login first.'}
     url = base + '/api/resource/' + doctype
-    print(url)
+    # print(url)
     if filters and fields:
         url += '?filters=' + str(filters)
         url += '&fields=' + str(fields)
@@ -74,10 +74,10 @@ def get_document(doctype, cookies, fields=None, filters=None):
             url += '?fields=' + str(fields)
         elif filters:
             url += '?filters=' + str(filters)
-    print(url)
+    # print(url)
 
     res = requests.get(url.replace("'", '"'), cookies=cookies)
-    print(res)
+    # print(res)
     return post_processing(res)
 
 
@@ -149,7 +149,8 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
     image.save(dir_path + '/output.pdf', resolution=500)
     with open(dir_path + "/output.pdf", "rb") as pdf_file:
         encoded_string = base64.b64encode(pdf_file.read())
-
+    # print(encoded_string)
+    # print(type(encoded_string))
     return encoded_string
 
 # import os
@@ -358,21 +359,21 @@ def purchaseReceive():
         'Purchase Order',
         data['purchase_id']
     ).items
-    print('-----------------1')
+    # print('-----------------1')
     purchase_receipt = frappe.new_doc(
         'Purchase Receipt'
     )
-    print('-----------------2')
-    pprint(dir(purchase_receipt))
+    # print('-----------------2')
+    # pprint(dir(purchase_receipt))
     dic = {item.item_name: item for item in purchase_order_items}
     for i in data["products"]:
-        print(i)
+        # print(i)
         dic[i['name']].qty = i['qty']
-        print('-----------------yo')
+        # print('-----------------yo')
         # purchase_receipt.items.append(dic[i['name']])
-    print('------------------------------3')
+    # print('------------------------------3')
     purchase_receipt.insert()
-    print('-----------------4')
+    # print('-----------------4')
 
     return 'done'
     # temp_dict = {
@@ -455,7 +456,7 @@ def get_label():
     #      fout.write(base64.decodebytes(pdf_binary))
 
     return {
-        "pdf_bin": pdf_binary
+        "pdf_bin": str(pdf_binary)[2:]
     }
 
 
