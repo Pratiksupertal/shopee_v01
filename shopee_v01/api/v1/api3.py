@@ -149,7 +149,8 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
     image.save(dir_path + '/output.pdf', resolution=500)
     with open(dir_path + "/output.pdf", "rb") as pdf_file:
         encoded_string = base64.b64encode(pdf_file.read())
-
+    print(encoded_string)
+    print(type(encoded_string))
     return encoded_string
 
 # import os
@@ -455,7 +456,7 @@ def get_label():
     #      fout.write(base64.decodebytes(pdf_binary))
 
     return {
-        "pdf_bin": pdf_binary
+        "pdf_bin": str(pdf_binary)[2:]
     }
 
 
