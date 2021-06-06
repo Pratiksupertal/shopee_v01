@@ -1,0 +1,90 @@
+{
+ "creation": "2021-06-03 20:59:25.419255",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "28",
+  "30",
+  "32",
+  "34",
+  "36",
+  "38",
+  "40",
+  "42",
+  "44",
+  "total"
+ ],
+ "fields": [
+  {
+   "fieldname": "28",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "28"
+  },
+  {
+   "fieldname": "30",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "30"
+  },
+  {
+   "fieldname": "32",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "32"
+  },
+  {
+   "fieldname": "34",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "34"
+  },
+  {
+   "fieldname": "36",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "36"
+  },
+  {
+   "fieldname": "38",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "38"
+  },
+  {
+   "fieldname": "40",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "40"
+  },
+  {
+   "fieldname": "42",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "42"
+  },
+  {
+   "fieldname": "44",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "44"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Data",
+   "label": "Total"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-04 18:52:06.646186",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Pant Size Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
