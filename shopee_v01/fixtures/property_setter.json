@@ -1,6 +1,22 @@
 [
  {
   "default_value": null,
+  "doc_type": "Work Order Operation",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "completed_qty",
+  "modified": "2021-06-03 17:15:19.612831",
+  "name": "Work Order Operation-completed_qty-in_list_view",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "in_list_view",
+  "property_type": "Check",
+  "value": "0"
+ },
+ {
+  "default_value": null,
   "doc_type": "Sales Order",
   "docstatus": 0,
   "doctype": "Property Setter",
@@ -1710,5 +1726,37 @@
   "property": "label",
   "property_type": "Data",
   "value": "Fixed Price"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Work Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "operation",
+  "modified": "2021-06-04 14:00:50.089465",
+  "name": "Work Order Item-operation-in_list_view",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "in_list_view",
+  "property_type": "Check",
+  "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Work Order",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "operations_section",
+  "modified": "2021-06-04 21:01:38.996519",
+  "name": "Work Order-operations_section-hidden",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "hidden",
+  "property_type": "Check",
+  "value": "1"
  }
 ]
