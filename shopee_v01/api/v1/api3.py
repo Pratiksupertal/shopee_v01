@@ -76,10 +76,10 @@ def get_document(doctype, cookies, fields=None, filters=None):
             url += '?fields=' + str(fields)
         elif filters:
             url += '?filters=' + str(filters)
-    print(url)
+    # print(url)
 
     res = requests.get(url.replace("'", '"'), cookies=cookies)
-    print(res)
+    # print(res)
     return post_processing(res)
 
 
@@ -402,8 +402,8 @@ def orders():
             'Sales Order',
             i['name']
         )
-        # sales_invoice_num = frappe.get_list('Sales Invoice Item', fields=['parent'],
-        #                                       filters=[['sales_order', '=', i['name']]])
+        sales_invoice_num = frappe.get_list('Sales Invoice Item', fields=['parent'],
+                                              filters=[['sales_order', '=', i['name']]])
         # print(sales_invoice_num[0].parent)
         temp_dict = {
             "id": each_data.idx,
@@ -437,7 +437,7 @@ def orders():
                 "notes": None,
                 # "isActive": None
             } for j in each_data.items],
-            # "notes": sales_invoice_num[0].parent
+            "notes": 'Sales Invoice: ' + '\n-'.join([i['parent'] for i in sales_invoice_num])
         }
         result.append(temp_dict)
 
@@ -457,13 +457,16 @@ def deliveryOrders():
             i['name']
         )
 
+        warehouse_data = get_document('Warehouse', cookies=cookies, fields=['warehouse_name'], filters=[['name', '=', each_data.set_warehouse]]) if each_data.set_warehouse is not None else None
+        warehouse_data = warehouse_data['data'][0]['warehouse_name'] if warehouse_data is not None and len(warehouse_data['data']) > 0 else None
+
         temp_dict = {
             "id": each_data.idx,
             "order_id": each_data.name,
             "warehouse_id": each_data.set_warehouse,
-            "warehouse_name": "GUDANG PUSAT",
-            "order_number": "AAIJDAJ33929",
-            "do_number": "DO-200600008",
+            "warehouse_name": warehouse_data,
+            "order_number": each_data.name,
+            "do_number": each_data.name,
             "order_date": each_data.creation,
             "customer_name": each_data.customer_name,
             "status": each_data.status,
