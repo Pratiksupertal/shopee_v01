@@ -1,6 +1,7 @@
 import json
+import time
 from pprint import pprint
-
+import io
 import frappe
 import requests
 from PIL import Image, ImageDraw, ImageFont
@@ -8,6 +9,7 @@ import base64
 import os
 import barcode
 from urllib.parse import urlparse
+import datetime as dt
 
 base = ''
 
@@ -74,16 +76,16 @@ def get_document(doctype, cookies, fields=None, filters=None):
             url += '?fields=' + str(fields)
         elif filters:
             url += '?filters=' + str(filters)
-    # print(url)
+    print(url)
 
     res = requests.get(url.replace("'", '"'), cookies=cookies)
-    # print(res)
+    print(res)
     return post_processing(res)
 
 
 def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_entity=None,
                    from_entity=None, address=None, address_company=None, product_list1=None,
-                   delivery_type=None, b_code=None):
+                   delivery_type=None, b_code=None, owner=None):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     image = Image.open(dir_path + '/Tokopedia Label edit.jpg')
     draw = ImageDraw.Draw(image)
@@ -141,27 +143,26 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
         draw.text((x2, y2), str(i['qty']) + ' Pcs', fill=color, font=font)
         (x1, y1), (x2, y2) = (x1, y1 + 15), (x2, y2 + 15)
 
-    # out = io.BytesIO()
-    # image.save(out, format='pdf')
-    # out1 = base64.base64encode(out)
-    # print(out.getvalue().decode())
-
-    image.save(dir_path + '/output.pdf', resolution=500)
-    with open(dir_path + "/output.pdf", "rb") as pdf_file:
+    pdf_time = str(time.time())
+    image.save(dir_path + '/output' + owner + pdf_time + '.pdf', resolution=500)
+    with open(dir_path + '/output' + owner + pdf_time + '.pdf', "rb") as pdf_file:
         encoded_string = base64.b64encode(pdf_file.read())
-    # print(encoded_string)
-    # print(type(encoded_string))
     return encoded_string
-
-# import os
-# with open(os.path.expanduser('test.pdf'), 'wb') as fout:
-#      fout.write(base64.decodebytes(encoded_string))
 
 
 @frappe.whitelist(allow_guest=True)
 def test():
     cookies = get_request(frappe.request)
     return get_document('Purchase Order', cookies=cookies)
+
+
+def format_result(result):
+    return {
+        "success": True,
+        "message": "Login success",
+        "status_code": 200,
+        "data": result
+    }
 
 
 @frappe.whitelist()
@@ -217,9 +218,7 @@ def purchases():
         }
         result.append(temp_dict)
 
-    return {
-        "data": result
-    }
+    return format_result(result)
 
 
 @frappe.whitelist()
@@ -256,9 +255,7 @@ def products():
 
         result.append(temp_dict)
 
-    return {
-        "data": result
-    }
+    return format_result(result)
 
 
 @frappe.whitelist()
@@ -288,11 +285,12 @@ def warehouse():
             "modified_by"
         ], filters=[["parent_warehouse", "=", i['name']]])
 
-        for j in warehouse_areas['data']:
-            j.update({
-                "usage_type_id": None,
-                "description": None
-            })
+        # for j in warehouse_areas['data']:
+        #
+        #     j.update({
+        #         "usage_type_id": None,
+        #         "description": None
+        #     })
 
         temp_dict = {
             "id": i['idx'],
@@ -300,16 +298,24 @@ def warehouse():
             "code": i['name'],
             "is_headquarter": "1" if i['parent'] is None else "0",
             "description": None,
+            "areas": [{
+                'id': j['idx'],
+                'warehouse_id': j['warehouse_id'],
+                'name': j['name'],
+                'create_time': j['creation'],
+                'update_time': j['modified'],
+                'create_user_id': j['owner'],
+                'update_user_id': j['modified_by'],
+                'usage_type_id': None,
+                'description': None
+            } for j in warehouse_areas['data']],
             "is_store": i['warehouse_type'],
-            "default_customer_id": None,
-            "areas": warehouse_areas['data']
+            "default_customer_id": None
         }
 
         result.append(temp_dict)
 
-    return {
-        "data": result
-    }
+    return format_result(result)
 
 
 @frappe.whitelist()
@@ -345,84 +351,7 @@ def warehouseAreas():
         }
         result.append(temp_dict)
 
-    return {
-        "data": result
-    }
-
-
-@frappe.whitelist()
-def purchaseReceive():
-
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    purchase_order_items = frappe.get_doc(
-        'Purchase Order',
-        data['purchase_id']
-    ).items
-    # print('-----------------1')
-    purchase_receipt = frappe.new_doc(
-        'Purchase Receipt'
-    )
-    # print('-----------------2')
-    # pprint(dir(purchase_receipt))
-    dic = {item.item_name: item for item in purchase_order_items}
-    for i in data["products"]:
-        # print(i)
-        dic[i['name']].qty = i['qty']
-        # print('-----------------yo')
-        # purchase_receipt.items.append(dic[i['name']])
-    # print('------------------------------3')
-    purchase_receipt.insert()
-    # print('-----------------4')
-
-    return 'done'
-    # temp_dict = {
-    #     # "doctype" : "Purchase Order",
-    #     "naming_series": "PUR-ORD-.YYYY.-",
-    #     "supplier": "ALVINDO 2",
-    #     "company": "ISS",
-    #     "transaction_date": "2021-05-26",
-    #     "currency": "IDR",
-    #     "conversion_rate": "1.0",
-    #     "items": [],
-    #     "status": "0",
-    #     "name": "BLDG202105-0008"
-    # }
-    # print('sent')
-
-
-    # Approach - get_doc to create
-    # doc = frappe.get_doc(temp_dict)
-    # doc.insert()
-    # doc.save()
-    # print(res)
-    # return 'done'
-
-
-    # Approach - new_doc
-    # doc = frappe.new_doc('Purchase Receipt')
-    # print('--------------------------------')
-    # doc.name = ''
-    # doc.items = []
-    # doc.supplier = 'Supplier 3 Raw'
-    # doc.currency = 'USD'
-    # print('--------------------->>>>>>>>>>>>>>')
-    # res = doc.insert(
-    #     ignore_permissions=True, # ignore write permissions during insert
-    #     ignore_links=True, # ignore Link validation in the document
-    #     ignore_if_duplicate=True, # dont insert if DuplicateEntryError is thrown
-    #     ignore_mandatory=True # insert even if mandatory fields are not set
-    # )
-    # return doc.as_dict()
-
-
-    # Approach - test get last doc
-    # doc = frappe.get_last_doc('Purchase Receipt')
-    # print(doc)
-    # return doc.as_dict()
-
-    # Approach - 4
-    # return post_document('Purchase Order', cookies=cookies, data=temp_dict)
+    return format_result(result)
 
 
 @frappe.whitelist()
@@ -431,7 +360,7 @@ def get_label():
     cookies = get_request(frappe.request)
     fields = ['name', 'customer_name', 'company', 'address_display',
               'company_address_display', 'total_net_weight', 'payment_terms_template',
-              'grand_total']
+              'grand_total', 'owner']
     filters = [["Sales Invoice", "name", "=", data['id']]]
     result = get_document('Sales Invoice', fields=fields, cookies=cookies, filters=filters)
 
@@ -448,7 +377,8 @@ def get_label():
         weight=str(info_retrieved['total_net_weight']), shipping=str(info_retrieved['grand_total']),
         to_entity=str(info_retrieved['customer_name']), from_entity=str(info_retrieved['company']),
         address=str(info_retrieved['address_display']), address_company=str(info_retrieved['company_address_display']),
-        product_list1=check, delivery_type='Regular \nShipping', b_code=str('123456789012')
+        product_list1=check, delivery_type='Regular \nShipping', b_code=str('123456789012'),
+        owner=str(info_retrieved['owner'])
     )
 
     # import os
@@ -456,7 +386,7 @@ def get_label():
     #      fout.write(base64.decodebytes(pdf_binary))
 
     return {
-        "pdf_bin": str(pdf_binary)[2:]
+        "pdf_bin": str(pdf_binary)
     }
 
 
@@ -472,15 +402,17 @@ def orders():
             'Sales Order',
             i['name']
         )
-
+        # sales_invoice_num = frappe.get_list('Sales Invoice Item', fields=['parent'],
+        #                                       filters=[['sales_order', '=', i['name']]])
+        # print(sales_invoice_num[0].parent)
         temp_dict = {
             "id": each_data.idx,
             "location_id": None,
             "location_name": None,
-            "order_number":each_data.name,
-            "order_date":each_data.creation,
-            "original_order_id":each_data.name,
-            "type":each_data.order_type,
+            "order_number": each_data.name,
+            "order_date": each_data.creation,
+            "original_order_id": each_data.name,
+            "type": each_data.order_type,
             "status": each_data.delivery_status,
             "payment_type": each_data.currency,
             "customer_id": each_data.customer,
@@ -491,26 +423,25 @@ def orders():
             "tax_amount": each_data.total_taxes_and_charges,
             "total_amount": each_data.grand_total,
             "products": [{
-                "id":j.idx,
+                "id": j.idx,
                 "order_id": j.parent,
                 "product_id": j.item_code,
                 "product_name": j.item_name,
                 "product_code": j.item_code,
                 "price": j.rate,
-                "qty": j.qty,
+                "quantity": j.qty,
                 "unit_id": j.item_group,
                 "discount": j.discount_amount,
                 "subtotal_amount": j.base_net_amount,
                 "product_condition_id": j.docstatus,
                 "notes": None,
-                "isActive": None
+                # "isActive": None
             } for j in each_data.items],
+            # "notes": sales_invoice_num[0].parent
         }
         result.append(temp_dict)
 
-    return {
-        "data": result
-    }
+    return format_result(result)
 
 
 @frappe.whitelist()
@@ -558,7 +489,223 @@ def deliveryOrders():
         }
         result.append(temp_dict)
 
+    return format_result(result)
+
+
+@frappe.whitelist()
+def stockTransfers():
+    cookies = get_request(frappe.request)
+
+    stock_entry_ids = get_document('Stock Entry', cookies=cookies)
+    result = []
+
+    for i in stock_entry_ids['data']:
+        each_data = frappe.get_doc(
+            'Stock Entry',
+            i['name']
+        )
+        temp_dict = {
+            "id": each_data.idx,
+            "transfer_number": each_data.name,
+            "transfer_date": each_data.posting_date,
+            "status": each_data.docstatus,
+            "from_warehouse_id": each_data.from_warehouse,
+            "from_warehouse_area_id": None,
+            "to_warehouse_id": each_data.to_warehouse,
+            "to_warehouse_area_id": None,
+            "start_datetime": None,
+            "end_datetime": None,
+            "notes": each_data.purpose,
+            "create_user_id": each_data.modified_by,
+            "create_time": each_data.creation,
+            "products": [
+                {
+                    "id": i.idx,
+                    "stock_transfer_id": i.name,
+                    "product_id": i.item_code,
+                    "product_name": i.item_name,
+                    "product_code": i.item_name,
+                    "quantity": i.qty,
+                    "warehouse_area_storage_id": None
+                } for i in each_data.items
+            ],
+            "update_user_id": each_data.modified_by,
+            "product_list": [i.item_name for i in each_data.items]
+        }
+        result.append(temp_dict)
+
+    return format_result(result)
+
+
+@frappe.whitelist()
+def stockOpnames():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+    fields = [
+        'idx',
+        'warehouse',
+        'creation',
+        '_comments',
+        'posting_date',
+        'posting_time',
+        'modified_by'
+    ]
+
+    product_list = get_document('Stock Ledger Entry', fields=fields, cookies=cookies)
+
+    result = []
+
+    for i in product_list['data']:
+        temp_dict = {
+            "id": i['idx'],
+            "warehouse_id": i['warehouse'],
+            "warehouse_area_id": None,
+            "start_datetime": dt.datetime.combine(dt.datetime.strptime(i['posting_date'], '%Y-%m-%d').date(),
+                                                  dt.datetime.strptime(i['posting_time'], '%H:%M:%S.%f').time()),
+            "end_datetime": None,
+            "notes": i['_comments'],
+            "create_user_id": i['modified_by'],
+            "create_time": i['creation']
+        }
+
+        result.append(temp_dict)
+
+    return format_result(result)
+
+
+@frappe.whitelist()
+def deliveryOrder():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+
+    # specific = []
+
+    parts = urlparse(frappe.request.url)
+    specific_part = parts.path.split('/')[-1] if parts.path.split('/')[-1].find(
+        'shopee_v01.api.v1.api3') == -1 else None
+    # if specific_part:
+    #     specific += [["name", "=", specific_part]]
+
+    # delivery_order = get_document('Delivery Note', filters=specific, cookies=cookies, fields=['*'])
+    delivery_order = frappe.get_doc('Delivery Note', specific_part)
+    # delivery_order.docstatus = data['status']
+    delivery_order.modified = data['update_time']
+    delivery_order.modified_by = data['update_user_id']
+    delivery_order.insert()
+    delivery_order.save()
+
+    # print(delivery_order)
     return {
-        "data": result
+        "success": True,
+        "message": "Data created",
+        "status_code": 200,
+        "data": [
+            {
+                "do_number": delivery_order.name
+            }
+        ]
     }
 
+
+@frappe.whitelist()
+def stockOpname():
+    data = validate_data(frappe.request.data)
+
+    # delivery_order = get_document('Delivery Note', filters=specific, cookies=cookies, fields=['*'])
+    delivery_order = frappe.get_doc('Stock Ledger Entry', data['warehouse_stockopname_id'])
+    # delivery_order.docstatus = data['status']
+    delivery_order.modified = data['update_time']
+    delivery_order.modified_by = data['update_user_id']
+    delivery_order.insert()
+    # delivery_order.save()
+
+    # print(delivery_order)
+    return {
+        "success": True,
+        "message": "Data created",
+        "status_code": 200,
+        "data": [
+            {
+                "do_number": delivery_order.name
+            }
+        ]
+    }
+
+
+@frappe.whitelist()
+def stockTransfer():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+    stock_transfer = frappe.get_doc('Stock Entry')
+
+
+
+@frappe.whitelist()
+def purchaseReceive():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+    purchase_order_items = frappe.get_doc(
+        'Purchase Order',
+        data['purchase_id']
+    ).items
+    # print('-----------------1')
+    purchase_receipt = frappe.new_doc(
+        'Purchase Receipt'
+    )
+    # print('-----------------2')
+    # pprint(dir(purchase_receipt))
+    dic = {item.item_name: item for item in purchase_order_items}
+    for i in data["products"]:
+        # print(i)
+        dic[i['name']].qty = i['qty']
+        # print('-----------------yo')
+        # purchase_receipt.items.append(dic[i['name']])
+    # print('------------------------------3')
+    purchase_receipt.insert()
+    # print('-----------------4')
+
+    return 'done'
+    # temp_dict = {
+    #     # "doctype" : "Purchase Order",
+    #     "naming_series": "PUR-ORD-.YYYY.-",
+    #     "supplier": "ALVINDO 2",
+    #     "company": "ISS",
+    #     "transaction_date": "2021-05-26",
+    #     "currency": "IDR",
+    #     "conversion_rate": "1.0",
+    #     "items": [],
+    #     "status": "0",
+    #     "name": "BLDG202105-0008"
+    # }
+    # print('sent')
+
+    # Approach - get_doc to create
+    # doc = frappe.get_doc(temp_dict)
+    # doc.insert()
+    # doc.save()
+    # print(res)
+    # return 'done'
+
+    # Approach - new_doc
+    # doc = frappe.new_doc('Purchase Receipt')
+    # print('--------------------------------')
+    # doc.name = ''
+    # doc.items = []
+    # doc.supplier = 'Supplier 3 Raw'
+    # doc.currency = 'USD'
+    # print('--------------------->>>>>>>>>>>>>>')
+    # res = doc.insert(
+    #     ignore_permissions=True, # ignore write permissions during insert
+    #     ignore_links=True, # ignore Link validation in the document
+    #     ignore_if_duplicate=True, # dont insert if DuplicateEntryError is thrown
+    #     ignore_mandatory=True # insert even if mandatory fields are not set
+    # )
+    # return doc.as_dict()
+
+    # Approach - test get last doc
+    # doc = frappe.get_last_doc('Purchase Receipt')
+    # print(doc)
+    # return doc.as_dict()
+
+    # Approach - 4
+    # return post_document('Purchase Order', cookies=cookies, data=temp_dict)
