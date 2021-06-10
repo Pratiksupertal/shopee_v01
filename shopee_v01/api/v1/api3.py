@@ -615,11 +615,13 @@ def stockOpname():
     data = validate_data(frappe.request.data)
 
     # delivery_order = get_document('Delivery Note', filters=specific, cookies=cookies, fields=['*'])
-    delivery_order = frappe.get_doc('Stock Ledger Entry', data['warehouse_stockopname_id'])
+    # stock_ledger = frappe.get_doc('Stock Ledger Entry', data['warehouse_stockopname_id'])
     # delivery_order.docstatus = data['status']
-    delivery_order.modified = data['update_time']
-    delivery_order.modified_by = data['update_user_id']
-    delivery_order.insert()
+    stock_ledger = frappe.new_doc('Stock Ledger Entry')
+
+    stock_ledger.modified = data['update_time']
+    stock_ledger.modified_by = data['update_user_id']
+    stock_ledger.insert()
     # delivery_order.save()
 
     # print(delivery_order)
@@ -627,11 +629,6 @@ def stockOpname():
         "success": True,
         "message": "Data created",
         "status_code": 200,
-        "data": [
-            {
-                "do_number": delivery_order.name
-            }
-        ]
     }
 
 
@@ -640,6 +637,7 @@ def stockTransfer():
     cookies = get_request(frappe.request)
     data = validate_data(frappe.request.data)
     stock_transfer = frappe.get_doc('Stock Entry')
+
 
 
 
