@@ -1,0 +1,72 @@
+
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+<div class="row section-break f_font">
+  <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
+    <tr>
+      <td colspan="12" class="fsize tac blh brs bbh"><b>Work Order / S P K</b></td>
+    </tr>
+  </table>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        {% if doc.supplier %}
+        <td width="40%"><b>Nama Supplier</b></td>
+        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+        {% endif %}
+      </tr>
+
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        {% if doc.supplier %}
+        <td width="40%"><b>Nama Supplier</b></td>
+        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+        {% endif %}
+      </tr>
+      <tr>
+        <td width="40%"><b>Brand</b></td>
+        <td width="60%"><b>{{ doc.brand or '' }}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="5"><b>No SPK </b></td>
+        <td colspan="12" >{{ doc.name or ''}}</td>
+      </tr>
+      <tr>
+
+        <td colspan="6"><b>Date SPK</b></td>
+        <!-- <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('spk_date'), "dd-mm-yyyy") }}</td> -->
+        <td colspan="12">{{ frappe.utils.formatdate(doc.get_formatted('spk_date'), "dd-MMM-yyyy") }}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b></b></td>
+        <td colspan="6">
+      </td>
+      </tr>
+    </table>
+  </div>
+  <div class="row section-break f_font">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        
+      </tr>
+    </table>
+  </div>
+</div>
+<br>
