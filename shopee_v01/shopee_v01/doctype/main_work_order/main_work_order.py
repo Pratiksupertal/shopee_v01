@@ -13,8 +13,6 @@ class MainWorkOrder(Document):
 	def on_submit(self):
 		for row in self.work_order_item_detail:
 			doc = frappe.new_doc('Work Order')
-			print(row)
-			# continue
 			doc.production_item = row.art_no
 			doc.qty = row.qty
 			doc.spk_date = self.spk_date
@@ -30,8 +28,6 @@ class MainWorkOrder(Document):
 
 	def on_cancel(self):
 		work_order = frappe.get_doc('Work Order', {"reference_main_work_order": self.name })
-		print(work_order.name)
-		print(work_order.docstatus)
 		if work_order.docstatus == 1:
 			msg = "Please cancel the Work Order linked with this Main Work Order {0}".format(work_order.name)
 			frappe.msgprint(msg)
@@ -46,13 +42,10 @@ class MainWorkOrder(Document):
 		pass
 
 	def fetch_required_item(self):
-		print(self.bom)
 		bom = frappe.get_doc("BOM",self.bom)
 		bom_data = {}
 		for row in bom.items:
 			bom_data["item_code"] = row.item_code
 			bom_data["qty"] = row.qty
 			bom_data["uom"] = row.uom
-			print(row.item_code,row.qty,row.uom)
-		print("fetch required item function called")
 		return bom_data

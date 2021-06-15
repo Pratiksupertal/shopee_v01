@@ -3,23 +3,46 @@
 
 frappe.ui.form.on('Main Work Order', {
   onload:function(frm){
-    console.log("onload funxtion");
-    frm.ignore_doctypes_on_cancel_all = ["Work Order"]
+    // 
+    frm.set_query("wip_warehouse", function() {
+			return {
+				filters: {
+					'company': frm.doc.company,
+				}
+			};
+		});
+
+		frm.set_query("fg_warehouse", function() {
+			return {
+				filters: {
+					'company': frm.doc.company,
+					'is_group': 0
+				}
+			};
+		});
+
+		frm.set_query("scrap_warehouse", function() {
+			return {
+				filters: {
+					'company': frm.doc.company,
+					'is_group': 0
+				}
+			};
+		});
   },
-  setup:function(frm){
-  // // Set query for BOM
-  // frm.set_query("bom", function() {
-  //   if (frm.doc.production_item) {
-  //     return {
-  //       query: "erpnext.controllers.queries.bom",
-  //       filters: {item: cstr(frm.doc.production_item)}
-  //     };
-  //   } else {
-  //     frappe.msgprint(__("Please enter Production Item first"));
-  //   }
-  // });
-  // // Set query for FG Item
-},
+
+  packing_template:function(frm){
+    frappe.call({
+      method: "shopee_v01.shopee_v01.custom_script.purchase_order.cara_packing",
+      args: {"template_name":frm.doc.packing_template},
+      callback: function(r) {
+           var resp = r.message
+           cur_frm.set_value("packing", resp);
+           frm.refresh_field("packing");
+         }
+       });
+  },
+
 bom: function(frm) {
   frm.call({
     doc:frm.doc,
