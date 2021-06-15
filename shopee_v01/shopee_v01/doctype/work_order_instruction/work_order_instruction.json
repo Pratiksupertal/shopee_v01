@@ -1,0 +1,43 @@
+{
+ "creation": "2021-06-15 20:54:39.724387",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "instruction_id",
+  "instruction_label",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "instruction_id",
+   "fieldtype": "Data",
+   "label": "Instruction ID"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "fieldname": "instruction_label",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Instruction Label",
+   "options": "Instructions",
+   "unique": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-15 21:54:47.537117",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Work Order Instruction",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

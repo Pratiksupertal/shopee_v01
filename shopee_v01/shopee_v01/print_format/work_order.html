@@ -1,0 +1,274 @@
+
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+<div class="row section-break f_font">
+  <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
+    <tr>
+      <td colspan="12" class="fsize tac blh brs bbh"><b>Work Order / S P K</b></td>
+    </tr>
+  </table>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        {% if doc.supplier %}
+        <td width="40%"><b>No. PO</b></td>
+        <td width="60%"><b>{{ '' }}</b></td>
+        {% endif %}
+      </tr>
+
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        {% if doc.supplier %}
+        <td width="40%"><b>Nama Supplier</b></td>
+        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+        {% endif %}
+      </tr>
+      <tr>
+        <td width="40%"><b>Brand</b></td>
+        <td width="60%"><b>{{ doc.brand or '' }}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="5"><b>No SPK </b></td>
+        <td colspan="12" >{{ doc.name or ''}}</td>
+      </tr>
+      <tr>
+
+        <td colspan="6"><b>Date SPK</b></td>
+        <!-- <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('spk_date'), "dd-mm-yyyy") }}</td> -->
+        <td colspan="12">{{ frappe.utils.formatdate(doc.get_formatted('spk_date'), "dd-MMM-yyyy") }}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b></b></td>
+        <td colspan="6">
+      </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<br>
+<div class="row section-break f_font">
+  <table width="100%" style="table-layout: fixed;">
+    <tr>
+      <div class="col-xs-4">
+        <b>Patron Pakai Model</b>
+      </div>
+      <div class="col-xs-8">
+        {{ doc.item_model }}
+      </div>
+    </tr>
+    <tr>
+      <div class="col-xs-4">
+        <b>Benang Luar</b>
+      </div>
+      <div class="col-xs-2">
+        {{ doc.inner_thread }}
+      </div>
+      <div class="col-xs-4">
+        <b>Benang Dalam</b>
+      </div>
+      <div class="col-xs-2">
+        {{ doc.outer_thread }}
+      </div>
+    </tr>
+    <tr>
+      <div class="col-xs-4">
+
+      </div>
+      <div class="col-xs-2">
+
+      </div>
+      <div class="col-xs-4">
+        <b>Benang Bartek</b>
+      </div>
+      <div class="col-xs-2">
+        {{ doc.bartek_thread }}
+      </div>
+    </tr>
+  </table>
+</div>
+<br>
+<div class="row section-break f_font">
+  <table width="100%" style="table-layout: fixed;">
+    {% for row in doc.instruction_tabel  %}
+    <tr>
+      <div class="col-xs-4">
+        <b>{{ row.instruction_label }}</b>
+      </div>
+      <div class="col-xs-8">
+        {{ row.description }}
+      </div>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+<br>
+<div style="margin-top:10px;">
+  <br>
+  <label for="">Work Order Item</label>
+  <table width= "100% " style= "overflow-x:auto; " border= "1px " bordercolor= "#d1d8dd ">
+    <tr>
+      <th class= "tac " width= "6% "><b>No.</b></th>
+      <th class= "tac " width= "25% "><b>Art No</b></th>
+      <th class= "tac " width= "10% "><b>Qty</b></th>
+      <th class= "tac " width= "25% "><b>Material</b></th>
+      <th class= "tac " width= "10% "><b>Color of Material</b></th>
+      <th class= "tac " width= "10% "><b>Color Thread</b></th>
+      <th class= "tac " width= "20% "><b>L/S - S/S</b></th>
+      <th class= "tac " width= "15% "><b>Washing</b></th>
+    </tr>
+     {% for row in doc.work_order_item_detail %}
+     <tr>
+       <td class= "tac " width= "6% ">{{ row.idx or '' }}</td>
+       <td width= "25% ">{{ row.art_no or '' }}</td>
+       <td width= "10% ">{{ row.qty or '' }}</td>
+       <td class= "tac " width= "25% ">{{ row.bahan or '' }}</td>
+       <td class= "tac " width= "10% ">{{ row.color_of_material or '' }}</td>
+       <td class= "tac " width= "10% ">{{ row.color_thread or '' }}</td>
+       <td class= "tac " width= "20% ">{{ row.ls__ss or '' }}</td>
+       <td width= "15% ">{{ row.washing or '' }}</td>
+
+     </tr> {% endfor %}
+   </table>
+</div>
+   <br>
+   <div>
+     <br>
+     <label for="">Size</label>
+     <table width= "100% " style= "overflow-x:auto; " border= "1px " bordercolor= "#d1d8dd ">
+       {% if doc.shirt_template %}
+       <tr>
+         {% for row in doc.shirt_template %}
+         {% if row.extra_small %}
+         <th class= "tac " width= "10% "><b>Extra Small</b></th>
+         {% endif %}
+         {% if row.small %}
+         <th class= "tac " width= "10% "><b>Small</b></th>
+         {% endif %}
+         {% if row.med %}
+         <th class= "tac " width= "10% "><b>Medium</b></th>
+         {% endif %}
+         {% if row.l %}
+         <th class= "tac " width= "10% "><b>Large</b></th>
+         {% endif %}
+         {% if row.xl %}
+         <th class= "tac " width= "10% "><b>Extra Large</b></th>
+         {% endif %}
+         {% if row.xxl %}
+         <th class= "tac " width= "10% "><b>XXL</b></th>
+         {% endif %}
+         {% if row.xxxl %}
+         <th class= "tac " width= "10% "><b>XXXL</b></th>
+         {% endif %}
+         <!-- {% if row.extra_small %}
+         <th class= "tac " width= "10% "><b>Extra Small</b></th>
+         {% endif %} -->
+         <th class= "tac " width= "10% "><b>Total</b></th>
+       </tr>
+       {%endfor%}
+       {% for row in doc.shirt_template %}
+       <tr>
+       {% if row.extra_small %}
+       <td class= "tac " width= "10% ">{{row.extra_small}}</td>
+       {% endif %}
+       {% if row.small %}
+       <td class= "tac " width= "10% ">{{row.small}}</td >
+       {% endif %}
+       {% if row.med %}
+       <td class= "tac " width= "10% ">{{row.med}}</td>
+       {% endif %}
+       {% if row.l %}
+       <td class= "tac " width= "10% ">{{row.l}}</td>
+       {% endif %}
+       {% if row.xl %}
+       <td class= "tac " width= "10% ">{{row.xl}}</td>
+       {% endif %}
+       {% if row.xxl %}
+       <td class= "tac " width= "10% ">{{row.xxl}}</td>
+       {% endif %}
+       {% if row.xxxl %}
+       <td class= "tac " width= "10% ">{{row.xxxl}}</td>
+       {% endif %}
+
+       <td class= "tac " width= "10% ">{{row.total}}</td>
+     </tr>
+     {%endfor%}
+        {% endif %}
+      </table>
+   </div>
+   <br>
+   <div class ="row section-break f_font" style="line-height: 2;">
+     <table width="100%" style="table-layout: fixed;">
+       <tr>
+         <div class="col-xs-4">
+           <b>GOSOKAN STYLE</b>
+         </div>
+         <div class="col-xs-8">
+           {{ doc.packing_style }}
+         </div>
+       </tr>
+       <br>
+       <tr>
+         <div class="col-xs-4">
+           <b>HANTAG + STICKER</b>
+         </div>
+         <div class="col-xs-2">
+           {{ doc.handtag_and_sticker }}
+         </div>
+         <div class="col-xs-4">
+
+         </div>
+         <div class="col-xs-2">
+
+         </div>
+       </tr>
+       <br>
+       <tr>
+         <div class="col-xs-2">
+           <b>Packing</b>
+         </div>
+         <div class="col-xs-4">
+           {{ doc.packing }}
+         </div>
+         <div class="col-xs-3">
+           <b>WARNA/CAMPUR WARNA</b>
+         </div>
+         <div class="col-xs-3">
+           {{ doc.solid_color_and_size }}
+         </div>
+       </tr>
+       <br>
+       <br>
+       <tr>
+
+       </tr>
+
+     </table>
+   </div>
+   <div class ="row section-break f_font" style="line-height: 2;">
+     <table width="100%" style="table-layout: fixed;">
+     <div class="col-xs-12">
+       <b>NOTES</b>
+     </div>
+
+     <div class="col-xs-12">
+       {{doc.notes}}
+     </div>
+     </table>
+   </div>
