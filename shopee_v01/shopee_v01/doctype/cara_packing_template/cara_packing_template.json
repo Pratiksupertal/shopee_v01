@@ -17,11 +17,11 @@
   },
   {
    "fieldname": "template_text",
-   "fieldtype": "Text",
+   "fieldtype": "Text Editor",
    "label": "Template Text"
   }
  ],
- "modified": "2021-03-31 18:12:08.418038",
+ "modified": "2021-06-16 20:20:15.756346",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Cara Packing Template",
