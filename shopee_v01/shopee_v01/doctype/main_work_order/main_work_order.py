@@ -21,6 +21,7 @@ class MainWorkOrder(Document):
 			doc.scrap_warehouse = self.scrap_warehouse
 			doc.bom_no = row.bom
 			doc.reference_main_work_order = self.name
+			doc.expected_delivery_date = self.expected_finish_date
 			doc.save(ignore_permissions=True)
 			frappe.db.commit()
 			doc.submit()
