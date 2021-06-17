@@ -37,16 +37,14 @@ class MainWorkOrder(Document):
 		# work_order.save(ignore_permissions=True)
 		self.docstatus = 2
 		self.status = "Cancelled"
-
-
-
 		pass
 
-	def fetch_required_item(self):
-		bom = frappe.get_doc("BOM",self.bom)
+	def fetch_required_item(self,bom):
+		bom = frappe.get_doc("BOM",bom)
 		bom_data = {}
+		item_list = []
 		for row in bom.items:
-			bom_data["item_code"] = row.item_code
-			bom_data["qty"] = row.qty
-			bom_data["uom"] = row.uom
+			print("Item :",row.item_code)
+			item_list.append(row.item_code)
+		bom_data["item_code"] = item_list
 		return bom_data

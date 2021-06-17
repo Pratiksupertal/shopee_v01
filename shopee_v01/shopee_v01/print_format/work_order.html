@@ -105,7 +105,7 @@
 </div>
 <br>
 
-<div class="row section-break f_font">
+<div class="row section-break f_font" style="line-height: 2;">
   <table width="100%" style="table-layout: fixed;">
     {% for row in doc.instruction_table  %}
     <tr>
@@ -117,6 +117,27 @@
       </div>
     </tr>
     {% endfor %}
+  </table>
+</div>
+<div class="row section-break f_font" style="line-height: 2;">
+  <table width="100%" style="table-layout: fixed;">
+    {% for row in doc.required_item  %}
+    <tr>
+      <div class="col-xs-2">
+        <b>{{ row.item_details or "" }}</b>
+      </div>
+      <div class="col-xs-4">
+        {{ row.item_code or "" }}
+      </div>
+      <div class="col-xs-2">
+        <b>{{ row.operation or "" }}</b>
+      </div>
+      <div class="col-xs-4">
+        {{ row.operation_details or "" }}
+      </div>
+    </tr>
+    {% endfor %}
+    <br>
   </table>
 </div>
 <br>
@@ -152,124 +173,84 @@
    <div>
      <br>
      <label for="">Size</label>
-     {% if doc.shirt_template %}
+     {% if doc.size_template =="Shirt Template" %}
      <table width= "100% " style= "overflow-x:auto; " border= "1px " bordercolor= "#d1d8dd ">
        <tr>
-         {% for row in doc.shirt_template %}
-          {% if row.extra_small %}
-             <th class= "tac " width= "10% "><b>Extra Small</b></th>
-           {% endif %}
-           {% if row.small %}
-             <th class= "tac " width= "10% "><b>Small</b></th>
-           {% endif %}
-           {% if row.med %}
-             <th class= "tac " width= "10% "><b>Medium</b></th>
-           {% endif %}
-           {% if row.l %}
-             <th class= "tac " width= "10% "><b>Large</b></th>
-           {% endif %}
-           {% if row.xl %}
-             <th class= "tac " width= "10% "><b>Extra Large</b></th>
-           {% endif %}
-           {% if row.xxl %}
-             <th class= "tac " width= "10% "><b>XXL</b></th>
-           {% endif %}
-           {% if row.xxxl %}
-             <th class= "tac " width= "10% "><b>XXXL</b></th>
-           {% endif %}
-             <th class= "tac " width= "10% "><b>Total</b></th>
+          <th class= "tac " width= "10% "><b>Extra Small</b></th>
+          <th class= "tac " width= "10% "><b>Small</b></th>
+          <th class= "tac " width= "10% "><b>Medium</b></th>
+          <th class= "tac " width= "10% "><b>Large</b></th>
+          <th class= "tac " width= "10% "><b>Extra Large</b></th>
+          <th class= "tac " width= "10% "><b>XXL</b></th>
+          <th class= "tac " width= "10% "><b>XXXL</b></th>
+          <th class= "tac " width= "10% "><b>Total</b></th>
        </tr>
-       <!-- {%endfor%} -->
        {% for row in doc.shirt_template %}
        <tr>
-       {% if row.extra_small %}
-       <td class= "tac " width= "10% ">{{row.extra_small or ""}}</td>
-       {% endif %}
-       {% if row.small %}
-       <td class= "tac " width= "10% ">{{row.small or ""}}</td >
-       {% endif %}
-       {% if row.med %}
-       <td class= "tac " width= "10% ">{{row.med or ""}}</td>
-       {% endif %}
-       {% if row.l %}
-       <td class= "tac " width= "10% ">{{row.l or ""}}</td>
-       {% endif %}
-       {% if row.xl %}
-       <td class= "tac " width= "10% ">{{row.xl or ""}}</td>
-       {% endif %}
-       {% if row.xxl %}
-       <td class= "tac " width= "10% ">{{row.xxl or ""}}</td>
-       {% endif %}
-       {% if row.xxxl %}
-       <td class= "tac " width= "10% ">{{row.xxxl or ""}}</td>
-       {% endif %}
-
-       <td class= "tac " width= "10% ">{{row.total}}</td>
-     </tr>
-     {%endfor%}
-        {% endif %}
+          <td class= "tac " width= "10% ">{{row.extra_small or ""}}</td>
+          <td class= "tac " width= "10% ">{{row.small or ""}}</td >
+          <td class= "tac " width= "10% ">{{row.med or ""}}</td>
+          <td class= "tac " width= "10% ">{{row.l or ""}}</td>
+          <td class= "tac " width= "10% ">{{row.xl or ""}}</td>
+          <td class= "tac " width= "10% ">{{row.xxl or ""}}</td>
+          <td class= "tac " width= "10% ">{{row.xxxl or ""}}</td>
+          <td class= "tac " width= "10% ">{{row.total or ""}}</td>
+      </tr>
+      {%endfor%}
       </table>
-   <!-- </div>
-   <div>
-     <br> -->
-     {% if doc.pant_template %}
+      {% endif %}
+      {% if doc.size_template =="Pant Template" %}
      <table width= "100% " style= "overflow-x:auto; " border= "1px " bordercolor= "#d1d8dd ">
        <tr>
-         {% for row in doc.shirt_template %}
-         {% if row.extra_small %}
-         <th class= "tac " width= "10% "><b>Extra Small</b></th>
-         {% endif %}
-         {% if row.small %}
-         <th class= "tac " width= "10% "><b>Small</b></th>
-         {% endif %}
-         {% if row.med %}
-         <th class= "tac " width= "10% "><b>Medium</b></th>
-         {% endif %}
-         {% if row.l %}
-         <th class= "tac " width= "10% "><b>Large</b></th>
-         {% endif %}
-         {% if row.xl %}
-         <th class= "tac " width= "10% "><b>Extra Large</b></th>
-         {% endif %}
-         {% if row.xxl %}
-         <th class= "tac " width= "10% "><b>XXL</b></th>
-         {% endif %}
-         {% if row.xxxl %}
-         <th class= "tac " width= "10% "><b>XXXL</b></th>
-         {% endif %}
-         <!-- {% if row.extra_small %}
-         <th class= "tac " width= "10% "><b>Extra Small</b></th>
-         {% endif %} -->
-         <th class= "tac " width= "10% "><b>Total</b></th>
+         <th class= "tac " width= "5% "><b>27</b></th>
+         <th class= "tac " width= "5% "><b>28</b></th>
+         <th class= "tac " width= "5% "><b>29</b></th>
+         <th class= "tac " width= "5% "><b>30</b></th>
+         <th class= "tac " width= "5% "><b>31</b></th>
+         <th class= "tac " width= "5% "><b>32</b></th>
+         <th class= "tac " width= "5% "><b>33</b></th>
+         <th class= "tac " width= "5% "><b>34</b></th>
+         <th class= "tac " width= "5% "><b>35</b></th>
+         <th class= "tac " width= "5% "><b>36</b></th>
+         <th class= "tac " width= "5% "><b>37</b></th>
+         <th class= "tac " width= "5% "><b>38</b></th>
+         <th class= "tac " width= "5% "><b>39</b></th>
+         <th class= "tac " width= "5% "><b>40</b></th>
+         <th class= "tac " width= "5% "><b>41</b></th>
+         <th class= "tac " width= "5% "><b>42</b></th>
+         <th class= "tac " width= "5% "><b>43</b></th>
+         <th class= "tac " width= "5% "><b>44</b></th>
+         <th class= "tac " width= "5% "><b>45</b></th>
+         <th class= "tac " width= "5% "><b>46</b></th>
+         <th class= "tac " width= "5% "><b>47</b></th>
+         <th class= "tac " width= "5% "><b>Total</b></th>
        </tr>
-       {%endfor%}
-       {% for row in doc.shirt_template %}
+       {% for row in doc.pant_template %}
        <tr>
-       {% if row.extra_small %}
-       <td class= "tac " width= "10% ">{{row.extra_small}}</td>
-       {% endif %}
-       {% if row.small %}
-       <td class= "tac " width= "10% ">{{row.small}}</td >
-       {% endif %}
-       {% if row.med %}
-       <td class= "tac " width= "10% ">{{row.med}}</td>
-       {% endif %}
-       {% if row.l %}
-       <td class= "tac " width= "10% ">{{row.l}}</td>
-       {% endif %}
-       {% if row.xl %}
-       <td class= "tac " width= "10% ">{{row.xl}}</td>
-       {% endif %}
-       {% if row.xxl %}
-       <td class= "tac " width= "10% ">{{row.xxl}}</td>
-       {% endif %}
-       {% if row.xxxl %}
-       <td class= "tac " width= "10% ">{{row.xxxl}}</td>
-       {% endif %}
-
-       <td class= "tac " width= "10% ">{{row.total}}</td>
-     </tr>
-     {%endfor%}
+         <td class= "tac " width= "5% ">{{row.t27 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t28 or ""}}</td >
+         <td class= "tac " width= "5% ">{{row.t29 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t30 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t31 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t32 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t33 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t34 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t35 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t36 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t37 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t38 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t39 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t40 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t41 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t42 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t43 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t44 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t45 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t46 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t47 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.total or ""}}</td>
+       </tr>
+      {%endfor%}
         {% endif %}
       </table>
    </div>
