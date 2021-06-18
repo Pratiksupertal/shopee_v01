@@ -1,5 +1,5 @@
 {
- "autoname": "field:instruction_label",
+ "autoname": "field:instruction_id",
  "creation": "2021-06-15 21:29:56.813705",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -12,7 +12,8 @@
   {
    "fieldname": "instruction_id",
    "fieldtype": "Data",
-   "label": "Instruction ID"
+   "label": "Instruction ID",
+   "unique": 1
   },
   {
    "fieldname": "instruction_label",
@@ -21,7 +22,7 @@
    "unique": 1
   }
  ],
- "modified": "2021-06-16 20:15:26.902292",
+ "modified": "2021-06-17 20:29:04.043007",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Instructions",

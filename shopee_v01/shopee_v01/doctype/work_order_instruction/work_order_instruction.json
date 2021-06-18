@@ -25,12 +25,11 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Instruction Label",
-   "options": "Instructions",
-   "unique": 1
+   "options": "Instructions"
   }
  ],
  "istable": 1,
- "modified": "2021-06-16 20:13:52.725212",
+ "modified": "2021-06-17 20:36:07.617869",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Work Order Instruction",
