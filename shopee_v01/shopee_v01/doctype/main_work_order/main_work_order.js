@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('Main Work Order', {
   onload:function(frm){
-    // 
+    //
     frm.set_query("wip_warehouse", function() {
 			return {
 				filters: {
@@ -41,21 +41,27 @@ frappe.ui.form.on('Main Work Order', {
            frm.refresh_field("packing");
          }
        });
-  },
-
-bom: function(frm) {
-  frm.call({
+  }
+});
+// Child table Work Order Item Details trigger
+frappe.ui.form.on('Work Order Item Details', {
+	bom: function(frm, cdt, cdn){
+	var row = locals[cdt][cdn];
+	frm.call({
     doc:frm.doc,
     method: "fetch_required_item",
     freeze: true,
+    args: {
+      bom: row.bom
+    },
     callback: function(r) {
          var resp = r.message
-         var childTable = cur_frm.add_child("required_items");
-         childTable.item_code = r.message.item_code
-         childTable.qty = r.message.qty
-         childTable.item_code = r.message.uom
-         cur_frm.refresh_fields("required_items");
-}
-});
-},
+         for(var i = 0; i < resp.item_code.length; i++) {
+           var childTable = cur_frm.add_child("required_item");
+           childTable.item_code = resp.item_code[i];
+           cur_frm.refresh_fields("required_item");
+         };
+       }
+     });
+	}
 });
