@@ -19,6 +19,10 @@ def ping():
     return 'pong'
 
 
+def authorize_request(header):
+    print(header)
+
+
 def get_request(request):
     global base
     parts = urlparse(request.url)
@@ -56,9 +60,7 @@ def post_document(doctype, cookies, data):
     if not cookies:
         return {'message': 'Credentials not identified. Please login first.'}
     url = base + '/api/resource/' + doctype
-    # print(url)
     res = requests.post(url.replace("'", '"'), cookies=cookies, data=data)
-    # print(res.raw)
     return post_processing(res)
 
 
@@ -67,7 +69,6 @@ def get_document(doctype, cookies, fields=None, filters=None):
     if not cookies:
         return {'message': 'Credentials not identified. Please login first.'}
     url = base + '/api/resource/' + doctype
-    # print(url)
     if filters and fields:
         url += '?filters=' + str(filters)
         url += '&fields=' + str(fields)
@@ -76,10 +77,8 @@ def get_document(doctype, cookies, fields=None, filters=None):
             url += '?fields=' + str(fields)
         elif filters:
             url += '?filters=' + str(filters)
-    # print(url)
 
     res = requests.get(url.replace("'", '"'), cookies=cookies)
-    # print(res)
     return post_processing(res)
 
 
@@ -92,7 +91,6 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
     color = 'rgb(0, 0, 0)'
     font = ImageFont.truetype(dir_path + '/OpenSans-Semibold.ttf', size=15)
     (x, y) = (320, 27)
-    # template = "Full Payment - COD"
     draw.text((x, y), template, fill=color, font=font)
 
     upc = barcode.get('upc', b_code, writer=barcode.writer.ImageWriter())
@@ -103,37 +101,29 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
     font = ImageFont.truetype(dir_path + '/OpenSans-Semibold.ttf', size=12)
 
     (x, y) = (50, 70)
-    # invoice = "Invoice"
     draw.text((x, y), invoice, fill=color, font=font)
 
     (x, y) = (32, 162)
-    # weight = "weight"
     draw.text((x, y), weight, fill=color, font=font)
 
     (x, y) = (118, 103)
-    # delivery_type = "Regular shipping"
     draw.text((x, y), delivery_type, fill=color, font=font)
 
     (x, y) = (116, 162)
-    # shipping = "shipping"
     draw.text((x, y), shipping, fill=color, font=font)
 
     (x, y) = (32, 260)
-    # to_entity = "to entity"
     draw.text((x, y), to_entity, fill=color, font=font)
 
     (x, y) = (245, 260)
-    # from_entity = "from entity"
     draw.text((x, y), from_entity, fill=color, font=font)
 
     font = ImageFont.truetype(dir_path + '/OpenSans-Light.ttf', size=10)
 
     (x, y) = (32, 278)
-    # address = "Jl. Customer 2 no 2<br>Bogor<br>\nJawa Barat<br>16000<br>Indonesia<br>\n"
     draw.text((x, y), address.replace('\n', '').replace('<br>', '\n'), fill=color, font=font)
 
     (x, y) = (245, 278)
-    # address_company = "Jl. Customer 2 no 2<br>Bogor<br>\nJawa Barat<br>16000<br>Indonesia<br>\n"
     draw.text((x, y), address_company.replace('\n', '').replace('<br>', '\n'), fill=color, font=font)
 
     (x1, y1) = (32, 400)
@@ -150,12 +140,6 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
     return encoded_string
 
 
-@frappe.whitelist(allow_guest=True)
-def test():
-    cookies = get_request(frappe.request)
-    return get_document('Purchase Order', cookies=cookies)
-
-
 def format_result(result):
     return {
         "success": True,
@@ -165,19 +149,34 @@ def format_result(result):
     }
 
 
+@frappe.whitelist(allow_guest=True)
+def login():
+    data = validate_data(frappe.request.data)
+    cookies = get_request(frappe.request)
+    global base
+    url = base + '/api/method/login'
+
+    res = requests.post(url.replace("'", '"'), data=data)
+    response = post_processing(res)
+    api_id = res.headers.get('Set-Cookie')
+    return format_result([
+        {
+            "id": "",
+            "username": response['full_name'],
+            "api_key": api_id[api_id.index('=')+1:api_id.index(';')],
+            "warehouse_id": ""
+        }
+    ])
+
+
 @frappe.whitelist()
 def purchases():
+    # purchase_ids = query_db('Purchase Order', fields=['*'])
     cookies = get_request(frappe.request)
-
-    purchase_ids = get_document('Purchase Order', cookies=cookies)
     result = []
-
-    for i in purchase_ids['data']:
-        each_data = frappe.get_doc(
-            'Purchase Order',
-            i['name']
-        )
-
+    each_data_list = list(map(lambda x: frappe.get_doc('Purchase Order', x),
+                              [i['name'] for i in frappe.get_list('Purchase Order')]))
+    for each_data in each_data_list:
         temp_dict = {
             "id": each_data.idx,
             "po_number": each_data.name,
@@ -209,7 +208,7 @@ def purchases():
             "supplier_work_phone": None,
             "supplier_cell_phone": None,
             "expiration_date": each_data.schedule_date,
-            "payment_due_date": None if len(each_data.payment_schedule) == 0 else each_data.payment_schedule[
+            "payment_due_date": None if each_data.payment_schedule is None or len(each_data.payment_schedule) == 0 else each_data.payment_schedule[
                 0].due_date,
             "notes": each_data.remarks,
             "rejection_notes": each_data.remarks if each_data.docstatus == 2 else None,
@@ -284,13 +283,6 @@ def warehouse():
             "modified",
             "modified_by"
         ], filters=[["parent_warehouse", "=", i['name']]])
-
-        # for j in warehouse_areas['data']:
-        #
-        #     j.update({
-        #         "usage_type_id": None,
-        #         "description": None
-        #     })
 
         temp_dict = {
             "id": i['idx'],
@@ -381,10 +373,6 @@ def get_label():
         owner=str(info_retrieved['owner'])
     )
 
-    # import os
-    # with open(os.path.expanduser('/home/sid/PycharmProjects/supertal/mamba2/mamba-frappe-bench/apps/shopee_v01/shopee_v01/api/v1/test.pdf'), 'wb') as fout:
-    #      fout.write(base64.decodebytes(pdf_binary))
-
     return {
         "pdf_bin": str(pdf_binary)
     }
@@ -404,7 +392,6 @@ def orders():
         )
         sales_invoice_num = frappe.get_list('Sales Invoice Item', fields=['parent'],
                                               filters=[['sales_order', '=', i['name']]])
-        # print(sales_invoice_num[0].parent)
         temp_dict = {
             "id": each_data.idx,
             "location_id": None,
@@ -595,7 +582,7 @@ def deliveryOrder():
     delivery_order.modified = data['update_time']
     delivery_order.modified_by = data['update_user_id']
     delivery_order.insert()
-    delivery_order.save()
+    # delivery_order.save()
 
     # print(delivery_order)
     return {
@@ -611,33 +598,42 @@ def deliveryOrder():
 
 
 @frappe.whitelist()
-def stockOpname():
+def stockTransfer():
+    cookies = get_request(frappe.request)
     data = validate_data(frappe.request.data)
-
-    # delivery_order = get_document('Delivery Note', filters=specific, cookies=cookies, fields=['*'])
-    # stock_ledger = frappe.get_doc('Stock Ledger Entry', data['warehouse_stockopname_id'])
-    # delivery_order.docstatus = data['status']
-    stock_ledger = frappe.new_doc('Stock Ledger Entry')
-
-    stock_ledger.modified = data['update_time']
-    stock_ledger.modified_by = data['update_user_id']
-    stock_ledger.insert()
-    # delivery_order.save()
-
-    # print(delivery_order)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Material Transfer'
+    new_doc.company = data['company']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": data['t_warehouse'],
+            "s_warehouse": data['s_warehouse'],
+            "qty": item['qty']
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
     return {
         "success": True,
-        "message": "Data created",
         "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name
+        },
     }
 
 
 @frappe.whitelist()
-def stockTransfer():
+def stockOpname():
     cookies = get_request(frappe.request)
     data = validate_data(frappe.request.data)
-    stock_transfer = frappe.get_doc('Stock Entry')
-
+    stock_ledger = frappe.new_doc('Stock Ledger Entry')
+    stock_ledger.warehouse = data['warehouse_stockopname_id']
+    stock_ledger.start_time = data['start_datetime']
+    stock_ledger.end_time = data['end_datetime']
+    stock_ledger._comments = data['notes']
+    stock_ledger.modified_by = data['create_user_id']
 
 
 
@@ -645,68 +641,5 @@ def stockTransfer():
 def purchaseReceive():
     cookies = get_request(frappe.request)
     data = validate_data(frappe.request.data)
-    purchase_order_items = frappe.get_doc(
-        'Purchase Order',
-        data['purchase_id']
-    ).items
-    # print('-----------------1')
-    purchase_receipt = frappe.new_doc(
-        'Purchase Receipt'
-    )
-    # print('-----------------2')
-    # pprint(dir(purchase_receipt))
-    dic = {item.item_name: item for item in purchase_order_items}
-    for i in data["products"]:
-        # print(i)
-        dic[i['name']].qty = i['qty']
-        # print('-----------------yo')
-        # purchase_receipt.items.append(dic[i['name']])
-    # print('------------------------------3')
-    purchase_receipt.insert()
-    # print('-----------------4')
+    new_doc = frappe.new_doc('Purchase Order')
 
-    return 'done'
-    # temp_dict = {
-    #     # "doctype" : "Purchase Order",
-    #     "naming_series": "PUR-ORD-.YYYY.-",
-    #     "supplier": "ALVINDO 2",
-    #     "company": "ISS",
-    #     "transaction_date": "2021-05-26",
-    #     "currency": "IDR",
-    #     "conversion_rate": "1.0",
-    #     "items": [],
-    #     "status": "0",
-    #     "name": "BLDG202105-0008"
-    # }
-    # print('sent')
-
-    # Approach - get_doc to create
-    # doc = frappe.get_doc(temp_dict)
-    # doc.insert()
-    # doc.save()
-    # print(res)
-    # return 'done'
-
-    # Approach - new_doc
-    # doc = frappe.new_doc('Purchase Receipt')
-    # print('--------------------------------')
-    # doc.name = ''
-    # doc.items = []
-    # doc.supplier = 'Supplier 3 Raw'
-    # doc.currency = 'USD'
-    # print('--------------------->>>>>>>>>>>>>>')
-    # res = doc.insert(
-    #     ignore_permissions=True, # ignore write permissions during insert
-    #     ignore_links=True, # ignore Link validation in the document
-    #     ignore_if_duplicate=True, # dont insert if DuplicateEntryError is thrown
-    #     ignore_mandatory=True # insert even if mandatory fields are not set
-    # )
-    # return doc.as_dict()
-
-    # Approach - test get last doc
-    # doc = frappe.get_last_doc('Purchase Receipt')
-    # print(doc)
-    # return doc.as_dict()
-
-    # Approach - 4
-    # return post_document('Purchase Order', cookies=cookies, data=temp_dict)
