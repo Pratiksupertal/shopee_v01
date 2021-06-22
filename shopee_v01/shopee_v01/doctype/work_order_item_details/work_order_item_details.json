@@ -1,0 +1,82 @@
+{
+ "creation": "2021-06-03 17:21:52.516937",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "art_no",
+  "bom",
+  "qty",
+  "material__color_material",
+  "column_break_4",
+  "color_thread",
+  "ls__ss",
+  "washing"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "art_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Art No",
+   "options": "Item"
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty"
+  },
+  {
+   "fieldname": "color_thread",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Color Thread"
+  },
+  {
+   "columns": 1,
+   "fieldname": "ls__ss",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "L/S  S/S"
+  },
+  {
+   "columns": 1,
+   "fieldname": "washing",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Washing",
+   "options": "Washing"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bom",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "BOM",
+   "options": "BOM"
+  },
+  {
+   "fieldname": "material__color_material",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Material / Color Material"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-22 17:33:19.032797",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Work Order Item Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
