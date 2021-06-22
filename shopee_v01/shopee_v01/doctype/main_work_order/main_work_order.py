@@ -15,11 +15,20 @@ class MainWorkOrder(Document):
 			doc = frappe.new_doc('Work Order')
 			doc.production_item = row.art_no
 			doc.qty = row.qty
+
 			doc.spk_date = self.spk_date
 			doc.wip_warehouse = self.wip_warehouse
 			doc.fg_warehouse = self.fg_warehouse
 			doc.scrap_warehouse = self.scrap_warehouse
 			doc.bom_no = row.bom
+			bom_data = frappe.get_doc("BOM",row.bom)
+			if bom_data.with_operations:
+				for op_row in bom_data.operations:
+					print(op_row.operation)
+				sql = "select operation, description, workstation, idx,'Pending' as status,base_hour_rate as hour_rate, time_in_mins, parent as bom, batch_size from `tabBOM Operation` where parent = '{0}' order by idx".format(row.bom)
+				operations = frappe.db.sql(sql, as_dict=1)
+
+				doc.set('operations', operations)
 			doc.reference_main_work_order = self.name
 			doc.expected_delivery_date = self.expected_finish_date
 			doc.save(ignore_permissions=True)
@@ -27,17 +36,6 @@ class MainWorkOrder(Document):
 			doc.submit()
 		# self.docstatus=1
 
-	def on_cancel(self):
-		work_order = frappe.get_doc('Work Order', {"reference_main_work_order": self.name })
-		if work_order.docstatus == 1:
-			msg = "Please cancel the Work Order linked with this Main Work Order {0}".format(work_order.name)
-			frappe.msgprint(msg)
-			work_order.docstatus = 2
-			work_order.status = "Cancelled"
-		# work_order.save(ignore_permissions=True)
-		self.docstatus = 2
-		self.status = "Cancelled"
-		pass
 
 	def fetch_required_item(self,bom):
 		bom = frappe.get_doc("BOM",bom)
