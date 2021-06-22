@@ -44,6 +44,7 @@ frappe.ui.form.on('Main Work Order', {
   }
 });
 // Child table Work Order Item Details trigger
+// frappe.ui.form.on('Work Order Item Details', {
 frappe.ui.form.on('Work Order Item Details', {
 	bom: function(frm, cdt, cdn){
 	var row = locals[cdt][cdn];
