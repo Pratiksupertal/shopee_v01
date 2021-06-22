@@ -124,7 +124,7 @@
     {% for row in doc.required_item  %}
     <tr>
       <div class="col-xs-2">
-        <b>{{ row.item_details or "" }}</b>
+        <b>{{ row.item_label or "" }}</b>
       </div>
       <div class="col-xs-4">
         {{ row.item_code or "" }}
@@ -149,8 +149,8 @@
       <th class= "tac " width= "6% "><b>No.</b></th>
       <th class= "tac " width= "25% "><b>Art No</b></th>
       <th class= "tac " width= "10% "><b>Qty</b></th>
-      <th class= "tac " width= "25% "><b>Material</b></th>
-      <th class= "tac " width= "10% "><b>Color of Material</b></th>
+      <th class= "tac " width= "35% "><b>Material & Color of Material</b></th>
+      <!-- <th class= "tac " width= "10% "><b>Color of Material</b></th> -->
       <th class= "tac " width= "10% "><b>Color Thread</b></th>
       <th class= "tac " width= "20% "><b>L/S - S/S</b></th>
       <th class= "tac " width= "15% "><b>Washing</b></th>
@@ -160,8 +160,8 @@
        <td class= "tac " width= "6% ">{{ row.idx or '' }}</td>
        <td width= "25% ">{{ row.art_no or '' }}</td>
        <td width= "10% ">{{ row.qty or '' }}</td>
-       <td class= "tac " width= "25% ">{{ row.bahan or '' }}</td>
-       <td class= "tac " width= "10% ">{{ row.color_of_material or '' }}</td>
+       <td class= "tac " width= "35% ">{{ row.material__color_material or '' }}</td>
+       <!-- <td class= "tac " width= "10% ">{{ row.color_of_material or '' }}</td> -->
        <td class= "tac " width= "10% ">{{ row.color_thread or '' }}</td>
        <td class= "tac " width= "20% ">{{ row.ls__ss or '' }}</td>
        <td width= "15% ">{{ row.washing or '' }}</td>
