@@ -1,30 +1,31 @@
 {
- "autoname": "field:template_name",
- "creation": "2021-03-31 17:15:34.259711",
+ "autoname": "field:instruction_id",
+ "creation": "2021-06-15 21:29:56.813705",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "template_name",
-  "template_text"
+  "instruction_id",
+  "instruction_label"
  ],
  "fields": [
   {
-   "fieldname": "template_name",
+   "fieldname": "instruction_id",
    "fieldtype": "Data",
-   "label": "Template Name",
+   "label": "Instruction ID",
    "unique": 1
   },
   {
-   "fieldname": "template_text",
-   "fieldtype": "Text Editor",
-   "label": "Template Text"
+   "fieldname": "instruction_label",
+   "fieldtype": "Data",
+   "label": "Instruction Label",
+   "unique": 1
   }
  ],
- "modified": "2021-06-16 20:20:15.756346",
+ "modified": "2021-06-17 20:29:04.043007",
  "modified_by": "Administrator",
  "module": "Shopee V01",
- "name": "Cara Packing Template",
+ "name": "Instructions",
  "owner": "Administrator",
  "permissions": [
   {
@@ -36,18 +37,6 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Administrator",
    "share": 1,
    "write": 1
   }
