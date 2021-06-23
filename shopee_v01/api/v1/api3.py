@@ -659,18 +659,26 @@ def deliveryOrder():
     parts = urlparse(frappe.request.url)
     specific_part = parts.path.split('/')[-1] if parts.path.split('/')[-1].find(
         'shopee_v01.api.v1.api3') == -1 else None
-    # if specific_part:
-    #     specific += [["name", "=", specific_part]]
 
-    # delivery_order = get_document('Delivery Note', filters=specific, cookies=cookies, fields=['*'])
-    delivery_order = frappe.get_doc('Delivery Note', specific_part)
+    if specific_part:
+        delivery_order = frappe.get_doc('Delivery Note', specific_part)
+        delivery_order.modified_by = data['update_user_id']
+    else:
+        delivery_order = frappe.new_doc('Delivery Note')
+        delivery_order.customer = data['create_user_id']
+        delivery_order.set_warehouse = data['warehouse_id']
+        for item in data['products']:
+            delivery_order.append("items", {
+                "item_code": item['delivery_order_product_id'],
+                "qty": item['quantity'],
+                # "warehouse": data['warehouse_product_lot_id']
+            })
+
     # delivery_order.docstatus = data['status']
-    delivery_order.modified = data['update_time']
-    delivery_order.modified_by = data['update_user_id']
+    # delivery_order.modified = data['update_time']
+    # delivery_order.modified_by = data['update_user_id']
     delivery_order.insert()
-    # delivery_order.save()
 
-    # print(delivery_order)
     return {
         "success": True,
         "message": "Data created",
