@@ -483,6 +483,37 @@ def deliveryOrders():
 
 
 @frappe.whitelist()
+def purchaseReceive():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+
+    today = dt.datetime.today()
+
+    new_doc = frappe.new_doc('Purchase Receipt')
+    new_doc.posting_date = today.strftime("%Y-%m-%d")
+    new_doc.supplier = data['supplier_do_number']
+    new_doc.set_warehouse = data['warehouse_id']
+    new_doc.modified_by = data['create_user_id']
+
+    for item in data['products']:
+        new_doc.append("items", {
+            "item_code" : item['purchase_product_id'],
+            "qty" : item['quantity'],
+            "purchase_order" : data['purchase_id']
+        })
+
+    new_doc.insert()
+
+    return format_result({
+        "id": new_doc.name,
+        "receive_number": new_doc.name,
+        "supplier_do_number": new_doc.supplier,
+        "receive_date": new_doc.posting_date,
+        "supplier_id": new_doc.supplier
+    })
+
+
+@frappe.whitelist()
 def stockTransfers():
     cookies = get_request(frappe.request)
 
@@ -525,6 +556,61 @@ def stockTransfers():
         result.append(temp_dict)
 
     return format_result(result)
+
+
+@frappe.whitelist()
+def stockTransfer():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Material Transfer'
+    new_doc.company = data['company']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": data['t_warehouse'],
+            "s_warehouse": data['s_warehouse'],
+            "qty": item['qty']
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
+    return {
+        "success": True,
+        "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name
+        },
+    }
+
+
+@frappe.whitelist()
+def stockOpname():
+    cookies = get_request(frappe.request)
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.start_time = data['start_datetime']
+    new_doc.end_time = data['end_datetime']
+    new_doc._comments = data['notes']
+    new_doc.modified_by = data['create_user_id']
+
+    new_doc.purpose = 'Material Receipt'
+    new_doc.set_stock_entry_type()
+    for item in data['products']:
+        new_doc.append("items", {
+            "item_code" : item['product_code'],
+            "qty" : item['quantity'],
+            "t_warehouse" : data['warehouse_stockopname_id']
+        })
+
+    new_doc.insert()
+
+    return {
+       "success": True,
+       "message": "Data created",
+       "status_code": 200,
+    }
 
 
 @frappe.whitelist()
@@ -595,51 +681,3 @@ def deliveryOrder():
             }
         ]
     }
-
-
-@frappe.whitelist()
-def stockTransfer():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    new_doc = frappe.new_doc('Stock Entry')
-    new_doc.purpose = 'Material Transfer'
-    new_doc.company = data['company']
-    new_doc._comments = data['notes']
-    for item in data['items']:
-        new_doc.append("items", {
-            "item_code": item['item_code'],
-            "t_warehouse": data['t_warehouse'],
-            "s_warehouse": data['s_warehouse'],
-            "qty": item['qty']
-        })
-    new_doc.set_stock_entry_type()
-    new_doc.insert()
-    return {
-        "success": True,
-        "status_code": 200,
-        "message": 'Data created',
-        "data": {
-            "transfer_number": new_doc.name
-        },
-    }
-
-
-@frappe.whitelist()
-def stockOpname():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    stock_ledger = frappe.new_doc('Stock Ledger Entry')
-    stock_ledger.warehouse = data['warehouse_stockopname_id']
-    stock_ledger.start_time = data['start_datetime']
-    stock_ledger.end_time = data['end_datetime']
-    stock_ledger._comments = data['notes']
-    stock_ledger.modified_by = data['create_user_id']
-
-
-
-@frappe.whitelist()
-def purchaseReceive():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    new_doc = frappe.new_doc('Purchase Order')
-
