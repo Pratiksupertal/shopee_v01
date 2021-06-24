@@ -8,8 +8,24 @@ from frappe.model.document import Document
 from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, get_link_to_form
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no, get_bom_items_as_dict
 from erpnext.stock.utils import get_bin, validate_warehouse_company, get_latest_stock_qty
+from frappe.model.naming import make_autoname
 
 class MainWorkOrder(Document):
+	def autoname(self):
+		if self.is_new():
+			item_name = [row.art_no for row in self.work_order_item_detail ]
+			item = frappe.get_doc("Item", {"name": item_name[0]})
+			if item.item_category:
+				item_category = item.item_category
+				item_category = item_category.split("-")
+				supplier_id = frappe.db.get_value('Supplier',self.supplier, 'supplier_id')
+				name = item_category[0] + "/.###"+"/."+supplier_id+"/.YYYY"
+				self.name = make_autoname(item_category[0]+"./." + ".###."+"./."+supplier_id+"./.YYYY")
+
+	def before_submit(self):
+		self.submitted_by = frappe.session.user
+		
+
 	def on_submit(self):
 		for row in self.work_order_item_detail:
 			doc = frappe.new_doc('Work Order')
@@ -34,6 +50,7 @@ class MainWorkOrder(Document):
 			doc.save(ignore_permissions=True)
 			frappe.db.commit()
 			doc.submit()
+		# self.save()
 		# self.docstatus=1
 
 

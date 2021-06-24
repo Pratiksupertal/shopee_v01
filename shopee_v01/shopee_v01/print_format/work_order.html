@@ -22,7 +22,7 @@
       <tr>
         {% if doc.supplier %}
         <td width="40%"><b>No. PO</b></td>
-        <td width="60%"><b>{{ '' }}</b></td>
+        <td width="60%"><b>{{ doc.name or '' }}</b></td>
         {% endif %}
       </tr>
 
@@ -52,7 +52,7 @@
 
         <td colspan="6"><b>Finish Date</b></td>
         <!-- <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('spk_date'), "dd-mm-yyyy") }}</td> -->
-        <td colspan="12">{{ frappe.utils.formatdate(doc.get_formatted('spk_date'), "MMM-yyyy") }}</td>
+        <td colspan="12">{{ frappe.utils.formatdate(doc.get_formatted('expected_finish_date'), "dd-MMM-yyyy") }}</td>
       </tr>
       <tr>
         <td colspan="6"><b></b></td>
@@ -315,7 +315,24 @@
      </table>
    </div>
    <div class ="row section-break f_font" style="margin-top: 20px;">
-     <div class="col-xs-12">
-       <b> <u>Approved By</u></b>
-     </div>
+     <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <div class="col-xs-6">
+          <b> <u>Created By</u></b>
+        </div>
+        <div class="col-xs-6" style="text-align:right">
+          <b> <u>Approved By</u></b>
+        </div>
+       </tr>
+       <tr>
+         <div class="col-xs-6">
+           {{doc.owner}}
+           <br>
+         </div>
+         <div class="col-xs-6" style="text-align:right">
+           {{doc.submitted_by or ""}}
+         </div><br>
+
+       </tr>
+     </table>
      </div>
