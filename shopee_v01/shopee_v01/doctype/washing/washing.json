@@ -1,30 +1,28 @@
 {
- "autoname": "field:item_category",
- "creation": "2021-02-22 18:41:56.277706",
+ "creation": "2021-06-03 17:23:06.734226",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item_category_id",
-  "item_category"
+  "washing_id",
+  "washing_type"
  ],
  "fields": [
   {
-   "fieldname": "item_category",
+   "fieldname": "washing_id",
    "fieldtype": "Data",
-   "label": "Item Category",
-   "unique": 1
+   "label": "Washing ID"
   },
   {
-   "fieldname": "item_category_id",
+   "fieldname": "washing_type",
    "fieldtype": "Data",
-   "label": "Item Category ID"
+   "label": "Washing Type"
   }
  ],
- "modified": "2021-05-03 21:26:37.585915",
+ "modified": "2021-06-03 17:23:06.734226",
  "modified_by": "Administrator",
  "module": "Shopee V01",
- "name": "Item Category",
+ "name": "Washing",
  "owner": "Administrator",
  "permissions": [
   {

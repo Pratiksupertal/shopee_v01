@@ -1,30 +1,30 @@
 {
- "autoname": "field:item_category",
- "creation": "2021-02-22 18:41:56.277706",
+ "autoname": "field:thread_name",
+ "creation": "2021-06-03 17:04:31.170894",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item_category_id",
-  "item_category"
+  "thread_id",
+  "thread_name"
  ],
  "fields": [
   {
-   "fieldname": "item_category",
+   "fieldname": "thread_id",
    "fieldtype": "Data",
-   "label": "Item Category",
-   "unique": 1
+   "label": "Thread ID"
   },
   {
-   "fieldname": "item_category_id",
+   "fieldname": "thread_name",
    "fieldtype": "Data",
-   "label": "Item Category ID"
+   "label": "Thread Name",
+   "unique": 1
   }
  ],
- "modified": "2021-05-03 21:26:37.585915",
+ "modified": "2021-06-03 17:04:52.207605",
  "modified_by": "Administrator",
  "module": "Shopee V01",
- "name": "Item Category",
+ "name": "Thread",
  "owner": "Administrator",
  "permissions": [
   {

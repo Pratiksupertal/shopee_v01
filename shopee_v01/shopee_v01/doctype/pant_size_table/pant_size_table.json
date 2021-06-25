@@ -1,0 +1,175 @@
+{
+ "creation": "2021-06-03 20:59:25.419255",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "t27",
+  "t28",
+  "t29",
+  "t30",
+  "t31",
+  "t32",
+  "t33",
+  "t34",
+  "t35",
+  "t36",
+  "t37",
+  "t38",
+  "t39",
+  "t40",
+  "t41",
+  "t42",
+  "t43",
+  "t44",
+  "t45",
+  "t46",
+  "t47",
+  "total"
+ ],
+ "fields": [
+  {
+   "fieldname": "total",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Total"
+  },
+  {
+   "fieldname": "t27",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "27"
+  },
+  {
+   "fieldname": "t28",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "28"
+  },
+  {
+   "fieldname": "t29",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "29"
+  },
+  {
+   "fieldname": "t30",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "30"
+  },
+  {
+   "fieldname": "t31",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "31"
+  },
+  {
+   "fieldname": "t32",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "32"
+  },
+  {
+   "fieldname": "t33",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "33"
+  },
+  {
+   "fieldname": "t34",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "34"
+  },
+  {
+   "fieldname": "t35",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "35"
+  },
+  {
+   "fieldname": "t36",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "36"
+  },
+  {
+   "fieldname": "t37",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "37"
+  },
+  {
+   "fieldname": "t38",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "38"
+  },
+  {
+   "fieldname": "t39",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "39"
+  },
+  {
+   "fieldname": "t40",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "40"
+  },
+  {
+   "fieldname": "t41",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "41"
+  },
+  {
+   "fieldname": "t42",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "42"
+  },
+  {
+   "fieldname": "t43",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "43"
+  },
+  {
+   "fieldname": "t44",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "44"
+  },
+  {
+   "fieldname": "t45",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "45"
+  },
+  {
+   "fieldname": "t46",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "46"
+  },
+  {
+   "fieldname": "t47",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "47"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-06-17 13:36:03.596975",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Pant Size Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
