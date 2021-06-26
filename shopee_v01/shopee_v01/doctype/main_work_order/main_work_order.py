@@ -24,7 +24,7 @@ class MainWorkOrder(Document):
 
 	def before_submit(self):
 		self.submitted_by = frappe.session.user
-		
+
 
 	def on_submit(self):
 		for row in self.work_order_item_detail:
@@ -37,6 +37,7 @@ class MainWorkOrder(Document):
 			doc.fg_warehouse = self.fg_warehouse
 			doc.scrap_warehouse = self.scrap_warehouse
 			doc.bom_no = row.bom
+			doc.company = self.company
 			bom_data = frappe.get_doc("BOM",row.bom)
 			if bom_data.with_operations:
 				for op_row in bom_data.operations:
@@ -45,7 +46,6 @@ class MainWorkOrder(Document):
 				operations = frappe.db.sql(sql, as_dict=1)
 
 				doc.set('operations', operations)
-			doc.reference_main_work_order = self.name
 			doc.expected_delivery_date = self.expected_finish_date
 			doc.save(ignore_permissions=True)
 			frappe.db.commit()
