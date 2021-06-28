@@ -1,7 +1,5 @@
 import json
 import time
-from pprint import pprint
-import io
 import frappe
 import requests
 from PIL import Image, ImageDraw, ImageFont
@@ -10,25 +8,6 @@ import os
 import barcode
 from urllib.parse import urlparse
 import datetime as dt
-
-base = ''
-
-
-@frappe.whitelist(allow_guest=True)
-def ping():
-    return 'pong'
-
-
-def authorize_request(header):
-    print(header)
-
-
-def get_request(request):
-    global base
-    parts = urlparse(request.url)
-    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
-    cookies = request.cookies
-    return cookies
 
 
 def validate_data(data):
@@ -41,45 +20,13 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def query_db(doctype, filters=None, fields=None):
-    check = frappe.db.get_list(
-        doctype,
-        fields=fields,
-        filters=filters)
-    return check
-
-
-def post_processing(res):
-    if res.status_code != 200:
-        raise requests.exceptions.HTTPError
-    return res.json()
-
-
-def post_document(doctype, cookies, data):
-    global base
-    if not cookies:
-        return {'message': 'Credentials not identified. Please login first.'}
-    url = base + '/api/resource/' + doctype
-    res = requests.post(url.replace("'", '"'), cookies=cookies, data=data)
-    return post_processing(res)
-
-
-def get_document(doctype, cookies, fields=None, filters=None):
-    global base
-    if not cookies:
-        return {'message': 'Credentials not identified. Please login first.'}
-    url = base + '/api/resource/' + doctype
-    if filters and fields:
-        url += '?filters=' + str(filters)
-        url += '&fields=' + str(fields)
-    else:
-        if fields:
-            url += '?fields=' + str(fields)
-        elif filters:
-            url += '?filters=' + str(filters)
-
-    res = requests.get(url.replace("'", '"'), cookies=cookies)
-    return post_processing(res)
+def format_result(result=None, message=None, status_code=None):
+    return {
+        "success": True,
+        "message": message,
+        "status_code": status_code,
+        "data": result
+    }
 
 
 def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_entity=None,
@@ -140,42 +87,70 @@ def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_e
     return encoded_string
 
 
-def format_result(result):
+@frappe.whitelist()
+def get_label():
+    data = validate_data(frappe.request.data)
+    fields = ['name', 'customer_name', 'company', 'address_display',
+              'company_address_display', 'total_net_weight', 'payment_terms_template',
+              'grand_total', 'owner']
+    filters = {"name": data['id']}
+    result = frappe.get_list('Sales Invoice', fields=fields, filters=filters)
+
+    filters = {
+        'parent': data['id']
+    }
+
+    fields = ["item_name", "qty"]
+    check = frappe.get_list(
+        'Sales Invoice Item',
+        fields=fields,
+        filters=filters)
+    info_retrieved = result[0]
+
+    pdf_binary = convert_to_pdf(
+        template=str(info_retrieved['payment_terms_template']), invoice=str(info_retrieved['name']),
+        weight=str(info_retrieved['total_net_weight']), shipping=str(info_retrieved['grand_total']),
+        to_entity=str(info_retrieved['customer_name']), from_entity=str(info_retrieved['company']),
+        address=str(info_retrieved['address_display']), address_company=str(info_retrieved['company_address_display']),
+        product_list1=check, delivery_type='Regular \nShipping', b_code=str('123456789012'),
+        owner=str(info_retrieved['owner'])
+    )
+
     return {
-        "success": True,
-        "message": "Login success",
-        "status_code": 200,
-        "data": result
+        "pdf_bin": str(pdf_binary)
     }
 
 
 @frappe.whitelist(allow_guest=True)
 def login():
     data = validate_data(frappe.request.data)
-    cookies = get_request(frappe.request)
-    global base
-    url = base + '/api/method/login'
+    parts = urlparse(frappe.request.url)
+    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
+    url = base + '/api/method/login'
     res = requests.post(url.replace("'", '"'), data=data)
-    response = post_processing(res)
-    api_id = res.headers.get('Set-Cookie')
-    return format_result([
-        {
-            "id": "",
-            "username": response['full_name'],
-            "api_key": api_id[api_id.index('=')+1:api_id.index(';')],
-            "warehouse_id": ""
-        }
-    ])
+    if res.status_code != 200:
+        return format_result(message='Login Failed', status_code=403, result='Entered credentials are invalid!')
+    else:
+        user_data = frappe.get_doc('User', {'username': data['usr']})
+        url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
+        res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
+        api_secret = res_api_secret.json()
+        return format_result(message='Login Success', status_code=200, result={
+            "id": user_data.idx,
+            "username": user_data.username,
+            "api_key": user_data.api_key + ':' + api_secret['message']['api_secret'],
+            "warehouse_id": user_data.warehouse
+        })
 
 
 @frappe.whitelist()
 def purchases():
-    # purchase_ids = query_db('Purchase Order', fields=['*'])
-    cookies = get_request(frappe.request)
     result = []
+
     each_data_list = list(map(lambda x: frappe.get_doc('Purchase Order', x),
                               [i['name'] for i in frappe.get_list('Purchase Order')]))
+
     for each_data in each_data_list:
         temp_dict = {
             "id": each_data.idx,
@@ -208,7 +183,8 @@ def purchases():
             "supplier_work_phone": None,
             "supplier_cell_phone": None,
             "expiration_date": each_data.schedule_date,
-            "payment_due_date": None if each_data.payment_schedule is None or len(each_data.payment_schedule) == 0 else each_data.payment_schedule[
+            "payment_due_date": None if each_data.payment_schedule is None or len(each_data.payment_schedule) == 0 else
+            each_data.payment_schedule[
                 0].due_date,
             "notes": each_data.remarks,
             "rejection_notes": each_data.remarks if each_data.docstatus == 2 else None,
@@ -217,12 +193,11 @@ def purchases():
         }
         result.append(temp_dict)
 
-    return format_result(result)
+    return format_result(message='Data found', result=result, status_code=200)
 
 
 @frappe.whitelist()
 def products():
-    cookies = get_request(frappe.request)
     fields = [
         'idx',
         'item_name',
@@ -233,14 +208,14 @@ def products():
     ]
 
     parts = urlparse(frappe.request.url)
-    specific = parts.path.split('/')[-1] if parts.path.split('/')[-1].find('shopee_v01.api.v1.api3.') == -1 else None
+    specific = parts.path.split('/')[-1] if parts.path.split('/')[-1].find('shopee_v01.api.v1.api4.') == -1 else None
     if specific:
-        specific = [["item_code", "=", specific]]
-
-    product_list = get_document('Item', fields=fields, cookies=cookies, filters=specific)
+        specific = {'item_code': specific.replace("%20", ' ')}
+    print(specific)
+    each_data_list = frappe.get_list('Item', fields=fields, filters=specific)
     result = []
 
-    for i in product_list['data']:
+    for i in each_data_list:
         temp_dict = {
             "id": i['idx'],
             "name": i['item_name'],
@@ -254,12 +229,11 @@ def products():
 
         result.append(temp_dict)
 
-    return format_result(result)
+    return format_result(result=result, status_code=200, message='Data Found')
 
 
 @frappe.whitelist()
-def warehouse():
-    cookies = get_request(frappe.request)
+def warehouses():
     fields = [
         'idx',
         'warehouse_name',
@@ -268,11 +242,11 @@ def warehouse():
         'warehouse_type',
     ]
 
-    warehouse_list = get_document('Warehouse', cookies=cookies, fields=fields)
+    warehouse_list = frappe.get_list('Warehouse', fields=fields)
     result = []
 
-    for i in warehouse_list['data']:
-        warehouse_areas = get_document('Warehouse', cookies=cookies, fields=[
+    for i in warehouse_list:
+        warehouse_areas = frappe.get_list('Warehouse', fields=[
             "idx",
             "warehouse_id",
             "name",
@@ -282,13 +256,12 @@ def warehouse():
             "owner",
             "modified",
             "modified_by"
-        ], filters=[["parent_warehouse", "=", i['name']]])
+        ], filters={'parent_warehouse': i['name']})
 
         temp_dict = {
             "id": i['idx'],
             "name": i['warehouse_name'],
             "code": i['name'],
-            "is_headquarter": "1" if i['parent'] is None else "0",
             "description": None,
             "areas": [{
                 'id': j['idx'],
@@ -300,19 +273,16 @@ def warehouse():
                 'update_user_id': j['modified_by'],
                 'usage_type_id': None,
                 'description': None
-            } for j in warehouse_areas['data']],
-            "is_store": i['warehouse_type'],
-            "default_customer_id": None
+            } for j in warehouse_areas]
         }
 
         result.append(temp_dict)
 
-    return format_result(result)
+    return format_result(result=result, status_code=200, message='Data Found')
 
 
 @frappe.whitelist()
 def warehouseAreas():
-    cookies = get_request(frappe.request)
     fields = [
         "idx",
         "warehouse_name",
@@ -321,18 +291,20 @@ def warehouseAreas():
         "warehouse_type",
     ]
 
-    specific = [["parent_warehouse", "!=", ""]]
+    specific = {"parent_warehouse": ('!=', '')}
 
     parts = urlparse(frappe.request.url)
     specific_part = parts.path.split('/')[-1] if parts.path.split('/')[-1].find(
-        'shopee_v01.api.v1.api3') == -1 else None
+        'shopee_v01.api.v1.api4') == -1 else None
     if specific_part:
-        specific += [["name", "=", specific_part]]
+        specific['name'] = specific_part.replace("%20", ' ')
 
-    warehouse_areas_list = get_document('Warehouse', fields=fields, cookies=cookies, filters=specific)
+    print(specific)
+
+    warehouse_areas_list = frappe.get_list('Warehouse', fields=fields, filters=specific)
     result = []
 
-    for i in warehouse_areas_list['data']:
+    for i in warehouse_areas_list:
         temp_dict = {
             "id": i['idx'],
             "warehouse_id": i['name'],
@@ -343,55 +315,111 @@ def warehouseAreas():
         }
         result.append(temp_dict)
 
+    return format_result(result=result, status_code=200, message='Data Found')
+
+
+@frappe.whitelist()
+def purchaseReceive():
+    data = validate_data(frappe.request.data)
+
+    today = dt.datetime.today()
+
+    new_doc = frappe.new_doc('Purchase Receipt')
+    new_doc.posting_date = today.strftime("%Y-%m-%d")
+    new_doc.supplier = data['supplier_do_number']
+    new_doc.set_warehouse = data['warehouse_id']
+    new_doc.modified_by = data['create_user_id']
+
+    for item in data['products']:
+        new_doc.append("items", {
+            "item_code": item['purchase_product_id'],
+            "qty": item['quantity'],
+            "purchase_order": data['purchase_id']
+        })
+
+    new_doc.insert()
+
+    return format_result(status_code=200, message='Data Created', result={
+        "id": new_doc.name,
+        "receive_number": new_doc.name,
+        "supplier_do_number": new_doc.supplier,
+        "receive_date": new_doc.posting_date,
+        "supplier_id": new_doc.supplier
+    })
+
+
+@frappe.whitelist()
+def stockOpname():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.start_time = data['start_datetime']
+    new_doc.end_time = data['end_datetime']
+    new_doc._comments = data['notes']
+    new_doc.modified_by = data['create_user_id']
+
+    new_doc.purpose = 'Material Receipt'
+    new_doc.set_stock_entry_type()
+    for item in data['products']:
+        new_doc.append("items", {
+            "item_code": item['product_code'],
+            "qty": item['quantity'],
+            "t_warehouse": data['warehouse_stockopname_id']
+        })
+
+    new_doc.insert()
+
+    return {
+        "success": True,
+        "message": "Data created",
+        "status_code": 200,
+    }
+
+
+@frappe.whitelist()
+def stockOpnames():
+    fields = [
+        'idx',
+        'warehouse',
+        'creation',
+        '_comments',
+        'posting_date',
+        'posting_time',
+        'modified_by'
+    ]
+
+    product_list = frappe.get_list('Stock Ledger Entry', fields=fields)
+
+    result = []
+
+    for i in product_list:
+        temp_dict = {
+            "id": i['idx'],
+            "warehouse_id": i['warehouse'],
+            "warehouse_area_id": None,
+            "start_datetime": dt.datetime.combine(i['posting_date'],
+                                                  (dt.datetime.min + i['posting_time']).time()
+                                                  ),
+            "end_datetime": None,
+            "notes": i['_comments'],
+            "create_user_id": i['modified_by'],
+            "create_time": i['creation']
+        }
+
+        result.append(temp_dict)
+
     return format_result(result)
 
 
 @frappe.whitelist()
-def get_label():
-    data = validate_data(frappe.request.data)
-    cookies = get_request(frappe.request)
-    fields = ['name', 'customer_name', 'company', 'address_display',
-              'company_address_display', 'total_net_weight', 'payment_terms_template',
-              'grand_total', 'owner']
-    filters = [["Sales Invoice", "name", "=", data['id']]]
-    result = get_document('Sales Invoice', fields=fields, cookies=cookies, filters=filters)
-
-    filters = {
-        'parent': ['=', data['id']]
-    }
-
-    fields = ["item_name", "qty"]
-    check = query_db('Sales Invoice Item', fields=fields, filters=filters)
-    info_retrieved = result['data'][0]
-
-    pdf_binary = convert_to_pdf(
-        template=str(info_retrieved['payment_terms_template']), invoice=str(info_retrieved['name']),
-        weight=str(info_retrieved['total_net_weight']), shipping=str(info_retrieved['grand_total']),
-        to_entity=str(info_retrieved['customer_name']), from_entity=str(info_retrieved['company']),
-        address=str(info_retrieved['address_display']), address_company=str(info_retrieved['company_address_display']),
-        product_list1=check, delivery_type='Regular \nShipping', b_code=str('123456789012'),
-        owner=str(info_retrieved['owner'])
-    )
-
-    return {
-        "pdf_bin": str(pdf_binary)
-    }
-
-
-@frappe.whitelist()
 def orders():
-    cookies = get_request(frappe.request)
-
-    sales_order_ids = get_document('Sales Order', cookies=cookies)
+    each_data_list = list(map(lambda x: frappe.get_doc('Sales Order', x),
+                              [i['name'] for i in frappe.get_list('Sales Order')]))
     result = []
 
-    for i in sales_order_ids['data']:
-        each_data = frappe.get_doc(
-            'Sales Order',
-            i['name']
-        )
+    for each_data in each_data_list:
         sales_invoice_num = frappe.get_list('Sales Invoice Item', fields=['parent'],
-                                              filters=[['sales_order', '=', i['name']]])
+                                            filters=[['sales_order', '=', each_data.name]])
+
         temp_dict = {
             "id": each_data.idx,
             "location_id": None,
@@ -424,28 +452,26 @@ def orders():
                 "notes": None,
                 # "isActive": None
             } for j in each_data.items],
-            "notes": 'Sales Invoice: ' + '\n-'.join([i['parent'] for i in sales_invoice_num])
+            "notes": ('Sales Invoice: ' if len(sales_invoice_num) > 0 else '' ) +
+                                                                          '\n-'.join(
+                                                                            [i['parent'] for i in sales_invoice_num])
         }
         result.append(temp_dict)
 
-    return format_result(result)
+    return format_result(result=result, status_code=200, message='Data Found')
 
 
 @frappe.whitelist()
 def deliveryOrders():
-    cookies = get_request(frappe.request)
-
-    delivery_order_ids = get_document('Delivery Note', cookies=cookies)
+    each_data_list = list(map(lambda x: frappe.get_doc('Delivery Note', x),
+                              [i['name'] for i in frappe.get_list('Delivery Note')]))
     result = []
+    for each_data in each_data_list:
 
-    for i in delivery_order_ids['data']:
-        each_data = frappe.get_doc(
-            'Delivery Note',
-            i['name']
-        )
-
-        warehouse_data = get_document('Warehouse', cookies=cookies, fields=['warehouse_name'], filters=[['name', '=', each_data.set_warehouse]]) if each_data.set_warehouse is not None else None
-        warehouse_data = warehouse_data['data'][0]['warehouse_name'] if warehouse_data is not None and len(warehouse_data['data']) > 0 else None
+        try:
+            warehouse_data = frappe.get_doc('Warehouse', each_data.set_warehouse).warehouse_name or None
+        except:
+            warehouse_data = None
 
         temp_dict = {
             "id": each_data.idx,
@@ -479,186 +505,16 @@ def deliveryOrders():
         }
         result.append(temp_dict)
 
-    return format_result(result)
-
-
-@frappe.whitelist()
-def purchaseReceive():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-
-    today = dt.datetime.today()
-
-    new_doc = frappe.new_doc('Purchase Receipt')
-    new_doc.posting_date = today.strftime("%Y-%m-%d")
-    new_doc.supplier = data['supplier_do_number']
-    new_doc.set_warehouse = data['warehouse_id']
-    new_doc.modified_by = data['create_user_id']
-
-    for item in data['products']:
-        new_doc.append("items", {
-            "item_code" : item['purchase_product_id'],
-            "qty" : item['quantity'],
-            "purchase_order" : data['purchase_id']
-        })
-
-    new_doc.insert()
-
-    return format_result({
-        "id": new_doc.name,
-        "receive_number": new_doc.name,
-        "supplier_do_number": new_doc.supplier,
-        "receive_date": new_doc.posting_date,
-        "supplier_id": new_doc.supplier
-    })
-
-
-@frappe.whitelist()
-def stockTransfers():
-    cookies = get_request(frappe.request)
-
-    stock_entry_ids = get_document('Stock Entry', cookies=cookies)
-    result = []
-
-    for i in stock_entry_ids['data']:
-        each_data = frappe.get_doc(
-            'Stock Entry',
-            i['name']
-        )
-        temp_dict = {
-            "id": each_data.idx,
-            "transfer_number": each_data.name,
-            "transfer_date": each_data.posting_date,
-            "status": each_data.docstatus,
-            "from_warehouse_id": each_data.from_warehouse,
-            "from_warehouse_area_id": None,
-            "to_warehouse_id": each_data.to_warehouse,
-            "to_warehouse_area_id": None,
-            "start_datetime": None,
-            "end_datetime": None,
-            "notes": each_data.purpose,
-            "create_user_id": each_data.modified_by,
-            "create_time": each_data.creation,
-            "products": [
-                {
-                    "id": i.idx,
-                    "stock_transfer_id": i.name,
-                    "product_id": i.item_code,
-                    "product_name": i.item_name,
-                    "product_code": i.item_name,
-                    "quantity": i.qty,
-                    "warehouse_area_storage_id": None
-                } for i in each_data.items
-            ],
-            "update_user_id": each_data.modified_by,
-            "product_list": [i.item_name for i in each_data.items]
-        }
-        result.append(temp_dict)
-
-    return format_result(result)
-
-
-@frappe.whitelist()
-def stockTransfer():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    new_doc = frappe.new_doc('Stock Entry')
-    new_doc.purpose = 'Material Transfer'
-    new_doc.company = data['company']
-    new_doc._comments = data['notes']
-    for item in data['items']:
-        new_doc.append("items", {
-            "item_code": item['item_code'],
-            "t_warehouse": data['t_warehouse'],
-            "s_warehouse": data['s_warehouse'],
-            "qty": item['qty']
-        })
-    new_doc.set_stock_entry_type()
-    new_doc.insert()
-    return {
-        "success": True,
-        "status_code": 200,
-        "message": 'Data created',
-        "data": {
-            "transfer_number": new_doc.name
-        },
-    }
-
-
-@frappe.whitelist()
-def stockOpname():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    new_doc = frappe.new_doc('Stock Entry')
-    new_doc.start_time = data['start_datetime']
-    new_doc.end_time = data['end_datetime']
-    new_doc._comments = data['notes']
-    new_doc.modified_by = data['create_user_id']
-
-    new_doc.purpose = 'Material Receipt'
-    new_doc.set_stock_entry_type()
-    for item in data['products']:
-        new_doc.append("items", {
-            "item_code" : item['product_code'],
-            "qty" : item['quantity'],
-            "t_warehouse" : data['warehouse_stockopname_id']
-        })
-
-    new_doc.insert()
-
-    return {
-       "success": True,
-       "message": "Data created",
-       "status_code": 200,
-    }
-
-
-@frappe.whitelist()
-def stockOpnames():
-    cookies = get_request(frappe.request)
-    data = validate_data(frappe.request.data)
-    fields = [
-        'idx',
-        'warehouse',
-        'creation',
-        '_comments',
-        'posting_date',
-        'posting_time',
-        'modified_by'
-    ]
-
-    product_list = get_document('Stock Ledger Entry', fields=fields, cookies=cookies)
-
-    result = []
-
-    for i in product_list['data']:
-        temp_dict = {
-            "id": i['idx'],
-            "warehouse_id": i['warehouse'],
-            "warehouse_area_id": None,
-            "start_datetime": dt.datetime.combine(dt.datetime.strptime(i['posting_date'], '%Y-%m-%d').date(),
-                                                  dt.datetime.strptime(i['posting_time'], '%H:%M:%S.%f').time()),
-            "end_datetime": None,
-            "notes": i['_comments'],
-            "create_user_id": i['modified_by'],
-            "create_time": i['creation']
-        }
-
-        result.append(temp_dict)
-
-    return format_result(result)
+    return format_result(result=result, message='Data Found', status_code=200)
 
 
 @frappe.whitelist()
 def deliveryOrder():
-    cookies = get_request(frappe.request)
     data = validate_data(frappe.request.data)
-
-    # specific = []
 
     parts = urlparse(frappe.request.url)
     specific_part = parts.path.split('/')[-1] if parts.path.split('/')[-1].find(
-        'shopee_v01.api.v1.api3') == -1 else None
+        'shopee_v01.api.v1.api4') == -1 else None
 
     if specific_part:
         delivery_order = frappe.get_doc('Delivery Note', specific_part)
@@ -689,3 +545,72 @@ def deliveryOrder():
             }
         ]
     }
+
+
+@frappe.whitelist()
+def stockTransfer():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Material Transfer'
+    new_doc.company = data['company']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": data['t_warehouse'],
+            "s_warehouse": data['s_warehouse'],
+            "qty": item['qty']
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
+    return {
+        "success": True,
+        "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name
+        },
+    }
+
+
+@frappe.whitelist()
+def stockTransfers():
+    each_data_list = list(map(lambda x: frappe.get_doc('Stock Entry', x),
+                              [i['name'] for i in frappe.get_list('Stock Entry',
+                                                                  filters={'purpose': 'Material Transfer'}
+                                                                  )
+                               ]))
+    result = []
+
+    for each_data in each_data_list:
+        temp_dict = {
+            "id": each_data.idx,
+            "transfer_number": each_data.name,
+            "transfer_date": each_data.posting_date,
+            "status": each_data.docstatus,
+            "from_warehouse_id": each_data.from_warehouse,
+            "from_warehouse_area_id": None,
+            "to_warehouse_id": each_data.to_warehouse,
+            "to_warehouse_area_id": None,
+            "start_datetime": None,
+            "end_datetime": None,
+            "notes": each_data.purpose,
+            "create_user_id": each_data.modified_by,
+            "create_time": each_data.creation,
+            "products": [
+                {
+                    "id": i.idx,
+                    "stock_transfer_id": i.name,
+                    "product_id": i.item_code,
+                    "product_name": i.item_name,
+                    "product_code": i.item_name,
+                    "quantity": i.qty,
+                    "warehouse_area_storage_id": None
+                } for i in each_data.items
+            ],
+            "update_user_id": each_data.modified_by,
+            "product_list": [i.item_name for i in each_data.items]
+        }
+        result.append(temp_dict)
+
+    return format_result(result=result, message='Data Found', status_code=200)
