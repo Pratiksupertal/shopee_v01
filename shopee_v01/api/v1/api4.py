@@ -136,11 +136,17 @@ def login():
         url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
         api_secret = res_api_secret.json()
+        try:
+            warehouse_data = frappe.get_doc('User Warehouse Mapping', user_data.name)
+            warehouse_id = warehouse_data.warehouse_id
+        except:
+            warehouse_id = None
+
         return format_result(message='Login Success', status_code=200, result={
             "id": user_data.idx,
             "username": user_data.username,
             "api_key": user_data.api_key + ':' + api_secret['message']['api_secret'],
-            "warehouse_id": user_data.warehouse
+            "warehouse_id": warehouse_id
         })
 
 
