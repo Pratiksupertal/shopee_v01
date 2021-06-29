@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 import base64
 import os
 import barcode
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 import datetime as dt
 
 
@@ -27,6 +27,14 @@ def format_result(result=None, message=None, status_code=None):
         "status_code": status_code,
         "data": result
     }
+
+
+def get_last_parameter(url, link):
+    param = unquote(urlparse(url).path)
+    last = os.path.split(param)
+    if link not in last[-1]:
+        return last[-1]
+    return None
 
 
 def convert_to_pdf(template=None, invoice=None, weight=None, shipping=None, to_entity=None,
@@ -213,11 +221,10 @@ def products():
         'description'
     ]
 
-    parts = urlparse(frappe.request.url)
-    specific = parts.path.split('/')[-1] if parts.path.split('/')[-1].find('shopee_v01.api.v1.api4.') == -1 else None
+    specific = get_last_parameter(frappe.request.url, 'products')
     if specific:
-        specific = {'item_code': specific.replace("%20", ' ')}
-    print(specific)
+        specific = {'item_code': specific}
+
     each_data_list = frappe.get_list('Item', fields=fields, filters=specific)
     result = []
 
@@ -299,13 +306,9 @@ def warehouseAreas():
 
     specific = {"parent_warehouse": ('!=', '')}
 
-    parts = urlparse(frappe.request.url)
-    specific_part = parts.path.split('/')[-1] if parts.path.split('/')[-1].find(
-        'shopee_v01.api.v1.api4') == -1 else None
+    specific_part = get_last_parameter(frappe.request.url, 'warehouseAreas')
     if specific_part:
-        specific['name'] = specific_part.replace("%20", ' ')
-
-    print(specific)
+        specific['name'] = specific_part
 
     warehouse_areas_list = frappe.get_list('Warehouse', fields=fields, filters=specific)
     result = []
@@ -518,9 +521,7 @@ def deliveryOrders():
 def deliveryOrder():
     data = validate_data(frappe.request.data)
 
-    parts = urlparse(frappe.request.url)
-    specific_part = parts.path.split('/')[-1] if parts.path.split('/')[-1].find(
-        'shopee_v01.api.v1.api4') == -1 else None
+    specific_part = get_last_parameter(frappe.request.url, 'deliveryOrder')
 
     if specific_part:
         delivery_order = frappe.get_doc('Delivery Note', specific_part)
