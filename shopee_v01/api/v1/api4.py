@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 import base64
 import os
 import barcode
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse, unquote, parse_qs
 import datetime as dt
 
 
@@ -222,10 +222,23 @@ def products():
     ]
 
     specific = get_last_parameter(frappe.request.url, 'products')
+
     if specific:
         specific = {'item_code': specific}
 
-    each_data_list = frappe.get_list('Item', fields=fields, filters=specific)
+    data_list = frappe.get_list('Item', fields=fields, filters=specific)
+
+    try:
+        query_limit = int(parse_qs(urlparse(frappe.request.url).query)['limit'][0])
+        query_page = int(parse_qs(urlparse(frappe.request.url).query)['page'][0])
+        each_data_list_length = len(data_list)
+        each_data_list = data_list[min(each_data_list_length, query_page * query_limit) : min(each_data_list_length, (query_page + 1) * query_limit)]
+    except:
+        each_data_list = data_list
+        query_limit = len(data_list)
+        query_page = 0
+
+
     result = []
 
     for i in each_data_list:
@@ -242,7 +255,11 @@ def products():
 
         result.append(temp_dict)
 
-    return format_result(result=result, status_code=200, message='Data Found')
+    return format_result(result=result, status_code=200, message={
+        'Total records': len(data_list),
+        'Limit': query_limit,
+        'Page': query_page
+    })
 
 
 @frappe.whitelist()
