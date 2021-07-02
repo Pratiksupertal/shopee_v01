@@ -238,7 +238,6 @@ def products():
         query_limit = len(data_list)
         query_page = 0
 
-
     result = []
 
     for i in each_data_list:
