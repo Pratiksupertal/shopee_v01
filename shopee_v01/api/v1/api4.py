@@ -233,7 +233,6 @@ def products():
         query_limit = int(parse_qs(urlparse(frappe.request.url).query)['limit'][0])
         query_page = int(parse_qs(urlparse(frappe.request.url).query)['page'][0])
         each_data_list_length = len(data_list)
-        a[10]
         each_data_list = data_list[min(each_data_list_length, query_page * query_limit) : min(each_data_list_length, (query_page + 1) * query_limit)]
     except:
         traceback.print_exc()
