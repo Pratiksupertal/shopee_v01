@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 import base64
 import os
 import barcode
+import traceback
 from urllib.parse import urlparse, unquote, parse_qs
 import datetime as dt
 
@@ -234,10 +235,10 @@ def products():
         each_data_list_length = len(data_list)
         each_data_list = data_list[min(each_data_list_length, query_page * query_limit) : min(each_data_list_length, (query_page + 1) * query_limit)]
     except:
+        traceback.print_exc()
         each_data_list = data_list
         query_limit = len(data_list)
         query_page = 0
-
 
     result = []
 
