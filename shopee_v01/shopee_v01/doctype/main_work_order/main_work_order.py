@@ -29,7 +29,7 @@ class MainWorkOrder(Document):
 	def on_submit(self):
 		for row in self.work_order_item_detail:
 			doc = frappe.new_doc('Work Order')
-			doc.production_item = row.art_no
+			# doc.production_item = row.art_no
 			doc.qty = row.qty
 
 			doc.spk_date = self.spk_date
@@ -39,6 +39,7 @@ class MainWorkOrder(Document):
 			doc.bom_no = row.bom
 			doc.company = self.company
 			bom_data = frappe.get_doc("BOM",row.bom)
+			doc.production_item = bom_data.item_name
 			if bom_data.with_operations:
 				for op_row in bom_data.operations:
 					print(op_row.operation)
