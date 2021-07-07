@@ -1,0 +1,39 @@
+{
+ "creation": "2021-06-28 16:57:02.388631",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user_warehouse_mapping"
+ ],
+ "fields": [
+  {
+   "fieldname": "user_warehouse_mapping",
+   "fieldtype": "Table",
+   "label": "User Warehouse Mapping",
+   "options": "User Warehouse Mapping"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2021-06-28 16:57:02.388631",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "User and Warehouse Mapping",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
