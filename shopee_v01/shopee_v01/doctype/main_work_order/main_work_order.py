@@ -52,7 +52,7 @@ class MainWorkOrder(Document):
 			doc.bom_no = row.bom
 			doc.company = self.company
 			bom_data = frappe.get_doc("BOM",row.bom)
-			doc.production_item = bom_data.item_name
+			doc.production_item = bom_data.item
 			if bom_data.with_operations:
 				for op_row in bom_data.operations:
 					print(op_row.operation)
