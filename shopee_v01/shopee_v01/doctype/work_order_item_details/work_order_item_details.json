@@ -20,7 +20,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Art No",
-   "options": "Item"
+   "options": "Art No"
   },
   {
    "columns": 1,
@@ -69,7 +69,7 @@
   }
  ],
  "istable": 1,
- "modified": "2021-06-22 17:33:19.032797",
+ "modified": "2021-07-07 17:44:32.598669",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Work Order Item Details",
