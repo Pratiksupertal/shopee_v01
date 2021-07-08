@@ -11,7 +11,20 @@ from erpnext.stock.utils import get_bin, validate_warehouse_company, get_latest_
 from frappe.model.naming import make_autoname
 
 class MainWorkOrder(Document):
+	#For main work order Art no is Doctype ART No
 	def autoname(self):
+		if self.is_new():
+			bom_no = [row.bom for row in self.work_order_item_detail ]
+			bom_data = frappe.get_doc("BOM",bom_no[0])
+			item = frappe.get_doc("Item", {"item_name": bom_data.item_name})
+			if item.item_category:
+				item_category = item.item_category
+				item_category = item_category.split("-")
+				supplier_id = frappe.db.get_value('Supplier',self.supplier, 'supplier_id')
+				name = item_category[0] + "/.###"+"/."+supplier_id+"/.YYYY"
+				self.name = make_autoname(item_category[0]+"./." + ".###."+"./."+supplier_id+"./.YYYY")
+	#For main work order Art no is Item code
+	def autonameCommented(self):
 		if self.is_new():
 			item_name = [row.art_no for row in self.work_order_item_detail ]
 			item = frappe.get_doc("Item", {"name": item_name[0]})
@@ -29,7 +42,7 @@ class MainWorkOrder(Document):
 	def on_submit(self):
 		for row in self.work_order_item_detail:
 			doc = frappe.new_doc('Work Order')
-			doc.production_item = row.art_no
+			# doc.production_item = row.art_no
 			doc.qty = row.qty
 
 			doc.spk_date = self.spk_date
@@ -39,6 +52,7 @@ class MainWorkOrder(Document):
 			doc.bom_no = row.bom
 			doc.company = self.company
 			bom_data = frappe.get_doc("BOM",row.bom)
+			doc.production_item = bom_data.item
 			if bom_data.with_operations:
 				for op_row in bom_data.operations:
 					print(op_row.operation)
