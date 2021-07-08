@@ -11,7 +11,20 @@ from erpnext.stock.utils import get_bin, validate_warehouse_company, get_latest_
 from frappe.model.naming import make_autoname
 
 class MainWorkOrder(Document):
+	#For main work order Art no is Doctype ART No
 	def autoname(self):
+		if self.is_new():
+			bom_no = [row.bom for row in self.work_order_item_detail ]
+			bom_data = frappe.get_doc("BOM",bom_no[0])
+			item = frappe.get_doc("Item", {"item_name": bom_data.item_name})
+			if item.item_category:
+				item_category = item.item_category
+				item_category = item_category.split("-")
+				supplier_id = frappe.db.get_value('Supplier',self.supplier, 'supplier_id')
+				name = item_category[0] + "/.###"+"/."+supplier_id+"/.YYYY"
+				self.name = make_autoname(item_category[0]+"./." + ".###."+"./."+supplier_id+"./.YYYY")
+	#For main work order Art no is Item code
+	def autonameCommented(self):
 		if self.is_new():
 			item_name = [row.art_no for row in self.work_order_item_detail ]
 			item = frappe.get_doc("Item", {"name": item_name[0]})
