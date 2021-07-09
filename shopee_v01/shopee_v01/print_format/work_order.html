@@ -17,6 +17,47 @@
   </table>
 </div>
 <div class="row section-break f_font">
+  <div class="col-xs-5">
+    <table width="100%" style="table-layout: fixed;">
+      {% if doc.sales_order %}
+      <tr>
+        <td width="40%"><b>Sales Order</b> </td>
+        <td width="60%">{{ doc.sales_order or '' }}</td>
+      </tr>
+      {% endif %}
+
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+
+      </tr>
+      <tr>
+        <td width="40%"><b></b> </td>
+        <td width="60%"></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="5"><b> </b></td>
+        <td colspan="12" ></td>
+      </tr>
+      <tr>
+        <td colspan="6"><b></b></td>
+        <td colspan="12"></td>
+      </tr>
+      <tr>
+        <td colspan="6"><b></b></td>
+        <td colspan="6">
+      </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
   <div class="col-xs-4">
     <table width="100%" style="table-layout: fixed;">
       <tr>
