@@ -178,14 +178,43 @@
       </div>
     </tr>
     {% endfor %}
-    <br>
   </table>
 </div>
-<br>
+{% set art = [] %}
+{% set bom = [] %}
+{% set qty1 =namespace(quantity=0) %}
+{% set qty_list = [] %}
+{% set material__color_material = []%}
+{% set color_thread = []%}
+{% set ls__ss = []%}
+{% set washing = []%}
+{% set art_dict = []%}
+{% for row in doc.work_order_item_detail %}
+  {% if row.art_no in art %}
+    {% set art_dict = {"qty":"hiiii"} %}
+    {% set qty1.quantity=qty1.quantity+ row.qty %}
+  {% else %}
+  {% set qty_list = qty_list.append(qty1.quantity) %}
+    {% set qty1.quantity = row.qty %}
+    {% set art = art.append(row.art_no) %}
+  {% endif %}
+  {% if row.bom%}  {% set bom = bom.append(row.bom) %} {%endif%}
+  {% if row.color_thread%}{% set color_thread = color_thread.append(row.color_thread) %}{%endif%}
+  {% if row.ls__ss %}{% set ls__ss = ls__ss.append(row.ls__ss) %}{% endif%}
+  {% if row.washing %}{% set washing = washing.append(row.washing) %}{% endif %}
+  {% if row.material__color_material %}{% set material__color_material = material__color_material.append(row.material__color_material) %}{% endif %}
+{% endfor %}
+{% set cnt=namespace(count=1) %}
+<div class="" style="visibility: hidden;">
+  {{qty_list.pop(0)}}
+  {{ qty_list.append(qty1.quantity) }}
+</div>
+<!-- New table for adjustment -->
 <div style="margin-top:10px;">
   <br>
   <label for="">Work Order Item</label>
   <table width= "100% " style= "overflow-x:auto; " border= "1px " bordercolor= "#d1d8dd ">
+
     <tr>
       <th class= "tac " width= "6% "><b>No.</b></th>
       <th class= "tac " width= "25% "><b>Art No</b></th>
@@ -196,20 +225,23 @@
       <th class= "tac " width= "20% "><b>L/S - S/S</b></th>
       <th class= "tac " width= "15% "><b>Washing</b></th>
     </tr>
-     {% for row in doc.work_order_item_detail %}
-     <tr>
-       <td class= "tac " width= "6% ">{{ row.idx or '' }}</td>
-       <td width= "25% ">{{ row.art_no or '' }}</td>
-       <td width= "10% ">{{ row.qty or '' }}</td>
-       <td class= "tac " width= "35% ">{{ row.material__color_material or '' }}</td>
-       <!-- <td class= "tac " width= "10% ">{{ row.color_of_material or '' }}</td> -->
-       <td class= "tac " width= "10% ">{{ row.color_thread or '' }}</td>
-       <td class= "tac " width= "20% ">{{ row.ls__ss or '' }}</td>
-       <td width= "15% ">{{ row.washing or '' }}</td>
 
-     </tr> {% endfor %}
+     {% for row in range(art | length) %}
+     <tr>
+        <td>{{cnt.count}}</td>
+        <td>{{art[row]}}</td>
+        <td>{{qty_list[row]}}</td>
+        <td>{{material__color_material or ""}}</td>
+        <td>{{color_thread or ""}}</td>
+        <td>{{ls__ss or ""}}</td>
+        <td>{{washing or ""}}</td>
+        {% set cnt.count = cnt.count+1%}
+     </tr>
+     {% endfor %}
    </table>
 </div>
+<!-- =================================================================== -->
+
    <br>
    <div>
      <br>
@@ -351,7 +383,7 @@
      </div>
 
      <div class="col-xs-12">
-       {{doc.notes}}
+       {{doc.notes or ""}}
      </div>
      </table>
    </div>
