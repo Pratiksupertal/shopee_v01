@@ -21,6 +21,8 @@ class MainWorkOrder(Document):
 				item_category = item.item_category
 				item_category = item_category.split("-")
 				supplier_id = frappe.db.get_value('Supplier',self.supplier, 'supplier_id')
+				if not supplier_id:
+					raise Exception("Supplier ID not available for this supplier")
 				name = item_category[0] + "/.###"+"/."+supplier_id+"/.YYYY"
 				self.name = make_autoname(item_category[0]+"./." + ".###."+"./."+supplier_id+"./.YYYY")
 	#For main work order Art no is Item code
