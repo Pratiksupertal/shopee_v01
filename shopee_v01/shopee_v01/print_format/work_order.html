@@ -108,46 +108,6 @@
   </div>
 </div>
 <br>
-<!--<div class="row section-break f_font">-->
-<!--  <table width="100%" style="table-layout: fixed;">-->
-<!--    <tr>-->
-<!--      <div class="col-xs-4">-->
-<!--        <b>Patron Pakai Model</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-8">-->
-<!--        {{ doc.item_model }}-->
-<!--      </div>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--      <div class="col-xs-4">-->
-<!--        <b>Benang Luar</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-2">-->
-<!--        {{ doc.inner_thread }}-->
-<!--      </div>-->
-<!--      <div class="col-xs-4">-->
-<!--        <b>Benang Dalam</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-2">-->
-<!--        {{ doc.outer_thread }}-->
-<!--      </div>-->
-<!--    </tr>-->
-<!--    <tr>-->
-<!--      <div class="col-xs-4">-->
-
-<!--      </div>-->
-<!--      <div class="col-xs-2">-->
-
-<!--      </div>-->
-<!--      <div class="col-xs-4">-->
-<!--        <b>Benang Bartek</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-2">-->
-<!--        {{ doc.bartek_thread }}-->
-<!--      </div>-->
-<!--    </tr>-->
-<!--  </table>-->
-<!--</div>-->
 
 <div class="row section-break f_font">
   <table class="table-center" width="80%" style="table-layout: fixed; border: 1px solid black;">
@@ -222,41 +182,6 @@
 </div>
 
 <br>
-
-<!--<div class="row section-break f_font" style="line-height: 2;">-->
-<!--  <table width="100%" style="table-layout: fixed;">-->
-<!--    {% for row in doc.instruction_table  %}-->
-<!--    <tr>-->
-<!--      <div class="col-xs-4">-->
-<!--        <b>{{ row.instruction_label }}</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-8">-->
-<!--        {{ row.description }}-->
-<!--      </div>-->
-<!--    </tr>-->
-<!--    {% endfor %}-->
-<!--  </table>-->
-<!--</div>-->
-<!--<div class="row section-break f_font" style="line-height: 2;">-->
-<!--  <table width="100%" style="table-layout: fixed;">-->
-<!--    {% for row in doc.required_item  %}-->
-<!--    <tr>-->
-<!--      <div class="col-xs-2">-->
-<!--        <b>{{ row.item_label or "" }}</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-4">-->
-<!--        {{ row.item_code or "" }}-->
-<!--      </div>-->
-<!--      <div class="col-xs-2">-->
-<!--        <b>{{ row.operation or "" }}</b>-->
-<!--      </div>-->
-<!--      <div class="col-xs-4">-->
-<!--        {{ row.operation_details or "" }}-->
-<!--      </div>-->
-<!--    </tr>-->
-<!--    {% endfor %}-->
-<!--  </table>-->
-<!--</div>-->
 {% set art = [] %}
 {% set bom = [] %}
 {% set qty1 =namespace(quantity=0) %}
@@ -405,67 +330,6 @@
       </table>
    </div>
    <br>
-<!--   <div class ="row section-break f_font" style="line-height: 2;">-->
-<!--     <table width="100%" style="table-layout: fixed;">-->
-<!--       <tr>-->
-<!--         <div class="col-xs-4">-->
-<!--           <b>GOSOKAN STYLE</b>-->
-<!--         </div>-->
-<!--         <div class="col-xs-8">-->
-<!--           {{ doc.packing_style }}-->
-<!--         </div>-->
-<!--       </tr>-->
-<!--       <br>-->
-<!--       <tr>-->
-<!--         <div class="col-xs-4">-->
-<!--           <b>HANTAG + STICKER</b>-->
-<!--         </div>-->
-<!--         <div class="col-xs-2">-->
-<!--           {{ doc.handtag_and_sticker }}-->
-<!--         </div>-->
-<!--         <div class="col-xs-4">-->
-
-<!--         </div>-->
-<!--         <div class="col-xs-2">-->
-
-<!--         </div>-->
-<!--       </tr>-->
-<!--       <br>-->
-<!--       <tr>-->
-<!--         <div class="col-xs-2">-->
-<!--           <b>Packing</b>-->
-<!--         </div>-->
-<!--         <div class="col-xs-4">-->
-<!--           {{ doc.packing }}-->
-<!--         </div>-->
-<!--         <div class="col-xs-3">-->
-<!--           <b>WARNA/CAMPUR WARNA</b>-->
-<!--         </div>-->
-<!--         <div class="col-xs-3">-->
-<!--           {{ doc.solid_color_and_size }}-->
-<!--         </div>-->
-<!--       </tr>-->
-<!--       <br>-->
-<!--       <br>-->
-<!--       <tr>-->
-
-<!--       </tr>-->
-
-<!--     </table>-->
-<!--   </div>-->
-
-
-<!--   <div class ="row section-break f_font" style="line-height: 2;">-->
-<!--     <table width="100%" style="table-layout: fixed;">-->
-<!--     <div class="col-xs-12">-->
-<!--       <b>NOTES</b>-->
-<!--     </div>-->
-
-<!--     <div class="col-xs-12">-->
-<!--       {{doc.notes or ""}}-->
-<!--     </div>-->
-<!--     </table>-->
-<!--   </div>-->
 
    <div class ="row section-break f_font" style="line-height: 2;">
      <table width="100%" style="table-layout: fixed;">
