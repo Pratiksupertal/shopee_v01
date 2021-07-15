@@ -1,11 +1,12 @@
 {
- "autoname": "field:division",
+ "autoname": "format:{division}-{division_description}",
  "creation": "2021-02-18 13:42:44.745363",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "division"
+  "division",
+  "division_description"
  ],
  "fields": [
   {
@@ -13,9 +14,14 @@
    "fieldtype": "Data",
    "label": "Division",
    "unique": 1
+  },
+  {
+   "fieldname": "division_description",
+   "fieldtype": "Data",
+   "label": "Division Group Description"
   }
  ],
- "modified": "2021-02-18 20:21:55.157999",
+ "modified": "2021-07-15 15:03:49.238788",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Division Group",

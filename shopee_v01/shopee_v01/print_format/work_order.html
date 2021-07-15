@@ -1,5 +1,9 @@
 
 <style>
+.table-center{margin-left: auto;
+  margin-right: auto;}
+.table-rows{border: 1px solid black;text-align: center;}
+.table-cells{border: 1px solid black;text-align: center;}
 .tac{text-align: center;}
 .tar{text-align: right;}
 .brs{border-right: hidden;}
@@ -104,82 +108,96 @@
   </div>
 </div>
 <br>
+
 <div class="row section-break f_font">
-  <table width="100%" style="table-layout: fixed;">
-    <tr>
-      <div class="col-xs-4">
+  <table class="table-center" width="80%" style="table-layout: fixed; border: 1px solid black;">
+    <tr class="table-rows">
+      <td class="table-cells">
         <b>Patron Pakai Model</b>
-      </div>
-      <div class="col-xs-8">
+      </td>
+      <td class="table-cells">
         {{ doc.item_model }}
-      </div>
+      </td>
     </tr>
-    <tr>
-      <div class="col-xs-4">
+    <tr class="table-rows">
+      <td class="table-cells">
         <b>Benang Luar</b>
-      </div>
-      <div class="col-xs-2">
+      </td>
+      <td class="table-cells">
         {{ doc.inner_thread }}
-      </div>
-      <div class="col-xs-4">
+      </td>
+    </tr>
+    <tr class="table-rows">
+      <td class="table-cells">
         <b>Benang Dalam</b>
-      </div>
-      <div class="col-xs-2">
+      </td>
+      <td class="table-cells">
         {{ doc.outer_thread }}
-      </div>
+      </td>
     </tr>
-    <tr>
-      <div class="col-xs-4">
-
-      </div>
-      <div class="col-xs-2">
-
-      </div>
-      <div class="col-xs-4">
+    <tr class="table-rows">
+      <td class="table-cells">
         <b>Benang Bartek</b>
-      </div>
-      <div class="col-xs-2">
+      </td>
+      <td class="table-cells">
         {{ doc.bartek_thread }}
-      </div>
+      </td>
     </tr>
+    {% for row in doc.instruction_table  %}
+    <tr class="table-rows">
+      <td class="table-cells">
+        <b>{{ row.instruction_label }}</b>
+      </td>
+      <td class="table-cells">
+        {{ row.description }}
+      </td>
+    </tr>
+    {% endfor %}
+    <tr class="table-rows">
+      <td class="table-cells">
+        <b>Items</b>
+      </td>
+
+      <td class="table-cells">
+        <ul>
+    {% for row in doc.required_item  %}
+      {% if row.item_label %}
+          <li>
+            <b>{{ row.item_label }}</b>
+          </li>
+      {% endif %}
+      {% if row.item_code %}
+          <li>
+            {{ row.item_code }}
+          </li>
+      {% endif %}
+      {% if row.operation %}
+          <li>
+            <b>{{ row.operation }}</b>
+          </li>
+      {% endif %}
+      {% if row.operation_details %}
+          <li>
+            {{ row.operation_details or "" }}
+          </li>
+      {% endif %}
+    {% endfor %}
+        </ul>
+      </td>>
+    </tr>
+
   </table>
 </div>
 <br>
 
+
 <div class="row section-break f_font" style="line-height: 2;">
   <table width="100%" style="table-layout: fixed;">
-    {% for row in doc.instruction_table  %}
-    <tr>
-      <div class="col-xs-4">
-        <b>{{ row.instruction_label }}</b>
-      </div>
-      <div class="col-xs-8">
-        {{ row.description }}
-      </div>
-    </tr>
-    {% endfor %}
+    <br>
   </table>
 </div>
-<div class="row section-break f_font" style="line-height: 2;">
-  <table width="100%" style="table-layout: fixed;">
-    {% for row in doc.required_item  %}
-    <tr>
-      <div class="col-xs-2">
-        <b>{{ row.item_label or "" }}</b>
-      </div>
-      <div class="col-xs-4">
-        {{ row.item_code or "" }}
-      </div>
-      <div class="col-xs-2">
-        <b>{{ row.operation or "" }}</b>
-      </div>
-      <div class="col-xs-4">
-        {{ row.operation_details or "" }}
-      </div>
-    </tr>
-    {% endfor %}
-  </table>
-</div>
+
+<br>
 {% set art = [] %}
 {% set bom = [] %}
 {% set qty1 =namespace(quantity=0) %}
@@ -328,65 +346,66 @@
       </table>
    </div>
    <br>
+
    <div class ="row section-break f_font" style="line-height: 2;">
      <table width="100%" style="table-layout: fixed;">
-       <tr>
-         <div class="col-xs-4">
+       {% if doc.packing_style %}
+       <tr class="table-rows">
+         <td class="table-cells">
            <b>GOSOKAN STYLE</b>
-         </div>
-         <div class="col-xs-8">
+         </td>
+         <td class="table-cells">
            {{ doc.packing_style }}
-         </div>
+         </td>
        </tr>
        <br>
-       <tr>
-         <div class="col-xs-4">
+       {% endif %}
+       {% if doc.handtag_and_sticker %}
+       <tr class="table-rows">
+         <td class="table-cells">
            <b>HANTAG + STICKER</b>
-         </div>
-         <div class="col-xs-2">
+         </td>
+         <td class="table-cells">
            {{ doc.handtag_and_sticker }}
-         </div>
-         <div class="col-xs-4">
-
-         </div>
-         <div class="col-xs-2">
-
-         </div>
+         </td>
        </tr>
        <br>
-       <tr>
-         <div class="col-xs-2">
+       {% endif %}
+       {% if doc.packing %}
+       <tr class="table-rows">
+         <td class="table-cells">
            <b>Packing</b>
-         </div>
-         <div class="col-xs-4">
+         </td>
+         <td class="table-cells">
            {{ doc.packing }}
-         </div>
-         <div class="col-xs-3">
+         </td>
+       </tr>
+       {% endif %}
+       {% if doc.solid_color_and_size %}
+       <tr class="table-rows">
+         <td class="table-cells">
            <b>WARNA/CAMPUR WARNA</b>
-         </div>
-         <div class="col-xs-3">
-           {{ doc.solid_color_and_size }}
-         </div>
+         </td>
+         <td class="table-cells">
+          {{ doc.solid_color_and_size }}
+         </td>
        </tr>
-       <br>
-       <br>
-       <tr>
-
-       </tr>
-
-     </table>
-   </div>
-   <div class ="row section-break f_font" style="line-height: 2;">
-     <table width="100%" style="table-layout: fixed;">
-     <div class="col-xs-12">
+       {% endif %}
+       {% if doc.notes %}
+       <tr class="table-rows">
+         <td class="table-cells">
        <b>NOTES</b>
-     </div>
-
-     <div class="col-xs-12">
-       {{doc.notes or ""}}
-     </div>
+         </td>
+         <td class="table-cells">
+       {{doc.notes}}
+         </td>
+       </tr>
+       {% endif %}
+       <br>
+       <br>
      </table>
    </div>
+
    <div class ="row section-break f_font" style="margin-top: 20px;">
      <table width="100%" style="table-layout: fixed;">
       <tr>
