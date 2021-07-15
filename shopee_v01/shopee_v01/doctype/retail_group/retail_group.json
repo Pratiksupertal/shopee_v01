@@ -1,11 +1,12 @@
 {
- "autoname": "field:retail",
+ "autoname": "format:{retail}-{retail_description}",
  "creation": "2021-02-18 20:19:04.202563",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "retail"
+  "retail",
+  "retail_description"
  ],
  "fields": [
   {
@@ -13,9 +14,14 @@
    "fieldtype": "Data",
    "label": "Retail",
    "unique": 1
+  },
+  {
+   "fieldname": "retail_description",
+   "fieldtype": "Data",
+   "label": "Retail Group Description"
   }
  ],
- "modified": "2021-02-18 20:21:38.781825",
+ "modified": "2021-07-15 15:02:07.182345",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Retail Group",
