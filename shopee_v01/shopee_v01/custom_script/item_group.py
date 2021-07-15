@@ -4,7 +4,6 @@ from frappe.model.document import Document
 
 
 def autoname(doc,method):
-    print("----- autoname is called from custom script -------")
     if doc.is_new():
         doc.name = make_autoname(doc.item_group_name+"-"+doc.item_group_description)
 
