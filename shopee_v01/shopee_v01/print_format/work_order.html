@@ -153,6 +153,38 @@
       </td>
     </tr>
     {% endfor %}
+    <tr class="table-rows">
+      <td class="table-cells">
+        <b>Items</b>
+      </td>
+
+      <td class="table-cells">
+        <ul>
+    {% for row in doc.required_item  %}
+      {% if row.item_label %}
+          <li>
+            <b>{{ row.item_label }}</b>
+          </li>
+      {% endif %}
+      {% if row.item_code %}
+          <li>
+            {{ row.item_code }}
+          </li>
+      {% endif %}
+      {% if row.operation %}
+          <li>
+            <b>{{ row.operation }}</b>
+          </li>
+      {% endif %}
+      {% if row.operation_details %}
+          <li>
+            {{ row.operation_details or "" }}
+          </li>
+      {% endif %}
+    {% endfor %}
+        </ul>
+      </td>>
+    </tr>
 
   </table>
 </div>
@@ -161,22 +193,6 @@
 
 <div class="row section-break f_font" style="line-height: 2;">
   <table width="100%" style="table-layout: fixed;">
-    {% for row in doc.required_item  %}
-    <tr>
-      <div class="col-xs-2">
-        <b>{{ row.item_label or "" }}</b>
-      </div>
-      <div class="col-xs-4">
-        {{ row.item_code or "" }}
-      </div>
-      <div class="col-xs-2">
-        <b>{{ row.operation or "" }}</b>
-      </div>
-      <div class="col-xs-4">
-        {{ row.operation_details or "" }}
-      </div>
-    </tr>
-    {% endfor %}
     <br>
   </table>
 </div>
