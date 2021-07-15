@@ -89,6 +89,9 @@ doc_events = {
     },
     "Purchase Order":{
     "autoname":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
+    },
+    "Item Group":{
+    "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
     }
 # 	"*": {
 # 		"on_update": "method",
