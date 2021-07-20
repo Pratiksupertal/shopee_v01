@@ -29,7 +29,8 @@ app_include_css = "/assets/css/min.logo.css"
 doctype_js = {
                 "Item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js",
                 "Purchase Order":"shopee_v01/custom_script/purchase_order.js",
-                "Supplier":"shopee_v01/custom_script/supplier.js"
+                "Supplier":"shopee_v01/custom_script/supplier.js",
+                "Item":"shopee_v01/custom_script/item.js"
              }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -89,10 +90,10 @@ doc_events = {
     },
     "Purchase Order":{
     "autoname":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
-    },
-    "Item Group":{
-    "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
-    }
+    }#,
+    # "Item Group":{
+    # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
+    # }
 # 	"*": {
 # 		"on_update": "method",
 # 		"on_cancel": "method",
