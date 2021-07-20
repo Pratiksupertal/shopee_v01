@@ -1,5 +1,5 @@
 {
- "autoname": "format:{retail}-{retail_description}",
+ "autoname": "field:retail",
  "creation": "2021-02-18 20:19:04.202563",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -21,7 +21,7 @@
    "label": "Retail Group Description"
   }
  ],
- "modified": "2021-07-15 15:02:07.182345",
+ "modified": "2021-07-20 20:21:17.075300",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Retail Group",
