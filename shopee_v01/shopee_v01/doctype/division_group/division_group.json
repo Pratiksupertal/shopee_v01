@@ -1,5 +1,5 @@
 {
- "autoname": "format:{division}-{division_description}",
+ "autoname": "field:division",
  "creation": "2021-02-18 13:42:44.745363",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -21,7 +21,7 @@
    "label": "Division Group Description"
   }
  ],
- "modified": "2021-07-15 15:03:49.238788",
+ "modified": "2021-07-20 21:00:45.735091",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Division Group",
