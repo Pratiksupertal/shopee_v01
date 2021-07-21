@@ -58,6 +58,7 @@ class MainWorkOrder(Document):
 					"schedule_date": self.expected_finish_date,
 					"bom":row.bom
 				})
+				doc.reference_main_work_order = self.name
 				doc.save()
 				# setting up reserve_warehouse in purchase order
 				if doc.is_subcontracted == "Yes":
@@ -94,6 +95,7 @@ class MainWorkOrder(Document):
 					operations = frappe.db.sql(sql, as_dict=1)
 
 					doc.set('operations', operations)
+				doc.reference_main_work_order = self.name
 				doc.expected_delivery_date = self.expected_finish_date
 				doc.save(ignore_permissions=True)
 				frappe.db.commit()
