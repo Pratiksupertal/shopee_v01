@@ -11,7 +11,8 @@
   "column_break_4",
   "color_thread",
   "ls__ss",
-  "washing"
+  "washing",
+  "product_image"
  ],
  "fields": [
   {
@@ -66,10 +67,15 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Material / Color Material"
+  },
+  {
+   "fieldname": "product_image",
+   "fieldtype": "Attach Image",
+   "label": "Product Image"
   }
  ],
  "istable": 1,
- "modified": "2021-07-14 13:33:32.503294",
+ "modified": "2021-07-21 16:28:36.254178",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Work Order Item Details",
