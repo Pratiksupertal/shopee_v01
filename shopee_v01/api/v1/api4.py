@@ -24,9 +24,9 @@ def validate_data(data):
 def format_result(result=None, message=None, status_code=None):
     return {
         "success": True,
-        "message": message,
-        "status_code": status_code,
-        "data": result
+        "message": str(message),
+        "status_code": str(status_code),
+        "data": str(result)
     }
 
 
@@ -152,10 +152,10 @@ def login():
             warehouse_id = None
 
         return format_result(message='Login Success', status_code=200, result={
-            "id": user_data.idx,
-            "username": user_data.username,
-            "api_key": user_data.api_key + ':' + api_secret['message']['api_secret'],
-            "warehouse_id": warehouse_id
+            "id": str(user_data.idx),
+            "username": str(user_data.username),
+            "api_key": str(user_data.api_key + ':' + api_secret['message']['api_secret']),
+            "warehouse_id": str(warehouse_id)
         })
 
 
@@ -168,31 +168,31 @@ def purchases():
 
     for each_data in each_data_list:
         temp_dict = {
-            "id": each_data.idx,
+            "id": str(each_data.idx),
             "po_number": each_data.name,
             "po_date": each_data.creation,
             "supplier_id": each_data.supplier,
             "supplier_name": each_data.supplier_name,
-            "total_amount": each_data.grand_total,
-            "total_product": each_data.total_qty,
+            "total_amount": str(each_data.grand_total),
+            "total_product": str(each_data.total_qty),
             "products": [{
-                "id": i.idx,
+                "id": str(i.idx),
                 "purchase_id": i.parent,
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
-                "price": i.amount,
-                "quantity": i.qty,
-                "unit_id": i.idx,
-                "discount": i.discount_amount,
-                "subtotal_amount": i.net_amount
+                "price": str(i.amount),
+                "quantity": str(i.qty),
+                "unit_id": str(i.idx),
+                "discount": str(i.discount_amount),
+                "subtotal_amount": str(i.net_amount)
             } for i in each_data.items],
             "type": each_data.po_type,
             "rejected_by": each_data.modified_by if each_data.docstatus == 2 else None,
             "cancelled_by": each_data.modified_by if each_data.status == 2 else None,
             "supplier_is_taxable": None,
-            "total_amount_excluding_tax": each_data.base_total,
-            "tax_amount": each_data.total_taxes_and_charges,
+            "total_amount_excluding_tax": str(each_data.base_total),
+            "tax_amount": str(each_data.total_taxes_and_charges),
             "delivery_contact_person": None,
             "supplier_email": None,
             "supplier_work_phone": None,
@@ -244,12 +244,12 @@ def products():
 
     for i in each_data_list:
         temp_dict = {
-            "id": i['idx'],
+            "id": str(i['idx']),
             "name": i['item_name'],
             "code": i['item_code'],
             "category_id": i['item_group'],
             "unit_id": None,
-            "weight": i['weightage'],
+            "weight": str(i['weightage']),
             "is_taxable": None,
             "description": i['description']
         }
@@ -501,7 +501,7 @@ def deliveryOrders():
             warehouse_data = None
 
         temp_dict = {
-            "id": each_data.idx,
+            "id": str(each_data.idx),
             "order_id": each_data.name,
             "warehouse_id": each_data.set_warehouse,
             "warehouse_name": warehouse_data,
@@ -511,22 +511,22 @@ def deliveryOrders():
             "customer_name": each_data.customer_name,
             "status": each_data.status,
             "delivery_date": each_data.lr_date,
-            "pretax_amount": each_data.net_total,
-            "tax_amount": each_data.total_taxes_and_charges,
-            "discount_amount": each_data.discount_amount,
-            "extra_discount_amount": each_data.additional_discount_percentage * each_data.net_total,
-            "total_amount": each_data.grand_total,
+            "pretax_amount": str(each_data.net_total),
+            "tax_amount": str(each_data.total_taxes_and_charges),
+            "discount_amount": str(each_data.discount_amount),
+            "extra_discount_amount": str(each_data.additional_discount_percentage * each_data.net_total),
+            "total_amount": str(each_data.grand_total),
             "products": [{
-                "id": i.idx,
+                "id": str(i.idx),
                 "delivery_order_id": i.against_sales_order,
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
-                "price": i.price_list_rate,
-                "quantity": i.qty,
+                "price": str(i.price_list_rate),
+                "quantity": str(i.qty),
                 "unit_id": i.item_group,
-                "discount": i.discount_amount,
-                "subtotal_amount": i.amount,
+                "discount": str(i.discount_amount),
+                "subtotal_amount": str(i.amount),
                 "notes": None
             } for i in each_data.items]
         }
@@ -551,7 +551,7 @@ def deliveryOrder():
         for item in data['products']:
             delivery_order.append("items", {
                 "item_code": item['delivery_order_product_id'],
-                "qty": item['quantity'],
+                "qty": str(item['quantity']),
                 # "warehouse": data['warehouse_product_lot_id']
             })
 
@@ -584,7 +584,7 @@ def stockTransfer():
             "item_code": item['item_code'],
             "t_warehouse": data['t_warehouse'],
             "s_warehouse": data['s_warehouse'],
-            "qty": item['qty']
+            "qty": str(item['qty'])
         })
     new_doc.set_stock_entry_type()
     new_doc.insert()
@@ -609,10 +609,10 @@ def stockTransfers():
 
     for each_data in each_data_list:
         temp_dict = {
-            "id": each_data.idx,
+            "id": str(each_data.idx),
             "transfer_number": each_data.name,
             "transfer_date": each_data.posting_date,
-            "status": each_data.docstatus,
+            "status": str(each_data.docstatus),
             "from_warehouse_id": each_data.from_warehouse,
             "from_warehouse_area_id": None,
             "to_warehouse_id": each_data.to_warehouse,
@@ -624,12 +624,12 @@ def stockTransfers():
             "create_time": each_data.creation,
             "products": [
                 {
-                    "id": i.idx,
+                    "id": str(i.idx),
                     "stock_transfer_id": i.name,
                     "product_id": i.item_code,
                     "product_name": i.item_name,
                     "product_code": i.item_name,
-                    "quantity": i.qty,
+                    "quantity": str(i.qty),
                     "warehouse_area_storage_id": None
                 } for i in each_data.items
             ],
