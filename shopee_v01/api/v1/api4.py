@@ -24,9 +24,9 @@ def validate_data(data):
 def format_result(result=None, message=None, status_code=None):
     return {
         "success": True,
-        "message": str(message),
+        "message": message,
         "status_code": str(status_code),
-        "data": str(result)
+        "data": result
     }
 
 
@@ -146,8 +146,9 @@ def login():
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
         api_secret = res_api_secret.json()
         try:
-            warehouse_data = frappe.get_doc('User Warehouse Mapping', user_data.name)
-            warehouse_id = warehouse_data.warehouse_id
+            warehouse_data = frappe.db.get_list('User Warehouse Mapping', filters={
+                'user_id': user_data.email}, fields=['warehouse_id'])
+            warehouse_id = warehouse_data[0].warehouse_id
         except:
             warehouse_id = None
 
