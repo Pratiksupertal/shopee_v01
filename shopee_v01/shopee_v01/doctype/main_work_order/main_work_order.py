@@ -41,8 +41,10 @@ class MainWorkOrder(Document):
 	def before_submit(self):
 		self.submitted_by = frappe.session.user
 		for row in self.work_order_item_detail:
+			print("--- printing work order item detail -----")
+			print(row.bom)
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
-			if(self.is_external and with_operation ==0):
+			if(self.is_external and with_operation !=0):
 				doc = frappe.new_doc("Purchase Order")
 				doc.supplier = self.supplier
 				doc.schedule_date = self.expected_finish_date
@@ -62,12 +64,15 @@ class MainWorkOrder(Document):
 				doc.save()
 				# setting up reserve_warehouse in purchase order
 				if doc.is_subcontracted == "Yes":
-					doc.reserve_warehouse = self.supplier_warehouse
+					doc.reserve_warehouse = self.fg_warehouse
 					supp_items = doc.get("supplied_items")
 					for d in supp_items:
-						d.reserve_warehouse = self.supplier_warehouse
+						d.reserve_warehouse = self.fg_warehouse
 				doc.save()
 				doc.submit()
+				print("Purchase Order is created ")
+				print(doc.name)
+
 
 
 	def on_submit(self):
@@ -75,7 +80,7 @@ class MainWorkOrder(Document):
 		for row in self.work_order_item_detail:
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
 			# Internal production will create new work order.
-			if(self.is_external!=1 and with_operation ==1):
+			if(self.is_external!=1 and with_operation !=1):
 				doc = frappe.new_doc('Work Order')
 				# doc.production_item = row.art_no
 				doc.qty = row.qty
