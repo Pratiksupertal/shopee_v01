@@ -41,8 +41,6 @@ class MainWorkOrder(Document):
 	def before_submit(self):
 		self.submitted_by = frappe.session.user
 		for row in self.work_order_item_detail:
-			print("--- printing work order item detail -----")
-			print(row.bom)
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
 			if(self.is_external and with_operation !=0):
 				doc = frappe.new_doc("Purchase Order")
