@@ -42,7 +42,7 @@ class MainWorkOrder(Document):
 		self.submitted_by = frappe.session.user
 		for row in self.work_order_item_detail:
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
-			if(self.is_external and with_operation !=0):
+			if(self.is_external and with_operation ==0):
 				doc = frappe.new_doc("Purchase Order")
 				doc.supplier = self.supplier
 				doc.schedule_date = self.expected_finish_date
@@ -78,7 +78,7 @@ class MainWorkOrder(Document):
 		for row in self.work_order_item_detail:
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
 			# Internal production will create new work order.
-			if(self.is_external!=1 and with_operation !=1):
+			if(self.is_external!=1 and with_operation ==1):
 				doc = frappe.new_doc('Work Order')
 				# doc.production_item = row.art_no
 				doc.qty = row.qty
