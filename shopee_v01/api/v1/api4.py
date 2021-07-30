@@ -141,7 +141,7 @@ def login():
     if res.status_code != 200:
         return format_result(message='Login Failed', status_code=403, result='Entered credentials are invalid!')
     else:
-        user_data = frappe.get_doc('User', {'username': data['usr']})
+        user_data = frappe.get_doc('User', {'email': data['usr']})
         url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
         api_secret = res_api_secret.json()
