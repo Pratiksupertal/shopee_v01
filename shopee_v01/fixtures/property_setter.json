@@ -2126,5 +2126,37 @@
   "property": "hidden",
   "property_type": "Check",
   "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Team",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "commission_rate",
+  "modified": "2021-08-04 09:07:00.077337",
+  "name": "Sales Team-commission_rate-hidden",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "in_list_view",
+  "property_type": "Check",
+  "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Team",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "commission_rate",
+  "modified": "2021-08-04 09:07:00.028537",
+  "name": "Sales Team-commission_rate-in_list_view",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "hidden",
+  "property_type": "Check",
+  "value": "1"
  }
 ]
