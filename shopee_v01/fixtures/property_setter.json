@@ -2222,5 +2222,53 @@
   "property": "in_list_view",
   "property_type": "Check",
   "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Shirt Size table",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "extra_small",
+  "modified": "2021-08-10 06:24:48.502089",
+  "name": "Shirt Size table-extra_small-label",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "label",
+  "property_type": "Data",
+  "value": "XS"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Shirt Size table",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "small",
+  "modified": "2021-08-10 06:24:48.673409",
+  "name": "Shirt Size table-small-label",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "label",
+  "property_type": "Data",
+  "value": "S "
+ },
+ {
+  "default_value": null,
+  "doc_type": "Shirt Size table",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "med",
+  "modified": "2021-08-10 06:24:48.717917",
+  "name": "Shirt Size table-med-label",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "label",
+  "property_type": "Data",
+  "value": "M"
  }
 ]
