@@ -108,9 +108,8 @@
   </div>
 </div>
 <br>
-
 <div class="row section-break f_font">
-  <table class="table-center" width="80%" style="table-layout: fixed; border: 1px solid black;">
+    <table class="table-center" width="80%" style="table-layout: fixed; border: 1px solid black;">
     <tr class="table-rows">
       <td class="table-cells">
         <b>Patron Pakai Model</b>
@@ -153,41 +152,29 @@
       </td>
     </tr>
     {% endfor %}
-    <tr class="table-rows">
-      <td class="table-cells">
-        <b>Items</b>
-      </td>
-
-      <td class="table-cells">
-        <ul>
+    </table>
+    <table class="table-center" width="80%" style="table-layout: fixed; border: 1px solid black; ">
     {% for row in doc.required_item  %}
-      {% if row.item_label %}
-          <li>
-            <b>{{ row.item_label }}</b>
-          </li>
-      {% endif %}
-      {% if row.item_code %}
-          <li>
-            {{ row.item_code }}
-          </li>
-      {% endif %}
-      {% if row.operation %}
-          <li>
-            <b>{{ row.operation }}</b>
-          </li>
-      {% endif %}
-      {% if row.operation_details %}
-          <li>
-            {{ row.operation_details or "" }}
-          </li>
-      {% endif %}
+        <tr class="table-rows">
+          <td class="table-cells">
+                {{ row.item_label }}
+          </td>
+          <td class="table-cells">
+              {{ row.item_code }}
+          </td>
+          <td class="table-cells">
+              {{ row.operation }}
+          </td>
+          <td class="table-cells">
+              {{ row.operation_details }}
+          </td>
+        </tr>
     {% endfor %}
-        </ul>
-      </td>>
-    </tr>
 
   </table>
+
 </div>
+
 <br>
 
 
