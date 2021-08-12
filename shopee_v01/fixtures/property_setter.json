@@ -2270,5 +2270,21 @@
   "property": "label",
   "property_type": "Data",
   "value": "M"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Purchase Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "amount",
+  "modified": "2021-08-09 08:57:26.450570",
+  "name": "Purchase Order Item-amount-allow_in_quick_entry",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "allow_in_quick_entry",
+  "property_type": "Check",
+  "value": "1"
  }
 ]
