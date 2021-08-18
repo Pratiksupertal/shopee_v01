@@ -1,0 +1,57 @@
+{
+ "creation": "2021-08-03 08:27:11.406690",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "warehouse",
+  "available_items",
+  "modified_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Warehouse"
+  },
+  {
+   "fieldname": "available_items",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Available Items"
+  },
+  {
+   "fieldname": "modified_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Modified Time"
+  }
+ ],
+ "istable": 1,
+ "modified": "2021-08-05 12:38:20.833649",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Total Item count in Warehouse",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
