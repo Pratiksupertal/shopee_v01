@@ -141,7 +141,7 @@ def login():
     if res.status_code != 200:
         return format_result(message='Login Failed', status_code=403, result='Entered credentials are invalid!')
     else:
-        user_data = frappe.get_doc('User', {'username': data['usr']})
+        user_data = frappe.get_doc('User', {'email': data['usr']})
         url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
         api_secret = res_api_secret.json()
@@ -291,7 +291,7 @@ def warehouses():
         ], filters={'parent_warehouse': i['name']})
 
         temp_dict = {
-            "id": i['idx'],
+            "id": str(i['idx']),
             "name": i['warehouse_name'],
             "code": i['name'],
             "description": None,
@@ -334,7 +334,7 @@ def warehouseAreas():
 
     for i in warehouse_areas_list:
         temp_dict = {
-            "id": i['idx'],
+            "id": str(i['idx']),
             "warehouse_id": i['name'],
             "usage_type_id": None,
             "name": i['warehouse_name'],
@@ -368,7 +368,7 @@ def purchaseReceive():
     new_doc.insert()
 
     return format_result(status_code=200, message='Data Created', result={
-        "id": new_doc.name,
+        "id": str(new_doc.name),
         "receive_number": new_doc.name,
         "supplier_do_number": new_doc.supplier,
         "receive_date": new_doc.posting_date,
@@ -421,7 +421,7 @@ def stockOpnames():
 
     for i in product_list:
         temp_dict = {
-            "id": i['idx'],
+            "id": str(i['idx']),
             "warehouse_id": i['warehouse'],
             "warehouse_area_id": None,
             "start_datetime": dt.datetime.combine(i['posting_date'],
@@ -449,7 +449,7 @@ def orders():
                                             filters=[['sales_order', '=', each_data.name]])
 
         temp_dict = {
-            "id": each_data.idx,
+            "id": str(each_data.idx),
             "location_id": None,
             "location_name": None,
             "order_number": each_data.name,
@@ -466,7 +466,7 @@ def orders():
             "tax_amount": each_data.total_taxes_and_charges,
             "total_amount": each_data.grand_total,
             "products": [{
-                "id": j.idx,
+                "id": str(j.idx),
                 "order_id": j.parent,
                 "product_id": j.item_code,
                 "product_name": j.item_name,
