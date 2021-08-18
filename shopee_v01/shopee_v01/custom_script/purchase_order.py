@@ -30,6 +30,12 @@ def warehouse_filter(supplier):
 
 @frappe.whitelist()
 def cara_packing(template_name):
-    doc = frappe.get_doc('Cara Packing Template',template_name)
+    doc = frappe.get_doc('Cara Packing Template', template_name)
     template = doc.template_text
     return template
+
+
+@frappe.whitelist()
+def size_filter(item_code):
+    doc = frappe.get_doc('Item', item_code)
+    return doc.invent_size_id
