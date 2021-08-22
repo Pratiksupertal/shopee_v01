@@ -29,6 +29,7 @@ app_include_css = "/assets/css/min.logo.css"
 doctype_js = {
                 "Item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js",
                 "Purchase Order":"shopee_v01/custom_script/purchase_order.js",
+                "Sales Order": "shopee_v01/custom_script/sales_order.js",
                 "Supplier":"shopee_v01/custom_script/supplier.js",
                 "Item":"shopee_v01/custom_script/item.js"
              }
