@@ -91,7 +91,10 @@ doc_events = {
     },
     "Purchase Order":{
     "autoname":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
-    }#,
+    },
+    "Stock Entry":{
+    "on_submit":"shopee_v01.shopee_v01.custom_script.stock_entry.update_item_qty"
+    }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
     # }
