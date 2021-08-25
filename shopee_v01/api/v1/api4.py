@@ -182,11 +182,11 @@ def purchases():
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
-                "price": str(i.amount),
-                "quantity": str(i.qty),
+                "price": str(int(i.amount) if i.amount else ''),
+                "quantity": str(int(i.qty) if i.qty else ''),
                 "unit_id": str(i.idx),
-                "discount": str(i.discount_amount),
-                "subtotal_amount": str(i.net_amount)
+                "discount": str(int(i.discount_amount) if i.discount_amount else ''),
+                "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
             } for i in each_data.items],
             "type": each_data.po_type,
             "rejected_by": each_data.modified_by if each_data.docstatus == 2 else None,
