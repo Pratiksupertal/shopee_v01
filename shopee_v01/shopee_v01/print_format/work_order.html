@@ -301,6 +301,9 @@
          <th class= "tac " width= "5% "><b>45</b></th>
          <th class= "tac " width= "5% "><b>46</b></th>
          <th class= "tac " width= "5% "><b>47</b></th>
+         <th class= "tac " width= "5% "><b>48</b></th>
+         <th class= "tac " width= "5% "><b>49</b></th>
+         <th class= "tac " width= "5% "><b>50</b></th>
          <th class= "tac " width= "5% "><b>Total</b></th>
        </tr>
        {% for row in doc.pant_template %}
@@ -326,6 +329,10 @@
          <td class= "tac " width= "5% ">{{row.t45 or ""}}</td>
          <td class= "tac " width= "5% ">{{row.t46 or ""}}</td>
          <td class= "tac " width= "5% ">{{row.t47 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t48 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t49 or ""}}</td>
+         <td class= "tac " width= "5% ">{{row.t50 or ""}}</td>
+
          <td class= "tac " width= "5% ">{{row.total or ""}}</td>
        </tr>
       {%endfor%}

@@ -1,0 +1,76 @@
+<style>
+	.print-format table, .print-format tr,
+	.print-format td, .print-format div, .print-format p {
+		font-family: Monospace;
+		line-height: 200%;
+		vertical-align: middle;
+	}
+	table.center-bold {
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: bold;
+      text-align:center;
+      font-size: 15px;
+    }
+    table.center {
+      margin-left: auto;
+      margin-right: auto;
+      text-align:center;
+      width: 100%;
+    }
+    table.size {
+        font-size: 15px;
+    }
+	@media screen{
+	    .print-format {
+	        width: 4in;
+	        padding: 0.25in;
+	        min-height: 5in;
+	    }
+	}
+
+</style>
+
+<div class="row section-break f_font">
+    <center>
+        <img src="https://indahsubursejati.com/wp-content/uploads/2020/02/lgs-300x200.jpeg" width="90" height="60">
+    </center>
+    <table class="center-bold">
+    <tr>
+        <td>
+            Size: {{ doc.invent_size_id }}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Article: {{ doc.item_name }}
+        </td>
+    </tr>
+    </table>
+    <br>
+    <table class="size">
+        <tr>
+            <td>
+                Color: {{ doc.color }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Price: Rp {{ doc.standard_rate }}
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table class="center">
+        <tr>
+            <td>
+                {{ doc.item_bar_code }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {{ doc.item_bar_code }}
+            </td>
+        </tr>
+    </table>
+</div>
