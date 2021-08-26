@@ -1,4 +1,5 @@
 {
+ "autoname": "field:item_code",
  "creation": "2021-08-03 08:27:11.406690",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -16,7 +17,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Item Code",
-   "options": "Item"
+   "options": "Item",
+   "unique": 1
   },
   {
    "fieldname": "item_name",
@@ -44,7 +46,7 @@
   }
  ],
  "istable": 1,
- "modified": "2021-08-05 12:38:20.833649",
+ "modified": "2021-08-26 12:18:00.535561",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Total Item count in Warehouse",

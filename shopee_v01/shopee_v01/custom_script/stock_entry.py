@@ -17,19 +17,24 @@ def update_item_qty(doc,method):
             temp = int(temp[0][0]) if len(temp)>0 else 0
             balance_qty = balance_qty + temp
         try:
-            sql = "update `tabTotal Item count in Warehouse` set item_code = '{0}' ,available_items = {1},warehouse='{2}' ".format(item.item_code,balance_qty+item.qty,item.t_warehouse)
+            sql = "select item_code,available_items,warehouse from `tabTotal Item count in Warehouse` where item_code = '{0}'".format(item.item_code)
             query = frappe.db.sql(sql,debug=True)
+            if len(query)>0:
+                sql = "update `tabTotal Item count in Warehouse` set item_code = '{0}' ,available_items = {1},warehouse='{2}' where item_code = '{0}' ".format(item.item_code,balance_qty+item.qty,item.t_warehouse)
+                query = frappe.db.sql(sql,debug=True)
+            else:
+                idx = frappe.db.sql("select idx from `tabTotal Item count in Warehouse` order by idx desc limit 1;",debug=True)
+                idx = idx[0][0]+1
+                sql = "insert into `tabTotal Item count in Warehouse` (name,idx,creation,modified,modified_by,owner,parent,parentfield,parenttype,item_code,available_items,warehouse) values ('{0}',{4},now(),now(),'{3}','{3}','Item Counter','total_item_count_in_warehouse','Item Counter','{0}',{1},'{2}')".format(item.item_code,balance_qty,item.t_warehouse,frappe.session.user,idx)
+                query = frappe.db.sql(sql,debug=True)
+
         except:
             print("xxxxxxxxxxxxxxxx Update query failed xxxxxxxxxxxxxxxxxxxxxxxxx")
-        # sql = "select item_code,available_items,warehouse from `tabTotal Item count in Warehouse` where item_code = '{0}'".format(item.item_code)
-        # query = frappe.db.sql(sql,debug=True)
         # if query:
         #     print("------- final output -----------")
         #     print(query)
         # else:
         #     print("---- item is not available -----")
-        #     sql = "insert into `tabTotal Item count in Warehouse` (item_code,available_items,warehouse) values ({0},{1},{2})".format(item.item_code,balance_qty,item.s_warehouse)
-        #     query = frappe.db.sql(sql,debug=True)
 
     pass
 # Recursively update warehouse in specified Parent warehouse
