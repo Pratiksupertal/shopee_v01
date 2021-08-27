@@ -15,6 +15,9 @@ def update_finished901itemsummary(doc,method):
                 qty =  item.qty
             if warehouse_tuple[0] == item.s_warehouse:
                 qty = -item.qty
+            if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
+                qty = 0
+
             sql = "update `tabTotal Item count in Warehouse` set available_items = available_items + {0},warehouse = '{1}',modified_time = now()  where item_code = '{2}';".format(qty,warehouse_tuple[0],item.item_code)
             query = frappe.db.sql(sql,debug=True)
 
