@@ -10,17 +10,18 @@ def update_finished901itemsummary(doc,method):
         item_availability = frappe.db.sql(sql,debug=True)
         warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
         warehouse_tuple = tuple(warehouse_tuple)
-        if len(item_availability)>0:
+        if len(item_availability)>0 :
             # qty = item.qty if warehouse_tuple[0] == item.t_warehouse
-            if warehouse_tuple[0] == item.t_warehouse:
-                qty =  item.qty
-            if warehouse_tuple[0] == item.s_warehouse:
-                qty = -item.qty
-            if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
-                qty = 0
-            if qty != 0:
-                sql = "update `tabTotal Item count in Warehouse` set available_items = available_items + {0},warehouse = '{1}',modified_time = now()  where item_code = '{2}';".format(qty,warehouse_tuple[0],item.item_code)
-                query = frappe.db.sql(sql,debug=True)
+            if len(warehouse_tuple)>0:
+                if warehouse_tuple[0] == item.t_warehouse:
+                    qty =  item.qty
+                if warehouse_tuple[0] == item.s_warehouse:
+                    qty = -item.qty
+                if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
+                    qty = 0
+                if qty != 0:
+                    sql = "update `tabTotal Item count in Warehouse` set available_items = available_items + {0},warehouse = '{1}',modified_time = now()  where item_code = '{2}';".format(qty,warehouse_tuple[0],item.item_code)
+                    query = frappe.db.sql(sql,debug=True)
         else:
             balance_qty = 0
             for i in warehouse_list.child_warehouse:
