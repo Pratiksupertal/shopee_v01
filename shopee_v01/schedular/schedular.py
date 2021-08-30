@@ -38,7 +38,8 @@ def access_token(shop_id,partner_id,partner_key,refresh_token):
     frappe.client.set_value("ShopeeAuthentication01", "ShopeeAuthentication01", "value", new_refresh_token)
     return access_token, new_refresh_token
 
-def update_warehouse():
+def update_finished_901_item_qty_summary():
+#    frappe.log('')
     warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
     item_dict = {i.item_code : i.available_items for i in warehouse_list.total_item_count_in_warehouse}
     warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse]
