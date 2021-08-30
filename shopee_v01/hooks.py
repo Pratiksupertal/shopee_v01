@@ -113,10 +113,9 @@ scheduler_events = {
 # 	"all": [
 # 		"shopee_v01.tasks.all"
 # 	],
- 	"daily": [
-        "shopee_v01.schedular.schedular.update_warehouse",
+# 	"daily": [
 #        "shopee_v01.tasks.daily"
- 	],
+# 	],
 # 	"hourly": [
 # 		"shopee_v01.tasks.hourly"
 # 	],
@@ -127,10 +126,10 @@ scheduler_events = {
 # 		"shopee_v01.tasks.monthly"
 # 	]
     "cron": {
-			"0 * * * *": [
-				"shopee_v01.schedular.schedular.refresh_acess_token",
-                "shopee_v01.schedular.schedular.update_warehouse"
-			]}
+  	    "0 0 * * *": [
+            "shopee_v01.schedular.schedular.update_finished_901_item_qty_summary"
+        ]
+    }
 }
 
 # Testing
