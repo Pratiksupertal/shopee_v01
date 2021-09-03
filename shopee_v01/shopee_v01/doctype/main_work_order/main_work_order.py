@@ -68,6 +68,8 @@ class MainWorkOrder(Document):
 					supp_items = doc.get("supplied_items")
 					for d in supp_items:
 						d.reserve_warehouse = self.source_warehouse
+				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', doc.taxes_and_charges)
+				doc.taxes = tax_template.taxes
 				doc.save()
 				doc.submit()
 				print("Purchase Order is created ")
