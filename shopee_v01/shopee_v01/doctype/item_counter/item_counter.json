@@ -1,0 +1,53 @@
+{
+ "creation": "2021-08-03 08:24:08.259665",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_warehouse",
+  "child_warehouse",
+  "total_item_count_in_warehouse"
+ ],
+ "fields": [
+  {
+   "fieldname": "reference_warehouse",
+   "fieldtype": "Link",
+   "label": "Reference Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "total_item_count_in_warehouse",
+   "fieldtype": "Table",
+   "label": "Total Item count in Warehouse",
+   "options": "Total Item count in Warehouse"
+  },
+  {
+   "fieldname": "child_warehouse",
+   "fieldtype": "Table",
+   "label": "Child Warehouse",
+   "options": "Child Warehouse"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2021-08-25 16:45:06.894484",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Item Counter",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

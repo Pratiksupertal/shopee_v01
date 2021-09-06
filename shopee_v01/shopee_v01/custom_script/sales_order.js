@@ -8,8 +8,8 @@ frappe.ui.form.on('Sales Order Item', {
            },
            callback: function(r) {
                 var resp = r.message
-                console.log(resp);
-                        frappe.model.set_value(row.doctype, row.name, "invent_size_id", resp);
+                        frappe.model.set_value(row.doctype, row.name, "invent_size_id", resp[0]);
+                        frappe.model.set_value(row.doctype, row.name, "available_qty", resp[1]);
               }
         });
     }

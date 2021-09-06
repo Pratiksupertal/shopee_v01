@@ -62,12 +62,15 @@ class MainWorkOrder(Document):
 				doc.save()
 				# setting up reserve_warehouse in purchase order
 				if doc.is_subcontracted == "Yes":
-					doc.reserve_warehouse = self.supplier_warehouse
+					doc.reserve_warehouse = self.source_warehouse
 					supp_items = doc.get("supplied_items")
 					for d in supp_items:
-						d.reserve_warehouse = self.supplier_warehouse
+						d.reserve_warehouse = self.source_warehouse
 				doc.save()
 				doc.submit()
+				print("Purchase Order is created ")
+				print(doc.name)
+
 
 
 	def on_submit(self):
