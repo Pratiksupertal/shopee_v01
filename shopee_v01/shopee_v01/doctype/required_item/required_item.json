@@ -7,8 +7,7 @@
   "item_label",
   "item_code",
   "operation",
-  "operation_details",
-  "source_warehouse"
+  "operation_details"
  ],
  "fields": [
   {
@@ -36,17 +35,10 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Operation Details"
-  },
-  {
-   "fieldname": "source_warehouse",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Source Warehouse",
-   "options": "Warehouse"
   }
  ],
  "istable": 1,
- "modified": "2021-06-22 14:57:26.686726",
+ "modified": "2021-09-07 15:43:00.223399",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Required Item",
