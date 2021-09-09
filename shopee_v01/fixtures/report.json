@@ -5,6 +5,94 @@
   "disabled": 0,
   "docstatus": 0,
   "doctype": "Report",
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2021-08-03 14:53:56.738256",
+  "module": "Stock",
+  "name": "Stock Quantity List",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "prepared_report": 0,
+  "query": "SELECT\n\t  a.item_name as \"Item Name::170\",\n\t  a.item_code as \"Item Code::180\",\n\t  a.item_group as \"Item Group:Link/Item Group:50\",\n\t  a.division_group as \"Division Group::50\",\n\t  a.retail_group as \"Retail Group::50\",\n\t  a.brand as \"Brand:Link/Brand:80\",\n\t  format(max(d.price_list_rate),0) as \"Price::80\",\n\t  b.actual_qty as \"Balance Qty:Float:70\",\n\t  b.projected_qty as \"Projected Qty:Float:70\",\n\t  b.warehouse as \"Warehouse:Link/Warehouse:140\"\n\t\nFROM `tabItem` a LEFT JOIN `tabBin` b\n    ON a.item_code = b.item_code\nLEFT JOIN `tabSales Order Item` c\n    ON a.item_code = c.item_code\nLEFT JOIN `tabItem Price` d\n    ON a.item_code = d.item_code\n    \n\ngroup by a.item_code, b.warehouse\norder by a.item_name asc",
+  "ref_doctype": "Delivery Note",
+  "reference_report": null,
+  "report_name": "Stock Quantity List",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Stock Quantity List",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Stock Quantity List",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Stock Quantity List",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Stock Quantity List",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ]
+ },
+ {
+  "add_total_row": 0,
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "is_standard": "No",
+  "javascript": null,
+  "json": "{\"filters\":[],\"fields\":[[\"name\",\"Payment Entry\"],[\"payment_type\",\"Payment Entry\"],[\"posting_date\",\"Payment Entry\"],[\"mode_of_payment\",\"Payment Entry\"],[\"party_type\",\"Payment Entry\"],[\"party\",\"Payment Entry\"],[\"reference_no\",\"Payment Entry\"],[\"reference_date\",\"Payment Entry\"]],\"order_by\":\"`tabPayment Entry`.`modified` desc\",\"add_totals_row\":0,\"page_length\":20,\"column_widths\":{\"name\":120,\"payment_type\":120,\"posting_date\":120,\"mode_of_payment\":120,\"party_type\":120,\"party\":120,\"reference_no\":120,\"reference_date\":120},\"group_by\":null}",
+  "letter_head": null,
+  "modified": "2021-08-05 18:46:16.891190",
+  "module": "Accounts",
+  "name": "Payment Entry Custom",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Payment Entry",
+  "reference_report": null,
+  "report_name": "Payment Entry Custom",
+  "report_script": null,
+  "report_type": "Report Builder",
+  "roles": [
+   {
+    "parent": "Payment Entry Custom",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Payment Entry Custom",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ]
+ },
+ {
+  "add_total_row": 0,
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
   "is_standard": "No",
   "javascript": null,
   "json": "[{\"fieldtype\":\"Link\",\"options\":\"Work Order\",\"width\":200,\"label\":\"Work Order\",\"fieldname\":\"work_order\",\"id\":\"work_order\",\"name\":\"Work Order\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Date\",\"width\":120,\"label\":\"Date\",\"fieldname\":\"date\",\"id\":\"date\",\"name\":\"Date\",\"editable\":false},{\"fieldtype\":\"Link\",\"options\":\"Item\",\"width\":150,\"label\":\"Item\",\"fieldname\":\"item\",\"id\":\"item\",\"name\":\"Item\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Int\",\"width\":100,\"label\":\"To Produce\",\"fieldname\":\"to_produce\",\"id\":\"to_produce\",\"name\":\"To Produce\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Int\",\"width\":100,\"label\":\"Produced\",\"fieldname\":\"produced\",\"id\":\"produced\",\"name\":\"Produced\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"actual_operating_cost\",\"fieldtype\":\"Currency\",\"label\":\"Actual Operating Cost\",\"insert_after_index\":4,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"width\":100,\"id\":\"actual_operating_cost\",\"name\":\"Actual Operating Cost\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"additional_operating_cost\",\"fieldtype\":\"Currency\",\"label\":\"Additional Operating Cost\",\"insert_after_index\":5,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"width\":100,\"id\":\"additional_operating_cost\",\"name\":\"Additional Operating Cost\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Link\",\"options\":\"Company\",\"width\":null,\"label\":\"Company\",\"fieldname\":\"company\",\"id\":\"company\",\"name\":\"Company\",\"editable\":false,\"compareValue\":null}]",
