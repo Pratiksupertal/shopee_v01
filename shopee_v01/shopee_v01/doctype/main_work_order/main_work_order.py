@@ -40,11 +40,13 @@ class MainWorkOrder(Document):
 
 	def before_submit(self):
 		self.submitted_by = frappe.session.user
+		supplier = frappe.get_doc('Supplier', self.supplier)
 		for row in self.work_order_item_detail:
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
 			if(self.is_external and with_operation ==0):
 				doc = frappe.new_doc("Purchase Order")
 				doc.supplier = self.supplier
+				doc.tax_category = supplier.tax_category
 				doc.schedule_date = self.expected_finish_date
 				doc.is_subcontracted = "Yes"
 				doc.supplier_warehouse = self.supplier_warehouse
@@ -66,6 +68,8 @@ class MainWorkOrder(Document):
 					supp_items = doc.get("supplied_items")
 					for d in supp_items:
 						d.reserve_warehouse = self.source_warehouse
+				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', doc.taxes_and_charges)
+				doc.taxes = tax_template.taxes
 				doc.save()
 				doc.submit()
 				print("Purchase Order is created ")
