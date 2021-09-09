@@ -1,7 +1,6 @@
 
 import frappe
 from frappe.model.document import Document
-from shopee_v01.utils import scheduler_event_log
 # import time
 # import json
 # import hmac
@@ -58,6 +57,3 @@ def update_finished_901_item_qty_summary():
                 balance_qty, item)
             query = frappe.db.sql(sql,debug=True)
             content.append([item,balance_qty])
-    if len(content)>0:
-        scheduler_event_log("Finished901ItemQtySummary Scheduler",content)
-    pass
