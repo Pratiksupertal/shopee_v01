@@ -156,6 +156,7 @@ def login():
         except:
             warehouse_id = None
 
+        print(str(user_data.api_key + ':' + api_secret['message']['api_secret']))
         return format_result(message='Login Success', status_code=200, result={
             "id": str(user_data.idx),
             "username": str(user_data.username),
@@ -439,7 +440,7 @@ def stockOpnames():
 
         result.append(temp_dict)
 
-    return format_result(result)
+    return format_result(result=result, status_code=200, message='Data Found')
 
 
 @frappe.whitelist()
@@ -660,7 +661,7 @@ def material_stock_entry():
             "qty": item["qty"],
             "uom": item["uom"],
             "conversion_factor": item["conversion_factor"],
-            "schedule_date": item['scheduled_date'] or today(),
+            "schedule_date": item['schedule_date'] or today(),
             "warehouse": item['target_warehouse'],
         })
     new_doc_material_request.save()
