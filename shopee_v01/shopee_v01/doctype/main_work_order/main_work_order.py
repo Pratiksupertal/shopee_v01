@@ -61,6 +61,20 @@ class MainWorkOrder(Document):
 					"bom":row.bom
 				})
 				doc.reference_main_work_order = self.name
+				taxes_and_charges = frappe.get_doc('Purchase Taxes and Charges Template',{"tax_category":doc.tax_category,"is_default":1})
+				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', taxes_and_charges.name)
+				doc.append("taxes",{
+					"category" : "Total",
+					"add_deduct_tax":"Add",
+					"charge_type":tax_template.taxes[0].charge_type,
+					# "charge_type":"On Net Total",
+					"account_head":tax_template.taxes[0].account_head,
+					# "account_head":"VAT - ISS",
+					"rate": tax_template.taxes[0].rate,
+					# "rate": 10.00,
+					"description":tax_template.taxes[0].description
+					# "description":"VAT - ISS"
+				})
 				doc.save()
 				# setting up reserve_warehouse in purchase order
 				if doc.is_subcontracted == "Yes":
@@ -68,12 +82,8 @@ class MainWorkOrder(Document):
 					supp_items = doc.get("supplied_items")
 					for d in supp_items:
 						d.reserve_warehouse = self.source_warehouse
-				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', doc.taxes_and_charges)
-				doc.taxes = tax_template.taxes
 				doc.save()
 				doc.submit()
-				print("Purchase Order is created ")
-				print(doc.name)
 
 
 
