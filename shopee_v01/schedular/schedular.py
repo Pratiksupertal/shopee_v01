@@ -7,7 +7,7 @@ from frappe.model.document import Document
 # import hashlib
 # import requests
 from shopee_v01.shopeemarketplace_v01.utils import refresh_token
-from shopee_v01.utils import schedular_log
+
 
 def refresh_acess_token():
     shop_id = 220288436
