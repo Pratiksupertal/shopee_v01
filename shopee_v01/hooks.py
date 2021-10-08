@@ -139,7 +139,7 @@ scheduler_events = {
 # -------
 
 # fixtures = ["Custom Field", "Property Setter","Role","Print Format", "Letter Head", "Workflow State", "Workflow Action", "Workflow", "Address Template","Web Page"]
-fixtures = ["Custom Field", "Property Setter","Print Format","Role","Report"]
+fixtures = ["Custom Field", "Property Setter","Print Format","Role","Report","Workflow State", "Workflow Action", "Workflow"]
 # before_tests = "shopee_v01.install.before_tests"
 
 # Overriding Methods
