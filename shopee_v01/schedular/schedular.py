@@ -8,7 +8,6 @@ from frappe.model.document import Document
 # import requests
 from shopee_v01.shopeemarketplace_v01.utils import refresh_token
 
-
 def refresh_acess_token():
     shop_id = 220288436
     partner_id = 850230
