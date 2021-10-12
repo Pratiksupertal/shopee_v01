@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 import frappe
@@ -9,6 +10,10 @@ import barcode
 import traceback
 from urllib.parse import urlparse, unquote, parse_qs
 import datetime as dt
+from frappe.utils import today
+from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry, create_delivery_note
+from erpnext.stock.doctype.material_request.material_request import create_pick_list
+from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
 
 
 def validate_data(data):
@@ -152,6 +157,7 @@ def login():
         except:
             warehouse_id = None
 
+        print(str(user_data.api_key + ':' + api_secret['message']['api_secret']))
         return format_result(message='Login Success', status_code=200, result={
             "id": str(user_data.idx),
             "username": str(user_data.username),
@@ -435,7 +441,7 @@ def stockOpnames():
 
         result.append(temp_dict)
 
-    return format_result(result)
+    return format_result(result=result, status_code=200, message='Data Found')
 
 
 @frappe.whitelist()
@@ -640,3 +646,78 @@ def stockTransfers():
         result.append(temp_dict)
 
     return format_result(result=result, message='Data Found', status_code=200)
+
+
+@frappe.whitelist()
+def material_stock_entry():
+    '''
+    Processing Material Request
+    '''
+    data = validate_data(frappe.request.data)
+    new_doc_material_request = frappe.new_doc('Material Request')
+    new_doc_material_request.material_request_type = "Material Transfer"
+    for item in data['items']:
+        new_doc_material_request.append("items", {
+            "item_code": item['item_code'],
+            "qty": item["qty"],
+            "uom": item["uom"],
+            "conversion_factor": item["conversion_factor"],
+            "schedule_date": item['schedule_date'] or today(),
+            "warehouse": item['target_warehouse'],
+        })
+    new_doc_material_request.save()
+    new_doc_material_request.submit()
+
+    '''
+    Generating Pick List from Material Request
+    '''
+    new_doc_pick_list = create_pick_list(new_doc_material_request.name)
+    new_doc_pick_list.save()
+    new_doc_pick_list.submit()
+
+    '''
+    Generating Stock Entry from Pick List
+    '''
+    stock_entry_dict = create_stock_entry(new_doc_pick_list.as_json())
+    new_doc_stock_entry = frappe.new_doc('Stock Entry')
+    new_doc_stock_entry.company = stock_entry_dict['company']
+    new_doc_stock_entry.purpose = stock_entry_dict['purpose']
+    for item in stock_entry_dict['items']:
+        new_doc_stock_entry.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": item['t_warehouse'],
+            "s_warehouse": item['s_warehouse'],
+            "qty": item['qty'],
+            "basic_rate": item['basic_rate'],
+            "cost_center": item['cost_center']
+        })
+    new_doc_stock_entry.stock_entry_type = stock_entry_dict["stock_entry_type"]
+
+    new_doc_stock_entry.save()
+    new_doc_stock_entry.submit()
+
+    return format_result(result={'stock entry': new_doc_stock_entry.name}, message='Data Created', status_code=200)
+
+
+@frappe.whitelist()
+def sales_delivery_note():
+    '''
+    Create Pick List for given Sales Order
+    '''
+    data = validate_data(frappe.request.data)
+    try:
+        pick_list_sales = create_pick_list_from_sales_order(data['sales_order'])
+        pick_list_sales.save()
+        pick_list_sales.submit()
+    except:
+        return format_result(result="There was a problem creating the Pick List", message='Error', status_code=500)
+
+    '''
+    Create Delivery Note from Pick List
+    '''
+    new_delivery_note = create_delivery_note(pick_list_sales.name)
+    new_delivery_note.save()
+    new_delivery_note.submit()
+
+    return format_result(result={'delivery note': new_delivery_note.name}, message='Data Created', status_code=200)
+

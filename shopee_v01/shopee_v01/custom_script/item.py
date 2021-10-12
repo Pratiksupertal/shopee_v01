@@ -6,3 +6,7 @@ from frappe.model.document import Document
 @frappe.whitelist()
 def categories(doctype,value,field):
     return frappe.db.get_value(doctype,value,field)
+
+@frappe.whitelist()
+def barcode(code):
+    return str(code)

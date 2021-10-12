@@ -95,6 +95,9 @@ doc_events = {
     },
     "Stock Entry":{
     "on_submit":"shopee_v01.shopee_v01.custom_script.stock_entry.update_finished901itemsummary"
+    },
+    "Pick List":{
+    "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
     }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"

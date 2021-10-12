@@ -40,11 +40,13 @@ class MainWorkOrder(Document):
 
 	def before_submit(self):
 		self.submitted_by = frappe.session.user
+		supplier = frappe.get_doc('Supplier', self.supplier)
 		for row in self.work_order_item_detail:
 			with_operation = frappe.db.get_value("BOM",row.bom,"with_operations")
 			if(self.is_external and with_operation ==0):
 				doc = frappe.new_doc("Purchase Order")
 				doc.supplier = self.supplier
+				doc.tax_category = supplier.tax_category
 				doc.schedule_date = self.expected_finish_date
 				doc.is_subcontracted = "Yes"
 				doc.supplier_warehouse = self.supplier_warehouse
@@ -59,6 +61,20 @@ class MainWorkOrder(Document):
 					"bom":row.bom
 				})
 				doc.reference_main_work_order = self.name
+				taxes_and_charges = frappe.get_doc('Purchase Taxes and Charges Template',{"tax_category":doc.tax_category,"is_default":1})
+				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', taxes_and_charges.name)
+				doc.append("taxes",{
+					"category" : "Total",
+					"add_deduct_tax":"Add",
+					"charge_type":tax_template.taxes[0].charge_type,
+					# "charge_type":"On Net Total",
+					"account_head":tax_template.taxes[0].account_head,
+					# "account_head":"VAT - ISS",
+					"rate": tax_template.taxes[0].rate,
+					# "rate": 10.00,
+					"description":tax_template.taxes[0].description
+					# "description":"VAT - ISS"
+				})
 				doc.save()
 				# setting up reserve_warehouse in purchase order
 				if doc.is_subcontracted == "Yes":
@@ -68,8 +84,6 @@ class MainWorkOrder(Document):
 						d.reserve_warehouse = self.source_warehouse
 				doc.save()
 				doc.submit()
-				print("Purchase Order is created ")
-				print(doc.name)
 
 
 

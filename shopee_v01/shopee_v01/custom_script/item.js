@@ -56,3 +56,19 @@ frappe.ui.form.on('Item', {
        });
 	}
 });
+
+frappe.ui.form.on('Item Barcode', {
+    barcode: function(frm, cdt, cdn){
+        var row = locals[cdt][cdn];
+        frappe.call({
+           method: "shopee_v01.shopee_v01.custom_script.item.barcode",
+           args: {
+             "code": row.barcode
+           },
+           callback: function(r) {
+                var resp = r.message
+                cur_frm.set_value("item_bar_code", resp);
+              }
+        });
+    }
+});
