@@ -1213,5 +1213,32 @@
   "raw_printing": 0,
   "show_section_headings": 0,
   "standard": "No"
+},
+{
+ "absolute_value": 0,
+ "align_labels_right": 0,
+ "css": null,
+ "custom_format": 0,
+ "default_print_language": null,
+ "disabled": 0,
+ "doc_type": "Purchase Receipt",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font": "Default",
+ "format_data": "[{\"fieldname\": \"print_heading_template\", \"fieldtype\": \"Custom HTML\", \"options\": \"<div class=\\\"print-heading\\\">\\t\\t\\t\\t\\n    <h2>Purchase Receipt<br>\\n        <small>{{ doc.name }}</small><br>\\n        <small>{{ doc.supplier_travel_document_number or '' }}</small>\\n    </h2>\\n</div>\"}, {\"fieldtype\": \"Section Break\", \"label\": \"\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"supplier_name\", \"print_hide\": 0, \"label\": \"Supplier Name\"}, {\"fieldname\": \"supplier_delivery_note\", \"print_hide\": 0, \"label\": \"Supplier Delivery Note\"}, {\"fieldname\": \"supplier_travel_document_number\", \"print_hide\": 0, \"label\": \"Supplier Travel Document number\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"posting_date\", \"print_hide\": 0, \"label\": \"Date\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Address and Contact\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"address_display\", \"print_hide\": 0, \"label\": \"Address\"}, {\"fieldname\": \"contact_display\", \"print_hide\": 0, \"label\": \"Contact\"}, {\"fieldname\": \"contact_mobile\", \"print_hide\": 0, \"label\": \"Mobile No\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldtype\": \"Section Break\", \"label\": \"\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"scan_barcode\", \"print_hide\": 0, \"label\": \"Scan Barcode\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Pricing Rules\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"pricing_rules\", \"print_hide\": 0, \"label\": \"Pricing Rule Detail\", \"visible_columns\": [{\"fieldname\": \"pricing_rule\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"item_code\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"margin_type\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"rate_or_discount\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"rule_applied\", \"print_width\": \"\", \"print_hide\": 0}]}, {\"fieldtype\": \"Section Break\", \"label\": \"\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"_custom_html\", \"print_hide\": 0, \"label\": \"Custom HTML\", \"fieldtype\": \"HTML\", \"options\": \"<br><table width=\\\"100%\\\" style=\\\"table-layout: fixed;\\\" border=\\\"1px\\\" bordercolor=\\\"#d1d8dd\\\">\\n    <tr>\\n        <th class=\\\"tac\\\" width=\\\"6%\\\"><b>Sr.</b></th>\\n        <th class=\\\"tac\\\" width=\\\"18%\\\"><b>Barang</b></th>\\n        <th class=\\\"tac\\\" width=\\\"32%\\\"><b>Deskripsi</b></th>\\n        <th class=\\\"tac\\\" width=\\\"10%\\\"><b>Quantity</b></th>\\n        <th class=\\\"tac\\\" width=\\\"15%\\\"><b>Purchase Order</b></th>\\n        <th class=\\\"tac\\\" width=\\\"15%\\\"><b>Expense Account</b></th>\\n        <th class=\\\"tac\\\" width=\\\"10%\\\"><b>Weight per Unit</b></th>\\n        <th class=\\\"tac\\\" width=\\\"10%\\\"><b>Total Weight</b></th>\\n    </tr>\\n{% set disc=namespace(discount=0) %}\\n{% set amt=namespace(price_amount=0) %}\\n{% set uom=namespace(uom_name=\\\"\\\") %}\\n{% for row in doc.items %}\\n<tr>\\n        <td class=\\\"tac\\\" width=\\\"6%\\\">{{ row.idx or '' }}</td>\\n        <td width=\\\"18%\\\">{{ row.item_code or '' }}</td>\\n        <td width=\\\"32%\\\">{{ row.description or '' }}</td>\\n        <td class=\\\"tac\\\" width=\\\"15%\\\"> {{ row.get_formatted(\\\"qty\\\") or 0}}&nbsp; {{row.uom}}</td>\\n        {% set uom.uom_name= row.uom%}\\n    <!-- <td class=\\\"tac\\\" width=\\\"15%\\\"> <img id=\\\"item_img\\\" src= '{{ row.image }}'></td> -->\\n        <td class=\\\"tac\\\" width=\\\"15%\\\"> \\n          {{ row.purchase_order or ''}}\\n        \\n        </td>\\n        <td class=\\\"tac\\\" width=\\\"15%\\\"> \\n          {{ row.expense_account or ''}} \\n        </td>\\n        <td class=\\\"tac\\\" width=\\\"15%\\\"> \\n          {{ row.weight_per_unit or ''}} \\n        </td>\\n        <td class=\\\"tac\\\" width=\\\"15%\\\"> \\n          {{ row.total_weight or ''}} \\n        </td>\\n        \\n    </tr>\\n{% endfor %}\\n\\n</table><br>\\n<div class=\\\"\\\">\\n  <div class=\\\"col-xs-7\\\">\\n    <table width=\\\"100%\\\" style=\\\"table-layout: fixed;    margin-left: 15px;\\\">\\n      <tr>\\n        <td class=\\\"tac\\\" colspan=\\\"6\\\">Total </td><td class=\\\"tac\\\">{{doc.total_qty}}&nbsp;{{uom.uom_name}}</td><td></td>\\n        <td></td>\\n      </tr>\\n      </table>\\n    </div>\\n  \\n\"}]",
+ "html": null,
+ "line_breaks": 0,
+ "modified": "2021-10-06 12:38:30.816751",
+ "module": "Shopee V01",
+ "name": "purchase receipt with travel doc",
+ "parent": null,
+ "parentfield": null,
+ "parenttype": null,
+ "print_format_builder": 1,
+ "print_format_type": "Jinja",
+ "raw_commands": null,
+ "raw_printing": 0,
+ "show_section_headings": 0,
+ "standard": "No"
 }
 ]
