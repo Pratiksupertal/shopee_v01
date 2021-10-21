@@ -2581,7 +2581,7 @@
   "bold": 0,
   "collapsible": 0,
   "collapsible_depends_on": null,
-  "columns": 2,
+  "columns": 1,
   "default": null,
   "depends_on": null,
   "description": null,
@@ -2612,14 +2612,14 @@
   "precision": "",
   "print_hide": 0,
   "print_hide_if_no_value": 0,
-  "print_width": null,
+  "print_width": "",
   "read_only": 1,
   "report_hide": 0,
   "reqd": 0,
   "search_index": 0,
   "translatable": 0,
   "unique": 0,
-  "width": null
+  "width": ""
  },
  {
   "allow_in_quick_entry": 0,
@@ -3219,13 +3219,13 @@
   "unique": 0,
   "width": null
  },
- {
+{
   "allow_in_quick_entry": 1,
   "allow_on_submit": 0,
   "bold": 0,
   "collapsible": 0,
   "collapsible_depends_on": null,
-  "columns": 0,
+  "columns": 1,
   "default": null,
   "depends_on": null,
   "description": null,
