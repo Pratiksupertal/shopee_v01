@@ -1,4 +1,5 @@
 import frappe
+from frappe.model.mapper import get_mapped_doc
 from frappe.model.document import Document
 group_warehouse, node_warehouse = [],[]
 
@@ -35,3 +36,16 @@ def update_finished901itemsummary(doc,method):
             idx = idx[0][0]+1 if idx else 1
             sql = "insert into `tabTotal Item count in Warehouse` (name,idx,creation,modified,modified_time,modified_by,owner,parent,parentfield,parenttype,item_code,item_name,available_items,warehouse) values ('{0}',{4},now(),now(),now(),'{3}','{3}','Finished901ItemQtySummary','total_item_count_in_warehouse','Finished901ItemQtySummary','{0}','{5}',{1},'{2}')".format(item.item_code,balance_qty,item.t_warehouse,frappe.session.user,idx,item.item_name)
             query = frappe.db.sql(sql,debug=True)
+
+
+@frappe.whitelist()
+def make_stock_entry(source_name, target_doc=None):
+    doclist = get_mapped_doc("Stock Entry", source_name, {
+        "Stock Entry": {
+            "doctype": "Stock Entry",},
+        "Stock Entry Detail": {
+            "doctype": "Stock Entry Detail",
+        }
+    }, target_doc)
+
+    return doclist
