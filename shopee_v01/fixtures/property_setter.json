@@ -2366,5 +2366,37 @@
   "property": "hidden",
   "property_type": "Check",
   "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "base_rate",
+  "modified": "2021-10-21 08:14:44.810679",
+  "name": "Sales Order Item-base_rate-columns",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "columns",
+  "property_type": "Int",
+  "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "base_rate",
+  "modified": "2021-10-21 08:17:26.402079",
+  "name": "Sales Order Item-base_rate-in_list_view",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "in_list_view",
+  "property_type": "Check",
+  "value": "1"
  }
 ]
