@@ -1,0 +1,47 @@
+{
+ "autoname": "field:main_color",
+ "creation": "2021-10-12 20:16:23.335318",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "main_color_id",
+  "main_color"
+ ],
+ "fields": [
+  {
+   "fieldname": "main_color_id",
+   "fieldtype": "Data",
+   "label": "Main Color ID"
+  },
+  {
+   "fieldname": "main_color",
+   "fieldtype": "Data",
+   "label": "Main Color",
+   "unique": 1
+  }
+ ],
+ "modified": "2021-10-13 10:00:06.063270",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Main Cloth Color",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
