@@ -14,23 +14,7 @@ def size_filter(item_code):
 
 
 @frappe.whitelist()
-def make_stock_entry123(source_name, target_doc=None):
-    print('---------------->> Stock entry called from Sales Order -------')
-
-    def update_item(obj, target, source_parent):
-        qty = flt(flt(obj.stock_qty) - flt(obj.ordered_qty)) / target.conversion_factor \
-            if flt(obj.stock_qty) > flt(obj.ordered_qty) else 0
-        target.qty = qty
-        target.transfer_qty = qty * obj.conversion_factor
-        target.conversion_factor = obj.conversion_factor
-
-        if source_parent.material_request_type == "Material Transfer" or source_parent.material_request_type == "Customer Provided":
-            target.t_warehouse = obj.warehouse
-        else:
-            target.s_warehouse = obj.warehouse
-
-        if source_parent.material_request_type == "Customer Provided":
-            target.allow_zero_valuation_rate = 1
+def make_stock_entry(source_name, target_doc=None):
 
     doclist = get_mapped_doc("Sales Order", source_name, {
         "Sales Order": {
@@ -38,7 +22,6 @@ def make_stock_entry123(source_name, target_doc=None):
         "Sales Order Item": {
             "doctype": "Stock Entry Detail",
         },
-        "postprocess": update_item,
     }, target_doc)
 
     return doclist

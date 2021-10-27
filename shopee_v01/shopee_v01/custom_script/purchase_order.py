@@ -45,8 +45,6 @@ def size_filter(item_code):
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
 
-    print('---------------->> Stock entry called from Purchase Order -------')
-
     doclist = get_mapped_doc("Purchase Order", source_name, {
         "Purchase Order": {
             "doctype": "Stock Entry",},
