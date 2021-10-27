@@ -98,9 +98,6 @@ doc_events = {
     },
     "Pick List":{
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
-    },
-    "Item":{
-    "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
