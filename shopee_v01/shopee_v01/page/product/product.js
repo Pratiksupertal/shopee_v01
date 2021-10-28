@@ -4,107 +4,82 @@ frappe.pages['product'].on_page_load = function(wrapper) {
 		title: 'Product',
 		single_column: true
 	});
+	// $(frappe.render_template('test')).appendTo(page.body);
 	console.log("----- product page intialized ------");
 	controller = new frappe.product(wrapper);
-	controller.product_list()
+	// controller.product_list()
 	controller.filters()
-	click_function()
-
+	controller.item_record()
+	// item_record();
 };
-function click_function(){
-	console.log("------- click function run ---------");
-	$(".10000").click(function(){
-		console.log("----- hiiiii");
-			alert("Hello world!");
-	});
-}
+// function item_record(){
+// 	console.log("----- item record called------");
+// }
+
 frappe.product = Class.extend({
 	init : function(wrapper){
 		console.log("------ init function called --------");
 		var me = this ;
 		me.wrapper_page = wrapper.page
 		this.page = $(wrapper).find('.layout-main-section-wrapper');
-
-
-		$(frappe.render_template('main')).appendTo(this.page);
+		$(frappe.render_template('test')).appendTo(this.page);
 		me.product_list()
-		me.click_function()
+		console.log("----- printing product_ list ");
+		console.log(me.resp);
+		// me.click_function()
 
 		// $('.list').html($(frappe.render_template('product')));
 
 	},
-	click_function:function(wrapper,resp){
-		var me = this;
-		console.log(resp);
-
-
-
-	},
-	make:function(wrapper){
-		const assets = [
-		 "/assets/frappe/css/frappe-datatable.css",
-		 "/assets/frappe/js/lib/clusterize.min.js",
-		 "/assets/frappe/js/lib/Sortable.min.js",
-		 "/assets/frappe/js/lib/frappe-datatable.js"
-	 ];
-		frappe.require(assets, () => {
-			this.make();
-		});
-		const me = this;
-		new frappe.ui.FileUploader({
-			method: 'erpnext.accounts.doctype.bank_transaction.bank_transaction_upload.upload_bank_statement',
-			allow_multiple: 0,
-			on_success: function(attachment, r) {
-				if (!r.exc && r.message) {
-					me.data = r.message;
-					me.setup_transactions_dom();
-					me.create_datatable();
-					me.add_primary_action();
-				}
-			}
-		})
-		frappe.call({
-      method: "shopee_v01.shopee_v01.page.product.product.product_list",
-      args: {"item_code":me.item_code},
-      callback: function(r) {
-           var resp = r.message
-					 me.resp = resp
-					 $('.list').html($(frappe.render_template('product',{"data":resp})));
-					 $(".item_code").click(function(e){
-						 console.log(e.target.innerHTML);
-						 		frappe.set_route("List", "Item", {
-									"item_code":e.target.innerHTML
-								})
-
-					 })
-					}
-       });
+	item_record:function(wrapper){
+		var me = this ;
+		if(me.data){
+			const assets = [
+				"/assets/frappe/css/frappe-datatable.css",
+				"/assets/frappe/js/lib/clusterize.min.js",
+				"/assets/frappe/js/lib/Sortable.min.js",
+				"/assets/frappe/js/lib/frappe-datatable.js"
+			]
+			frappe.require(assets, () => {
+				var datatable = new DataTable('#datatable', {
+					columns:this.data.columns,
+					data:this.data.data
+				});
+			});
+		}
 	},
 	product_list : function(wrapper){
 		var me = this;
 		frappe.call({
       method: "shopee_v01.shopee_v01.page.product.product.product_list",
-      args: {"item_code":me.item_code},
+      args: {"item_code":me.item_code,
+							"item_group":me.item_group,
+							"division_group":me.division_group
+		},
+			freeze:true,
       callback: function(r) {
            var resp = r.message
-					 me.resp = resp
-
-
-					 $('.list').html($(frappe.render_template('product',{"data":resp})));
-					 $(".item_code").click(function(e){
-						 console.log(e.target.innerHTML);
-						 		frappe.set_route("List", "Item", {
-									"item_code":e.target.innerHTML
-								})
-
-					 })
+					 me.data = resp
+					 console.log(me.data);
+					 if(me.data){
+						 me.item_record()
+					 }
+					 // $('.list').html($(frappe.render_template('product',{"data":resp})));
+					 // $(".item_code").click(function(e){
+						//  console.log(e.target.innerHTML);
+						//  		frappe.set_route("List", "Item", {
+						// 			"item_code":e.target.innerHTML
+						// 		})
+					 //
+					 // })
 					}
        });
 	},
 	filters : function(wrapper){
 		var me = this;
-		var item = frappe.ui.form.make_control({
-	     parent: this.page.find("#item"),
+		// Item code filter
+		var item_code = frappe.ui.form.make_control({
+	     parent: this.page.find("#item_code"),
 	     df: {
 				 label: '<b>Item</b>',
 	       fieldtype: "Link",
@@ -113,17 +88,63 @@ frappe.product = Class.extend({
 	       placeholder: __(""),
 
 	       change:function(){
-					 me.item_code = item.get_value()
-					 // me.product_list()
+					 me.item_code = item_code.get_value()
+					 console.log("----- item code filter",item_code.get_value());
+					 console.log(me.item_code);
+					 // console.log("------- item_code filter");
+					 me.product_list()
+
 
 			 }
      },
      only_input: false,
    });
-	 item.set_value(me.item);
-	 item.refresh();
-	$('.item_code').click(function(){
+	 item_code.set_value(me.item);
+	 item_code.refresh();
+	 // Item group
+	 var item_group = frappe.ui.form.make_control({
+			parent: this.page.find("#item_group"),
+			df: {
+				label: '<b>Item Group</b>',
+				fieldtype: "Link",
+				options: "Item Group",
+				fieldname: "item_group",
+				placeholder: __(""),
 
+				change:function(){
+					me.item_group = item_group.get_value()
+					me.product_list()
+					console.log("------- item_group filter");
+			}
+		},
+		only_input: false,
 	});
+	item_group.set_value(me.item);
+	item_group.refresh();
+	//division_group filter
+	var division_group = frappe.ui.form.make_control({
+		 parent: this.page.find("#division_group"),
+		 df: {
+			 label: '<b>Division Group</b>',
+			 fieldtype: "Link",
+			 options: "Division Group",
+			 fieldname: "division_group",
+			 placeholder: __(""),
+
+			 change:function(){
+				 me.division_group = division_group.get_value()
+
+				 me.product_list()
+				 console.log("------- division group filter");
+		 }
+	 },
+	 only_input: false,
+ });
+ division_group.set_value(me.item);
+ division_group.refresh();
+// me.product_list()
+	// $('.item_code').click(function(){
+	//
+	// });
 	}
 });
