@@ -1,6 +1,8 @@
 from frappe.model.naming import make_autoname
 import frappe
 from frappe.model.document import Document
+from frappe.utils import cstr, flt, getdate, new_line_sep, nowdate, add_days
+from frappe.model.mapper import get_mapped_doc
 
 
 def autoname(doc,method):
@@ -38,3 +40,17 @@ def cara_packing(template_name):
 def size_filter(item_code):
     doc = frappe.get_doc('Item', item_code)
     return doc.invent_size_id
+
+
+@frappe.whitelist()
+def make_stock_entry(source_name, target_doc=None):
+
+    doclist = get_mapped_doc("Purchase Order", source_name, {
+        "Purchase Order": {
+            "doctype": "Stock Entry",},
+        "Purchase Order Item": {
+            "doctype": "Stock Entry Detail",
+        }
+    }, target_doc)
+
+    return doclist
