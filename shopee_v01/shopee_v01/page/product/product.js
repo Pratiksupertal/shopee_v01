@@ -46,6 +46,9 @@ frappe.product = Class.extend({
 					data:this.data.data
 				});
 			});
+			$("#datatable").DataTable({
+	        "pagingType": "full_numbers"
+	    });
 		}
 	},
 	product_list : function(wrapper){
