@@ -5,18 +5,29 @@ import json, copy
 from frappe.utils import cstr, flt
 
 def validate(doc,method):
-    if(doc.__islocal):
-        sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
-        pre_barcode = frappe.db.sql(sql,as_dict=True)
-        barcode = int(pre_barcode[0].barcode)+1
-        if len(pre_barcode)>0:
-            doc.append("barcodes",{
-            "barcode":str(barcode)
-            })
-        else:
-            doc.append("barcodes",{
-            "barcode":"1000001"
-            })
+    try:
+        if doc.get("__islocal"):
+            sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
+            pre_barcode = frappe.db.sql(sql,as_dict=True)
+            barcode = int(pre_barcode[0].barcode)+1
+            if len(pre_barcode)>0:
+                barcode = barcode_design(barcode)
+                doc.append("barcodes",{
+                "barcode":str(barcode)
+                })
+            else:
+                doc.append("barcodes",{
+                "barcode":"1000001"
+                })
+    except :
+        raise
+
+def barcode_design(barcode):
+    if not frappe.db.exists('Item Barcode',{'barcode':barcode}):
+        return barcode
+    else:
+        barcode = barcode_design(barcode+1)
+        return barcode
 
 @frappe.whitelist()
 def enqueue_multiple_variant_creation(item, args):
