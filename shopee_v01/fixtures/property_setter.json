@@ -2382,5 +2382,21 @@
   "property": "hidden",
   "property_type": "Check",
   "value": "0"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Purchase Order",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "supplier",
+  "modified": "2021-10-29 10:07:24.937786",
+  "name": "Purchase Order-supplier-in_list_view",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "in_list_view",
+  "property_type": "Check",
+  "value": "1"
  }
 ]
