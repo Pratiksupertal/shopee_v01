@@ -99,6 +99,9 @@ doc_events = {
     },
     "Pick List":{
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
+    },
+    "Item":{
+    "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
@@ -146,6 +149,10 @@ fixtures = ["Custom Field", "Property Setter","Print Format","Role","Report","Wo
 # Overriding Methods
 # ------------------------------
 #
+override_whitelisted_methods = {
+	"erpnext.controllers.item_variant.create_variant": "shopee_v01.shopee_v01.custom_script.item.create_variant",
+    "erpnext.controllers.item_variant.enqueue_multiple_variant_creation":"shopee_v01.shopee_v01.custom_script.item.enqueue_multiple_variant_creation"
+}
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "shopee_v01.event.get_events"
 # }
