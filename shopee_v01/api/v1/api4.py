@@ -175,7 +175,7 @@ def purchases():
 
     for each_data in each_data_list:
         temp_dict = {
-            "id": str(each_data.idx),
+            "id": each_data.name,
             "po_number": each_data.name,
             "po_date": each_data.creation,
             "supplier_id": each_data.supplier,
@@ -721,3 +721,45 @@ def sales_delivery_note():
 
     return format_result(result={'delivery note': new_delivery_note.name}, message='Data Created', status_code=200)
 
+
+@frappe.whitelist()
+def material_requests():
+    each_data_list = list(map(lambda x: frappe.get_doc('Material Request', x),
+                              [i['name'] for i in frappe.get_list('Material Request')]))
+    return format_result(result=each_data_list, status_code=200, message='Data Found')
+
+
+@frappe.whitelist()
+def stock_entry():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.start_time = data['start_datetime']
+    new_doc.end_time = data['end_datetime']
+    new_doc._comments = data['notes']
+
+    new_doc.purpose = data['purpose']
+    new_doc.set_stock_entry_type()
+
+    if data['purpose'] not in ['Material Receipt']:
+        for doc in data['get_item_doc_id']:
+            item_list = frappe.get_doc(data['get_items_from'], doc)
+            for item in item_list.items:
+                new_doc.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    "t_warehouse": data['target_warehouse_stockopname_id'],
+                    "s_warehouse": data['source_warehouse_stockopname_id']
+                })
+    else:
+        for doc in data['get_item_doc_id']:
+            item_list = frappe.get_doc(data['get_items_from'], doc)
+            for item in item_list.items:
+                new_doc.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    "t_warehouse": data['target_warehouse_stockopname_id'],
+                })
+
+    new_doc.insert()
+
+    return format_result(result=new_doc.name, status_code=200, message='Data Created')
