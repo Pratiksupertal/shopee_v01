@@ -166,6 +166,11 @@ def login():
         })
 
 
+def fill_barcode(item_code):
+    doc = frappe.get_doc('Item', item_code)
+    return str(doc.barcodes[0].barcode) if len(doc.barcodes) > 0 else ''
+
+
 @frappe.whitelist()
 def purchases():
     result = []
@@ -188,6 +193,7 @@ def purchases():
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
+                "barcode": fill_barcode(i.item_code),
                 "price": str(int(i.amount) if i.amount else ''),
                 "quantity": str(int(i.qty) if i.qty else ''),
                 "unit_id": str(i.idx),
@@ -255,6 +261,7 @@ def products():
             "name": i['item_name'],
             "code": i['item_code'],
             "category_id": i['item_group'],
+            "barcode": fill_barcode(i['item_code']),
             "unit_id": None,
             "weight": str(i['weightage']),
             "is_taxable": None,
@@ -478,6 +485,7 @@ def orders():
                 "product_name": j.item_name,
                 "product_code": j.item_code,
                 "price": j.rate,
+                "barcode": fill_barcode(j['item_code']),
                 "quantity": j.qty,
                 "unit_id": j.item_group,
                 "discount": j.discount_amount,
@@ -530,6 +538,7 @@ def deliveryOrders():
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "price": str(i.price_list_rate),
+                "barcode": fill_barcode(i['item_code']),
                 "quantity": str(i.qty),
                 "unit_id": i.item_group,
                 "discount": str(i.discount_amount),
@@ -636,6 +645,7 @@ def stockTransfers():
                     "product_id": i.item_code,
                     "product_name": i.item_name,
                     "product_code": i.item_name,
+                    "barcode": fill_barcode(i['item_code']),
                     "quantity": str(i.qty),
                     "warehouse_area_storage_id": None
                 } for i in each_data.items
