@@ -666,15 +666,29 @@ def material_stock_entry():
     data = validate_data(frappe.request.data)
     new_doc_material_request = frappe.new_doc('Material Request')
     new_doc_material_request.material_request_type = "Material Transfer"
-    for item in data['items']:
-        new_doc_material_request.append("items", {
-            "item_code": item['item_code'],
-            "qty": item["qty"],
-            "uom": item["uom"],
-            "conversion_factor": item["conversion_factor"],
-            "schedule_date": item['schedule_date'] or today(),
-            "warehouse": item['target_warehouse'],
-        })
+
+    if 'get_items_doc' in data:
+        for num in data['get_items_doc_no']:
+            source_doc = frappe.get_doc(data['get_items_doc'], num)
+            for item in source_doc.items:
+                new_doc_material_request.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    # "uom": item["uom"],
+                    # "conversion_factor": item["conversion_factor"],
+                    "schedule_date": data['schedule_date'] or today(),
+                    "warehouse": source_doc.set_warehouse,
+                })
+    else:
+        for item in data['items']:
+            new_doc_material_request.append("items", {
+                "item_code": item['item_code'],
+                "qty": item["qty"],
+                "uom": item["uom"],
+                "conversion_factor": item["conversion_factor"],
+                "schedule_date": item['schedule_date'] or today(),
+                "warehouse": item['target_warehouse'],
+            })
     new_doc_material_request.save()
     new_doc_material_request.submit()
 
