@@ -538,7 +538,7 @@ def deliveryOrders():
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "price": str(i.price_list_rate),
-                "barcode": fill_barcode(i['item_code']),
+                "barcode": fill_barcode(i.item_code),
                 "quantity": str(i.qty),
                 "unit_id": i.item_group,
                 "discount": str(i.discount_amount),
