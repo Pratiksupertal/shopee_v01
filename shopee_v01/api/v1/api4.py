@@ -485,7 +485,7 @@ def orders():
                 "product_name": j.item_name,
                 "product_code": j.item_code,
                 "price": j.rate,
-                "barcode": fill_barcode(j['item_code']),
+                "barcode": fill_barcode(j.item_code),
                 "quantity": j.qty,
                 "unit_id": j.item_group,
                 "discount": j.discount_amount,
