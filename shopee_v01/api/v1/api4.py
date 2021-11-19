@@ -485,7 +485,7 @@ def orders():
                 "product_name": j.item_name,
                 "product_code": j.item_code,
                 "price": j.rate,
-                "barcode": fill_barcode(j['item_code']),
+                "barcode": fill_barcode(j.item_code),
                 "quantity": j.qty,
                 "unit_id": j.item_group,
                 "discount": j.discount_amount,
@@ -538,7 +538,7 @@ def deliveryOrders():
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "price": str(i.price_list_rate),
-                "barcode": fill_barcode(i['item_code']),
+                "barcode": fill_barcode(i.item_code),
                 "quantity": str(i.qty),
                 "unit_id": i.item_group,
                 "discount": str(i.discount_amount),
@@ -666,15 +666,29 @@ def material_stock_entry():
     data = validate_data(frappe.request.data)
     new_doc_material_request = frappe.new_doc('Material Request')
     new_doc_material_request.material_request_type = "Material Transfer"
-    for item in data['items']:
-        new_doc_material_request.append("items", {
-            "item_code": item['item_code'],
-            "qty": item["qty"],
-            "uom": item["uom"],
-            "conversion_factor": item["conversion_factor"],
-            "schedule_date": item['schedule_date'] or today(),
-            "warehouse": item['target_warehouse'],
-        })
+
+    if 'get_items_doc' in data:
+        for num in data['get_items_doc_no']:
+            source_doc = frappe.get_doc(data['get_items_doc'], num)
+            for item in source_doc.items:
+                new_doc_material_request.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    # "uom": item["uom"],
+                    # "conversion_factor": item["conversion_factor"],
+                    "schedule_date": data['schedule_date'] or today(),
+                    "warehouse": source_doc.set_warehouse,
+                })
+    else:
+        for item in data['items']:
+            new_doc_material_request.append("items", {
+                "item_code": item['item_code'],
+                "qty": item["qty"],
+                "uom": item["uom"],
+                "conversion_factor": item["conversion_factor"],
+                "schedule_date": item['schedule_date'] or today(),
+                "warehouse": item['target_warehouse'],
+            })
     new_doc_material_request.save()
     new_doc_material_request.submit()
 
