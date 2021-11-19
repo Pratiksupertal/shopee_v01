@@ -19,6 +19,7 @@ def validate(doc,method):
                 doc.append("barcodes",{
                 "barcode":"1000001"
                 })
+        doc.item_bar_code = doc.barcodes[0].barcode
     except :
         raise
 
@@ -129,6 +130,12 @@ def create_variant(item, args):
 			"attribute_value": args.get(d.attribute)
 		})
     variant.set("attributes", variant_attributes)
+    custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group"]
+    temp = template.__dict__
+    for i in custom_fields:
+        if template.get(i):
+            value = temp[i]
+            variant.set(i,value)
     copy_attributes_to_variant(template, variant)
     make_variant_item_code(template.item_code, template.item_name, variant)
     return variant
