@@ -9,7 +9,8 @@ frappe.ui.form.on('Sales Order Item', {
            callback: function(r) {
                 var resp = r.message
                         frappe.model.set_value(row.doctype, row.name, "invent_size_id", resp[0]);
-                        frappe.model.set_value(row.doctype, row.name, "available_qty", resp[1]);
+                        frappe.model.set_value(row.doctype, row.name, "basic_rate", resp[1]);
+                        frappe.model.set_value(row.doctype, row.name, "available_qty", resp[2]);
               }
         });
     }
