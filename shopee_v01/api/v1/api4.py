@@ -14,7 +14,7 @@ from frappe.utils import today
 from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry, create_delivery_note
 from erpnext.stock.doctype.material_request.material_request import create_pick_list
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
-
+from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 
 def validate_data(data):
     if len(data) == 0 or data is None:
@@ -658,6 +658,41 @@ def stockTransfers():
     return format_result(result=result, message='Data Found', status_code=200)
 
 
+def set_item_locations(pick_list, save=False):
+    items = pick_list.aggregate_item_qty()
+    pick_list.item_location_map = frappe._dict()
+
+    from_warehouses = None
+    if pick_list.parent_warehouse:
+        from_warehouses = frappe.db.get_descendants('Warehouse', pick_list.parent_warehouse)
+
+    # reset
+    pick_list.delete_key('locations')
+    for item_doc in items:
+        item_code = item_doc.item_code
+
+        pick_list.item_location_map.setdefault(item_code,
+                                          get_available_item_locations(item_code, from_warehouses,
+                                                                       pick_list.item_count_map.get(item_code),
+                                                                       pick_list.company))
+
+        locations = get_items_with_location_and_quantity(item_doc, pick_list.item_location_map)
+
+        item_doc.idx = None
+        item_doc.name = None
+
+        for row in locations:
+            row.update({
+                'picked_qty': row.stock_qty
+            })
+
+            location = item_doc.as_dict()
+            location.update(row)
+            pick_list.append('locations', location)
+
+    return pick_list
+
+
 @frappe.whitelist()
 def material_stock_entry():
     '''
@@ -696,6 +731,8 @@ def material_stock_entry():
     Generating Pick List from Material Request
     '''
     new_doc_pick_list = create_pick_list(new_doc_material_request.name)
+    new_doc_pick_list.parent_warehouse = data['parent_warehouse']
+    new_doc_pick_list = set_item_locations(new_doc_pick_list)
     new_doc_pick_list.save()
     new_doc_pick_list.submit()
 

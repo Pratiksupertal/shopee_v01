@@ -28,6 +28,7 @@ app_include_css = "/assets/css/min.logo.css"
 # include js in doctype views // /home/abc/workspace/mamba/frappe-bench/apps/shopee_v01/shopee_v01/shopeemarketplace_v01/doctype/custom/item.js
 doctype_js = {
                 "Stock Entry": "shopee_v01/custom_script/stock_entry.js",
+                "Material Request": "shopee_v01/custom_script/material_request.js",
                 "Item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js",
                 "Purchase Order":"shopee_v01/custom_script/purchase_order.js",
                 "Sales Order": "shopee_v01/custom_script/sales_order.js",
