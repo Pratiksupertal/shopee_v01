@@ -54,3 +54,18 @@ def make_stock_entry(source_name, target_doc=None):
     }, target_doc)
 
     return doclist
+
+
+@frappe.whitelist()
+def make_stock_entry_material_request(source_name, target_doc=None):
+
+    doclist = get_mapped_doc("Purchase Order", source_name, {
+        "Purchase Order": {
+            "doctype": "Material Request",},
+        "Purchase Order Item": {
+            "doctype": "Material Request Item",
+        }
+    }, target_doc)
+
+    return doclist
+
