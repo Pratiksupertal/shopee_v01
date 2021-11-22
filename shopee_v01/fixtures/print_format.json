@@ -1267,5 +1267,32 @@
  "raw_printing": 0,
  "show_section_headings": 0,
  "standard": "No"
+},
+{
+ "absolute_value": 0,
+ "align_labels_right": 0,
+ "css": null,
+ "custom_format": 1,
+ "default_print_language": "en",
+ "disabled": 0,
+ "doc_type": "Material Request",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font": "Default",
+ "format_data": null,
+ "html": "{% if letter_head %}\n\t\t<div class=\"hidden-pdf\" id=\"header-html\">\n\t\t\t<div class=\"letter-head\">\n\t\t     \t\n\t\t\t</div>\n\t\t</div>\n\t{% endif %}\n{{ frappe.render_template(\"shopee_v01/print_format/material_request.html\",{\"doc\": doc}) }}\n<div id=\"footer-html\" class=\"visible-pdf\">\n\t\t\t\t{% if not no_letterhead and footer %}\n\t\t\t\t\t<div class=\"letter-head-footer\">\n\t\t\t\t\t\t{{ footer }}\n\t\t\t\t\t</div>\n\t\t\t\t{% endif %}\t",
+ "line_breaks": 0,
+ "modified": "2021-11-22 17:12:15.598420",
+ "module": "Shopee V01",
+ "name": "Material Request",
+ "parent": null,
+ "parentfield": null,
+ "parenttype": null,
+ "print_format_builder": 0,
+ "print_format_type": "Jinja",
+ "raw_commands": null,
+ "raw_printing": 0,
+ "show_section_headings": 0,
+ "standard": "No"
 }
 ]
