@@ -70,22 +70,27 @@
 <td class="tac" width="10%">{{ row.idx or '' }}</td>
 <td width="50%">{{ row.item_code or '' }} <br> {{ row.item_name}} <br>{{ row.description or '' }}</td>
 {% set uom.uom_name= row.uom%}
+{% set fmt_price_list_rate = frappe.utils.fmt_money(row.price_list_rate,currency="") %}
+{% set fmt_qty = frappe.utils.fmt_money(row.qty,currency="") %}
 <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-<td class="tac" width="15%" >{{ row.qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="15%" >{{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
 <td class="tac" width="15%"> {% if doc.currency == "IDR" %}
-  {{doc.currency}} {{ row.price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %}
-  {{doc.currency}} {{ row.price_list_rate or ''}} {% endif %}
+  {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %}
+  {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %}
 </td>
-{% set price_tag = row.price_list_rate * row.qty%}
-<td class="tac" width="20%" style="text-align: right;"> {{doc.currency}} {{ price_tag  or ''}}</td>
+{% set price_tag = row.price_list_rate * row.qty %}
+{% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
+<td class="tac" width="20%" style="text-align: right;"> {{doc.currency}} {{ fmt_price_tag  or ''}}</td>
 {% set amt.price_amount=amt.price_amount+price_tag %}
 {% set discount = row.discount_amount * row.qty%}
 {% set disc.discount=disc.discount+ discount %}
 </tr>
 {% endfor %}
 <tr>
-  <td class="tac" colspan="2">Total </td><td class="tac">{{doc.total_qty}}&nbsp;{{uom.uom_name}}</td><td></td>
-  <td class="tac" style="text-align: right;">{{doc.currency}} {{amt.price_amount}}</td>
+  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+  {% set fmt_amt_price_amount = frappe.utils.fmt_money(amt.price_amount,currency="") %}
+  <td class="tac" colspan="2">Total </td><td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td><td></td>
+  <td class="tac" style="text-align: right;">{{doc.currency}} {{fmt_amt_price_amount}}</td>
 </tr>
 </table>
 <div class="">
@@ -95,22 +100,27 @@
     <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
       <tr>
         <td colspan="6"><b>Diskon</b></td>
-        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ disc.discount+doc.discount_amount or '0'}}</td>
+        {% set tot_disc = disc.discount+doc.discount_amount %}
+        {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ fmt_tot_disc or '0'}}</td>
       </tr>
       <tr>
         <td colspan="6"><b>Total setelah Diskon</b></td>
-        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ doc.net_total }}</td>
+        {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ fmt_net_total }}</td>
       </tr>
       {% if doc.taxes_and_charges %}
       <tr>
+        {% set fmt_total_taxes_and_charges = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
         <td colspan="6"><b>PPN</b></td>
-        <td colspan="6" style="text-align: right;"> {{doc.currency}} {{doc.total_taxes_and_charges}}
+        <td colspan="6" style="text-align: right;"> {{doc.currency}} {{fmt_total_taxes_and_charges}}
         </td>
       </tr>
       {% endif %}
       <tr>
         <td colspan="6"><b>Grand Total</b></td>
-        <td colspan="6" style="text-align: right;"> {{doc.currency}} {{doc.grand_total}}
+        {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+        <td colspan="6" style="text-align: right;"> {{doc.currency}} {{fmt_grand_total}}
         </td>
       </tr>
     </table>
