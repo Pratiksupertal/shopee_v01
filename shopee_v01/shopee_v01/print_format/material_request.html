@@ -1,0 +1,89 @@
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+
+  <div class="row section-break f_font">
+    <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
+      <tr>
+        <td colspan="12" class="fsize tac blh brs bbh" style="text-align:right"><b>Material Request</b></td>
+      </tr>
+	  <tr>
+        <td colspan="12" class="fsize tac blh brs bbh" style="text-align:right">{{ doc.name or '' }}</td>
+      </tr>
+    </table>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Type</b></td>
+        <td width="60%"><b>{{ doc.material_request_type or '' }}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="6"><b>Tanggal</b></td>
+        <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('schedule_date'), "dd-mm-yyyy") }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<br>
+
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;" border="1px" bordercolor="#d1d8dd">
+<tr>
+<th class="tac" width="5%"><b>SR</b></th>
+<th class="tac" width="15%"><b>Item Code</b></th>
+<!-- <th class="tac" width="15%"> <b>Image</b></th> -->
+<th class="tac" width="20%"><b>Description</b></th>
+<th class="tac" width="16%"><b>Quantity</b></th>
+<th class="tac" width="15%"><b>For Warehouse</b></th>
+<th class="tac" width="12%"><b>Required Date</b></th>
+<th class="tac" width="15%"><b>Rate</b></th>
+<th class="tac" width="25%"><b>Amount</b></th>
+</tr>
+{% set uom=namespace(uom_name="") %}
+{% for row in doc.items %}
+<tr>
+<td class="tac" width="5%">{{ row.idx or '' }}</td>
+<td width="15%">{{ row.item_code or '' }}</td>
+<td width="20%">{{ row.description or '' }}</td>
+{% set uom.uom_name= row.uom%}
+{% set rateformat =  frappe.utils.fmt_money(row.rate,currency="Rp") %}
+{% set rateamount =  frappe.utils.fmt_money(row.amount,currency="Rp") %}
+{% set rateqty =  frappe.utils.fmt_money(row.qty,currency="") %}
+<!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+<td class="tac" width="16%" >{{ rateqty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="15%" >{{ row.warehouse or ''}}</td>
+<td class="tac" width="12%"> {{ frappe.utils.formatdate(row.schedule_date, "dd-mm-yyyy") }}</td>
+<td class="tac" width="15%" style="text-align: right;">{{ rateformat or '' }}</td>
+<td class="tac" width="25%" style="text-align: right;"> {{ rateamount or '' }} </td>
+</tr>
+{% endfor %}
+</table>
+
+</div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Transaction Date</b></td>
+        <td width="60%"><b>{{ frappe.utils.formatdate(doc.get_formatted('transaction_date'), "dd-mm-yyyy") }}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+  </div>
+</div>
