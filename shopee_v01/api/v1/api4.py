@@ -153,7 +153,7 @@ def login():
         try:
             warehouse_data = frappe.db.get_list('User Warehouse Mapping', filters={
                 'user_id': user_data.email}, fields=['warehouse_id'])
-            warehouse_id = warehouse_data[0].warehouse_id
+            warehouse_id = [warehouse.warehouse_id for warehouse in warehouse_data]
         except:
             warehouse_id = None
 
