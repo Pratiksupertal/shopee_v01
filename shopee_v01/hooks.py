@@ -101,6 +101,9 @@ doc_events = {
     "Pick List":{
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
     },
+    "Sales Invoice":{
+    "validate":"shopee_v01.shopee_v01.custom_script.sales_invoice.validate"
+    },
     "Item":{
     "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     }
