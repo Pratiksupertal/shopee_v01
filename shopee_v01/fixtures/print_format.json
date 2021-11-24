@@ -1295,5 +1295,32 @@
  "raw_printing": 0,
  "show_section_headings": 0,
  "standard": "No"
+},
+{
+ "absolute_value": 0,
+ "align_labels_right": 0,
+ "css": null,
+ "custom_format": 0,
+ "default_print_language": null,
+ "disabled": 0,
+ "doc_type": "Delivery Note",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font": "Default",
+ "format_data": "[{\"fieldname\": \"print_heading_template\", \"fieldtype\": \"Custom HTML\", \"options\": \"<div class=\\\"print-heading\\\">\\t\\t\\t\\t<h2>Delivery Note<br><small>{{ doc.name }}</small>\\t\\t\\t\\t</h2></div>\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Delivery To\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"customer_name\", \"print_hide\": 0, \"label\": \"Customer Name\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"posting_date\", \"print_hide\": 0, \"label\": \"Date\"}, {\"fieldname\": \"issue_credit_note\", \"print_hide\": 0, \"label\": \"Issue Credit Note\"}, {\"fieldtype\": \"Section Break\", \"label\": \"\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"pick_list\", \"print_hide\": 0, \"label\": \"Pick List\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Address and Contact\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"shipping_address\", \"print_hide\": 0, \"label\": \"Shipping Address\"}, {\"fieldname\": \"contact_display\", \"print_hide\": 0, \"label\": \"Contact\"}, {\"fieldname\": \"contact_mobile\", \"print_hide\": 0, \"label\": \"Mobile No\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"tax_id\", \"print_hide\": 0, \"label\": \"Tax Id\"}, {\"fieldname\": \"address_display\", \"print_hide\": 0, \"label\": \"Billing Address\"}, {\"fieldname\": \"company_address\", \"print_hide\": 0, \"label\": \"Company Address Name\"}, {\"fieldname\": \"company_address_display\", \"print_hide\": 0, \"label\": \"Company Address\"}, {\"fieldtype\": \"Section Break\", \"label\": \"\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"scan_barcode\", \"print_hide\": 0, \"label\": \"Scan Barcode\"}, {\"fieldname\": \"_custom_html\", \"print_hide\": 0, \"label\": \"Custom HTML\", \"fieldtype\": \"HTML\", \"options\": \"<br><table width=\\\"100%\\\" style=\\\"table-layout: fixed;\\\" border=\\\"1px\\\" bordercolor=\\\"#d1d8dd\\\">\\n    <tr>\\n        <th class=\\\"tac\\\" width=\\\"6%\\\"><b>Sr.</b></th>\\n        <th class=\\\"tac\\\" width=\\\"18%\\\"><b>Item Code</b></th>\\n        <th class=\\\"tac\\\" width=\\\"32%\\\"><b>Description</b></th>\\n        <th class=\\\"tac\\\" width=\\\"10%\\\"><b>Quantity</b></th>\\n        <th class=\\\"tac\\\" width=\\\"15%\\\"><b>Weight/Unit</b></th>\\n        <th class=\\\"tac\\\" width=\\\"10%\\\"><b>Total Weight</b></th>\\n    </tr>\\n{% for row in doc.items %}\\n\\n<tr>\\n        <td class=\\\"tac\\\" width=\\\"6%\\\">{{ row.idx or '' }}</td>\\n        <td width=\\\"18%\\\">{{ row.item_code or '' }}</td>\\n        <td width=\\\"32%\\\">{{ row.description or '' }}</td>\\n        <td class=\\\"tac\\\" width=\\\"15%\\\"> {{ row.get_formatted(\\\"qty\\\") or 0}}&nbsp; {{row.uom}}</td>\\n        <td>{{ row.weight_per_unit }}</td>\\n        <td>{{ row.total_weight }}</td>\\n\\n    </tr>\\n{% endfor %}\\n\\n</table><br>\\n\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Pricing Rules\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"pricing_rules\", \"print_hide\": 0, \"label\": \"Pricing Rule Detail\", \"visible_columns\": [{\"fieldname\": \"pricing_rule\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"item_code\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"margin_type\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"rate_or_discount\", \"print_width\": \"\", \"print_hide\": 0}, {\"fieldname\": \"rule_applied\", \"print_width\": \"\", \"print_hide\": 0}]}, {\"fieldtype\": \"Section Break\", \"label\": \"\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"total_qty\", \"print_hide\": 0, \"label\": \"Total Quantity\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldtype\": \"Section Break\", \"label\": \"More Information\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"project\", \"print_hide\": 0, \"label\": \"Project\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldtype\": \"Section Break\", \"label\": \"Status\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldtype\": \"Column Break\"}, {\"fieldname\": \"instructions\", \"print_hide\": 0, \"label\": \"Instructions\"}]",
+ "html": null,
+ "line_breaks": 0,
+ "modified": "2021-11-24 21:29:43.873573",
+ "module": "Stock",
+ "name": "Standard Delivery Note",
+ "parent": null,
+ "parentfield": null,
+ "parenttype": null,
+ "print_format_builder": 1,
+ "print_format_type": "Jinja",
+ "raw_commands": null,
+ "raw_printing": 0,
+ "show_section_headings": 0,
+ "standard": "No"
 }
 ]
