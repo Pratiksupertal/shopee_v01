@@ -153,7 +153,7 @@ def login():
         try:
             warehouse_data = frappe.db.get_list('User Warehouse Mapping', filters={
                 'user_id': user_data.email}, fields=['warehouse_id'])
-            warehouse_id = [warehouse.warehouse_id for warehouse in warehouse_data]
+            warehouse_id = warehouse_data[0].warehouse_id
         except:
             warehouse_id = None
 
@@ -755,9 +755,11 @@ def material_stock_entry():
     new_doc_stock_entry.stock_entry_type = stock_entry_dict["stock_entry_type"]
 
     new_doc_stock_entry.save()
-    new_doc_stock_entry.submit()
+    # new_doc_stock_entry.submit()
 
-    return format_result(result={'stock entry': new_doc_stock_entry.name}, message='Data Created', status_code=200)
+    return format_result(result={'stock entry': new_doc_stock_entry.name,
+                                 'items': new_doc_stock_entry.items
+                                 }, message='Data Created', status_code=200)
 
 
 @frappe.whitelist()
@@ -824,3 +826,32 @@ def stock_entry():
     new_doc.insert()
 
     return format_result(result=new_doc.name, status_code=200, message='Data Created')
+
+
+@frappe.whitelist()
+def submit_stock_entry():
+    data = validate_data(frappe.request.data)
+    stock_entry_doc = frappe.get_doc('Stock Entry', data['id'])
+    if 'add_items' in data:
+        for item in data['add_items']:
+            stock_entry_doc.append("items", {
+                "item_code": item['item_id'],
+                "qty": item['qty'],
+                "t_warehouse": item['target_warehouse_id'],
+                "s_warehouse": item['source_warehouse_id'],
+            })
+
+    if 'edit_items' in data:
+        for item in data['edit_items']:
+            for se_item in stock_entry_doc.items:
+                if se_item.item_code == item['item_id']:
+                    se_item.qty = item['qty']
+                    se_item.t_warehouse = item['target_warehouse_id']
+                    se_item.s_warehouse = item['source_warehouse_id']
+
+    stock_entry_doc.save()
+    stock_entry_doc.submit()
+
+    return format_result(result={'stock entry': stock_entry_doc.name,
+                                 'items': stock_entry_doc.items
+                                 }, message='Data Created', status_code=200)
