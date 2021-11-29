@@ -645,7 +645,7 @@ def stockTransfers():
                     "product_id": i.item_code,
                     "product_name": i.item_name,
                     "product_code": i.item_name,
-                    "barcode": fill_barcode(i['item_code']),
+                    "barcode": fill_barcode(i.item_code),
                     "quantity": str(i.qty),
                     "warehouse_area_storage_id": None
                 } for i in each_data.items
@@ -855,3 +855,72 @@ def submit_stock_entry():
     return format_result(result={'stock entry': stock_entry_doc.name,
                                  'items': stock_entry_doc.items
                                  }, message='Data Created', status_code=200)
+
+
+@frappe.whitelist()
+def stock_entry_send_to_warehouse():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Send To Warehouse'
+    new_doc.company = data['company']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": 'Virtual Transit - ISS',
+            "s_warehouse": item['s_warehouse'],
+            "qty": str(item['qty'])
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
+    new_doc.submit()
+    return {
+        "success": True,
+        "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name,
+            "items": new_doc.items
+        },
+    }
+
+
+@frappe.whitelist()
+def get_stock_entry_send_to_warehouse():
+    each_data_list = list(map(lambda x: frappe.get_doc('Stock Entry', x),
+                              [i['name'] for i in frappe.get_list('Stock Entry',
+                                                                  filters={'purpose': 'Send To Warehouse',
+                                                                           'docstatus': 1}
+                                                                  )
+                               ]))
+
+    return format_result(result=each_data_list, message='Data Found', status_code=200)
+
+
+@frappe.whitelist()
+def stock_entry_receive_at_warehouse():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Receive at Warehouse'
+    new_doc.company = data['company']
+    new_doc.outgoing_stock_entry = data['send_to_warehouse_id']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": item['t_warehouse'],
+            "s_warehouse": 'Virtual Transit - ISS',
+            "qty": int(item['qty'])
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
+    new_doc.submit()
+    return {
+        "success": True,
+        "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name,
+            "items": new_doc.items
+        },
+    }
