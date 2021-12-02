@@ -909,7 +909,7 @@ def stock_entry_receive_at_warehouse():
         new_doc.append("items", {
             "item_code": item['item_code'],
             "t_warehouse": item['t_warehouse'],
-            "s_warehouse": 'Virtual Transit - ISS',
+            "s_warehouse": item['s_warehouse'],
             "qty": int(item['qty'])
         })
     new_doc.set_stock_entry_type()
