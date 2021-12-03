@@ -924,3 +924,15 @@ def stock_entry_receive_at_warehouse():
             "items": new_doc.items
         },
     }
+@frappe.whitelist()
+def create_sales_order():
+    data=validate_data(frappe.request.data)
+    parts = urlparse(frappe.request.url)
+    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+    url = base + '/api/resource/Sales%20Order'
+    res_api_response = requests.post(url.replace("'", '"'), headers={
+        "Authorization": frappe.request.headers["Authorization"]
+    },data=json.dumps(data))
+    if res_api_response.status_code==200:
+        return format_result(res_api_response.json())
+    return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
