@@ -927,7 +927,10 @@ def stock_entry_receive_at_warehouse():
 @frappe.whitelist()
 def create_sales_order():
     data=validate_data(frappe.request.data)
+    if not data.get("delivery_date"):
+        data["delivery_date"]=today()
     parts = urlparse(frappe.request.url)
+
     base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
     url = base + '/api/resource/Sales%20Order'
     res_api_response = requests.post(url.replace("'", '"'), headers={
