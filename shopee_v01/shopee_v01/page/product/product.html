@@ -1,0 +1,68 @@
+<style>
+    #customers {
+      font-family: Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    #customers td, #customers th {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    #customers tr:nth-child(even){background-color: #f2f2f2;}
+
+    #customers tr:hover {background-color: #ddd;}
+
+    #customers th {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      background-color: #f5f7fa;
+      color: black;
+    }
+    .pagination a:first-child {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.pagination a:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+</style>
+
+<div class="">
+
+<table class= "table table-hover tb-head" id="customers" style="overflow-x:auto;">
+  <tr>
+    <th>Item</th>
+    <th>Item Code</th>
+    <th>Item Group</th>
+    <th>Division Group</th>
+    <th>Retail Group</th>
+    <th>Size Group</th>
+  </tr>
+  {% for row in data %}
+  <tr>
+    <td class= "item_code" onclick="click_function(this)"> {{ row[0] }}</td>
+    <td>{{ row[1] }}</td>
+    <td>{{ row[2] }}</td>
+    <td>{{ row[3] }}</td>
+    <td>{{ row[4] }}</td>
+    <td>{{ row[5] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+<hr>
+<!-- <div class="row">
+		<div class="col-md-12">
+			<div id="datatable">
+
+			</div>
+		</div>
+	</div> -->
+<div class="item_table">
+
+</div>

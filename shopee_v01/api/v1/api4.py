@@ -14,7 +14,7 @@ from frappe.utils import today
 from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry, create_delivery_note
 from erpnext.stock.doctype.material_request.material_request import create_pick_list
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
-
+from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 
 def validate_data(data):
     if len(data) == 0 or data is None:
@@ -166,6 +166,11 @@ def login():
         })
 
 
+def fill_barcode(item_code):
+    doc = frappe.get_doc('Item', item_code)
+    return str(doc.barcodes[0].barcode) if len(doc.barcodes) > 0 else ''
+
+
 @frappe.whitelist()
 def purchases():
     result = []
@@ -175,7 +180,7 @@ def purchases():
 
     for each_data in each_data_list:
         temp_dict = {
-            "id": str(each_data.idx),
+            "id": each_data.name,
             "po_number": each_data.name,
             "po_date": each_data.creation,
             "supplier_id": each_data.supplier,
@@ -188,6 +193,7 @@ def purchases():
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
+                "barcode": fill_barcode(i.item_code),
                 "price": str(int(i.amount) if i.amount else ''),
                 "quantity": str(int(i.qty) if i.qty else ''),
                 "unit_id": str(i.idx),
@@ -255,6 +261,7 @@ def products():
             "name": i['item_name'],
             "code": i['item_code'],
             "category_id": i['item_group'],
+            "barcode": fill_barcode(i['item_code']),
             "unit_id": None,
             "weight": str(i['weightage']),
             "is_taxable": None,
@@ -478,6 +485,7 @@ def orders():
                 "product_name": j.item_name,
                 "product_code": j.item_code,
                 "price": j.rate,
+                "barcode": fill_barcode(j.item_code),
                 "quantity": j.qty,
                 "unit_id": j.item_group,
                 "discount": j.discount_amount,
@@ -530,6 +538,7 @@ def deliveryOrders():
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "price": str(i.price_list_rate),
+                "barcode": fill_barcode(i.item_code),
                 "quantity": str(i.qty),
                 "unit_id": i.item_group,
                 "discount": str(i.discount_amount),
@@ -636,6 +645,7 @@ def stockTransfers():
                     "product_id": i.item_code,
                     "product_name": i.item_name,
                     "product_code": i.item_name,
+                    "barcode": fill_barcode(i.item_code),
                     "quantity": str(i.qty),
                     "warehouse_area_storage_id": None
                 } for i in each_data.items
@@ -648,6 +658,41 @@ def stockTransfers():
     return format_result(result=result, message='Data Found', status_code=200)
 
 
+def set_item_locations(pick_list, save=False):
+    items = pick_list.aggregate_item_qty()
+    pick_list.item_location_map = frappe._dict()
+
+    from_warehouses = None
+    if pick_list.parent_warehouse:
+        from_warehouses = frappe.db.get_descendants('Warehouse', pick_list.parent_warehouse)
+
+    # reset
+    pick_list.delete_key('locations')
+    for item_doc in items:
+        item_code = item_doc.item_code
+
+        pick_list.item_location_map.setdefault(item_code,
+                                          get_available_item_locations(item_code, from_warehouses,
+                                                                       pick_list.item_count_map.get(item_code),
+                                                                       pick_list.company))
+
+        locations = get_items_with_location_and_quantity(item_doc, pick_list.item_location_map)
+
+        item_doc.idx = None
+        item_doc.name = None
+
+        for row in locations:
+            row.update({
+                'picked_qty': row.stock_qty
+            })
+
+            location = item_doc.as_dict()
+            location.update(row)
+            pick_list.append('locations', location)
+
+    return pick_list
+
+
 @frappe.whitelist()
 def material_stock_entry():
     '''
@@ -656,15 +701,29 @@ def material_stock_entry():
     data = validate_data(frappe.request.data)
     new_doc_material_request = frappe.new_doc('Material Request')
     new_doc_material_request.material_request_type = "Material Transfer"
-    for item in data['items']:
-        new_doc_material_request.append("items", {
-            "item_code": item['item_code'],
-            "qty": item["qty"],
-            "uom": item["uom"],
-            "conversion_factor": item["conversion_factor"],
-            "schedule_date": item['schedule_date'] or today(),
-            "warehouse": item['target_warehouse'],
-        })
+
+    if 'get_items_doc' in data:
+        for num in data['get_items_doc_no']:
+            source_doc = frappe.get_doc(data['get_items_doc'], num)
+            for item in source_doc.items:
+                new_doc_material_request.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    # "uom": item["uom"],
+                    # "conversion_factor": item["conversion_factor"],
+                    "schedule_date": data['schedule_date'] or today(),
+                    "warehouse": source_doc.set_warehouse,
+                })
+    else:
+        for item in data['items']:
+            new_doc_material_request.append("items", {
+                "item_code": item['item_code'],
+                "qty": item["qty"],
+                "uom": item["uom"],
+                "conversion_factor": item["conversion_factor"],
+                "schedule_date": item['schedule_date'] or today(),
+                "warehouse": item['target_warehouse'],
+            })
     new_doc_material_request.save()
     new_doc_material_request.submit()
 
@@ -672,6 +731,8 @@ def material_stock_entry():
     Generating Pick List from Material Request
     '''
     new_doc_pick_list = create_pick_list(new_doc_material_request.name)
+    new_doc_pick_list.parent_warehouse = data['parent_warehouse']
+    new_doc_pick_list = set_item_locations(new_doc_pick_list)
     new_doc_pick_list.save()
     new_doc_pick_list.submit()
 
@@ -694,9 +755,11 @@ def material_stock_entry():
     new_doc_stock_entry.stock_entry_type = stock_entry_dict["stock_entry_type"]
 
     new_doc_stock_entry.save()
-    new_doc_stock_entry.submit()
+    # new_doc_stock_entry.submit()
 
-    return format_result(result={'stock entry': new_doc_stock_entry.name}, message='Data Created', status_code=200)
+    return format_result(result={'stock entry': new_doc_stock_entry.name,
+                                 'items': new_doc_stock_entry.items
+                                 }, message='Data Created', status_code=200)
 
 
 @frappe.whitelist()
@@ -721,3 +784,155 @@ def sales_delivery_note():
 
     return format_result(result={'delivery note': new_delivery_note.name}, message='Data Created', status_code=200)
 
+
+@frappe.whitelist()
+def material_requests():
+    each_data_list = list(map(lambda x: frappe.get_doc('Material Request', x),
+                              [i['name'] for i in frappe.get_list('Material Request')]))
+    return format_result(result=each_data_list, status_code=200, message='Data Found')
+
+
+@frappe.whitelist()
+def stock_entry():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.start_time = data['start_datetime']
+    new_doc.end_time = data['end_datetime']
+    new_doc._comments = data['notes']
+
+    new_doc.purpose = data['purpose']
+    new_doc.set_stock_entry_type()
+
+    if data['purpose'] not in ['Material Receipt']:
+        for doc in data['get_item_doc_id']:
+            item_list = frappe.get_doc(data['get_items_from'], doc)
+            for item in item_list.items:
+                new_doc.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    "t_warehouse": data['target_warehouse_stockopname_id'],
+                    "s_warehouse": data['source_warehouse_stockopname_id']
+                })
+    else:
+        for doc in data['get_item_doc_id']:
+            item_list = frappe.get_doc(data['get_items_from'], doc)
+            for item in item_list.items:
+                new_doc.append("items", {
+                    "item_code": item.item_code,
+                    "qty": item.qty,
+                    "t_warehouse": data['target_warehouse_stockopname_id'],
+                })
+
+    new_doc.insert()
+
+    return format_result(result=new_doc.name, status_code=200, message='Data Created')
+
+
+@frappe.whitelist()
+def submit_stock_entry():
+    data = validate_data(frappe.request.data)
+    stock_entry_doc = frappe.get_doc('Stock Entry', data['id'])
+    if 'add_items' in data:
+        for item in data['add_items']:
+            stock_entry_doc.append("items", {
+                "item_code": item['item_id'],
+                "qty": item['qty'],
+                "t_warehouse": item['target_warehouse_id'],
+                "s_warehouse": item['source_warehouse_id'],
+            })
+
+    if 'edit_items' in data:
+        for item in data['edit_items']:
+            for se_item in stock_entry_doc.items:
+                if se_item.item_code == item['item_id']:
+                    se_item.qty = item['qty']
+                    se_item.t_warehouse = item['target_warehouse_id']
+                    se_item.s_warehouse = item['source_warehouse_id']
+
+    stock_entry_doc.save()
+    stock_entry_doc.submit()
+
+    return format_result(result={'stock entry': stock_entry_doc.name,
+                                 'items': stock_entry_doc.items
+                                 }, message='Data Created', status_code=200)
+
+
+@frappe.whitelist()
+def stock_entry_send_to_warehouse():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Send To Warehouse'
+    new_doc.company = data['company']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": 'Virtual Transit - ISS',
+            "s_warehouse": item['s_warehouse'],
+            "qty": str(item['qty'])
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
+    new_doc.submit()
+    return {
+        "success": True,
+        "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name,
+            "items": new_doc.items
+        },
+    }
+
+
+@frappe.whitelist()
+def get_stock_entry_send_to_warehouse():
+    each_data_list = list(map(lambda x: frappe.get_doc('Stock Entry', x),
+                              [i['name'] for i in frappe.get_list('Stock Entry',
+                                                                  filters={'purpose': 'Send To Warehouse',
+                                                                           'docstatus': 1}
+                                                                  )
+                               ]))
+
+    return format_result(result=each_data_list, message='Data Found', status_code=200)
+
+
+@frappe.whitelist()
+def stock_entry_receive_at_warehouse():
+    data = validate_data(frappe.request.data)
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.purpose = 'Receive at Warehouse'
+    new_doc.company = data['company']
+    new_doc.outgoing_stock_entry = data['send_to_warehouse_id']
+    new_doc._comments = data['notes']
+    for item in data['items']:
+        new_doc.append("items", {
+            "item_code": item['item_code'],
+            "t_warehouse": item['t_warehouse'],
+            "s_warehouse": item['s_warehouse'],
+            "qty": int(item['qty'])
+        })
+    new_doc.set_stock_entry_type()
+    new_doc.insert()
+    new_doc.submit()
+    return {
+        "success": True,
+        "status_code": 200,
+        "message": 'Data created',
+        "data": {
+            "transfer_number": new_doc.name,
+            "items": new_doc.items
+        },
+    }
+@frappe.whitelist()
+def create_sales_order():
+    data=validate_data(frappe.request.data)
+    parts = urlparse(frappe.request.url)
+    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+    url = base + '/api/resource/Sales%20Order'
+    res_api_response = requests.post(url.replace("'", '"'), headers={
+        "Authorization": frappe.request.headers["Authorization"]
+    },data=json.dumps(data))
+    if res_api_response.status_code==200:
+        return format_result(res_api_response.json())
+    return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)

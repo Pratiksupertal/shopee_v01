@@ -27,6 +27,8 @@ app_include_css = "/assets/css/min.logo.css"
 
 # include js in doctype views // /home/abc/workspace/mamba/frappe-bench/apps/shopee_v01/shopee_v01/shopeemarketplace_v01/doctype/custom/item.js
 doctype_js = {
+                "Stock Entry": "shopee_v01/custom_script/stock_entry.js",
+                "Material Request": "shopee_v01/custom_script/material_request.js",
                 "Item" : "shopee_v01/shopeemarketplace_v01/doctype/custom/item.js",
                 "Purchase Order":"shopee_v01/custom_script/purchase_order.js",
                 "Sales Order": "shopee_v01/custom_script/sales_order.js",
@@ -98,6 +100,12 @@ doc_events = {
     },
     "Pick List":{
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
+    },
+    "Sales Invoice":{
+    "validate":"shopee_v01.shopee_v01.custom_script.sales_invoice.validate"
+    },
+    "Item":{
+    "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
@@ -139,12 +147,16 @@ scheduler_events = {
 # -------
 
 # fixtures = ["Custom Field", "Property Setter","Role","Print Format", "Letter Head", "Workflow State", "Workflow Action", "Workflow", "Address Template","Web Page"]
-fixtures = ["Custom Field", "Property Setter","Print Format","Role","Report"]
+fixtures = ["Custom Field", "Property Setter","Print Format","Role","Report","Workflow State", "Workflow Action", "Workflow"]
 # before_tests = "shopee_v01.install.before_tests"
 
 # Overriding Methods
 # ------------------------------
 #
+override_whitelisted_methods = {
+	"erpnext.controllers.item_variant.create_variant": "shopee_v01.shopee_v01.custom_script.item.create_variant",
+    "erpnext.controllers.item_variant.enqueue_multiple_variant_creation":"shopee_v01.shopee_v01.custom_script.item.enqueue_multiple_variant_creation"
+}
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "shopee_v01.event.get_events"
 # }

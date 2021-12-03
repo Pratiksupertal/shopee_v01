@@ -7,6 +7,7 @@ from frappe.model.document import Document
 # import hashlib
 # import requests
 from shopee_v01.shopeemarketplace_v01.utils import refresh_token
+from shopee_v01.utils import schedular_log
 
 def refresh_acess_token():
     shop_id = 220288436
@@ -42,7 +43,6 @@ def update_finished_901_item_qty_summary():
     warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
     item_dict = {i.item_code : i.available_items for i in warehouse_list.total_item_count_in_warehouse}
     warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse]
-    content = []
     for item in item_dict.keys():
         balance_qty = 0
         for i in range(len(warehouse_tuple)):
@@ -56,4 +56,5 @@ def update_finished_901_item_qty_summary():
             sql = "update `tabTotal Item count in Warehouse` set available_items ={0} ,modified_time = now()  where item_code = '{1}';".format(
                 balance_qty, item)
             query = frappe.db.sql(sql,debug=True)
-            content.append([item,balance_qty])
+            msg_log ="Updated values-> Item code : {0} ; available qty : {1}".format(item,balance_qty)
+            schedular_log(msg_log)

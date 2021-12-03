@@ -1,0 +1,47 @@
+{
+ "autoname": "field:cut_type",
+ "creation": "2021-10-12 19:02:57.724070",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "cut_type_id",
+  "cut_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "cut_type_id",
+   "fieldtype": "Data",
+   "label": "Cut Type ID"
+  },
+  {
+   "fieldname": "cut_type",
+   "fieldtype": "Data",
+   "label": "Cut Type",
+   "unique": 1
+  }
+ ],
+ "modified": "2021-10-13 09:58:58.217709",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Cut Type",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
