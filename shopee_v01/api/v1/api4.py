@@ -940,6 +940,7 @@ def create_sales_order():
         return format_result(res_api_response.json())
     return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
 
+
 @frappe.whitelist()
 def create_sales_order_all():
     data = validate_data(frappe.request.data)
@@ -947,14 +948,12 @@ def create_sales_order_all():
     result = []
     success_count, fail_count = 0, 0
     data=data.get("sales order")
-
-    #data = json.looads(data)
     for order in list(data):
         try:
-            print("=====\n\n", order , "\n\n======")
-            #print(type(order))
             if not order.get("delivery_date"):
                 order["delivery_date"] = today()
+            if not order.get("external_so_number") or not  order.get("source_app_name"):
+                raise Exception("Sales order Number and Source app name both are required")
             parts = urlparse(frappe.request.url)
             base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
             url = base + '/api/resource/Sales%20Order'
@@ -962,23 +961,21 @@ def create_sales_order_all():
                 "Authorization": frappe.request.headers["Authorization"]
             }, data=json.dumps(order))
             if res_api_response.status_code == 200:
-                #return format_result(res_api_response.json())
-
                 success_count += 1
                 result.append({
-                    "external_so_number": order.get("external_so_name"),
+                    "external_so_number": order.get("external_so_number"),
                     "message": "success"
                 })
             else:
                 fail_count += 1
                 result.append({
-                    "external_so_number": order.get("external_so_name"),
+                    "external_so_number": order.get("external_so_number"),
                     "message": "failed"
                 })
         except Exception as err:
             fail_count += 1
             result.append({
-                "external_so_number": order.get("external_so_name"),
+                "external_so_number": order.get("external_so_number"),
                 "message": "failed"
             })
     return format_result(result={
