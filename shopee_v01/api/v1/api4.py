@@ -924,18 +924,27 @@ def stock_entry_receive_at_warehouse():
             "items": new_doc.items
         },
     }
+
+
 @frappe.whitelist()
 def create_sales_order():
-    data=validate_data(frappe.request.data)
-    if not data.get("delivery_date"):
-        data["delivery_date"]=today()
+    order=validate_data(frappe.request.data)
+    if not order.get("delivery_date"):
+        order["delivery_date"]=today()
+
+    if not order.get("delivery_date"):
+        order["delivery_date"] = today()
+
+    if not order.get("external_so_number") or not order.get("source_app_name"):
+        raise Exception("Sales order Number and Source app name both are required")
+
     parts = urlparse(frappe.request.url)
 
     base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
     url = base + '/api/resource/Sales%20Order'
     res_api_response = requests.post(url.replace("'", '"'), headers={
         "Authorization": frappe.request.headers["Authorization"]
-    },data=json.dumps(data))
+    },data=json.dumps(order))
     if res_api_response.status_code==200:
         return format_result(res_api_response.json())
     return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
@@ -944,10 +953,9 @@ def create_sales_order():
 @frappe.whitelist()
 def create_sales_order_all():
     data = validate_data(frappe.request.data)
-
     result = []
     success_count, fail_count = 0, 0
-    data=data.get("sales order")
+    data=data.get("sales_order")
     for order in list(data):
         try:
             if not order.get("delivery_date"):
@@ -967,12 +975,14 @@ def create_sales_order_all():
                     "message": "success"
                 })
             else:
+                print("\n\n",res_api_response.text,"\n\n")
                 fail_count += 1
                 result.append({
                     "external_so_number": order.get("external_so_number"),
                     "message": "failed"
                 })
         except Exception as err:
+            print("\n\n",str(err),"\n\n")
             fail_count += 1
             result.append({
                 "external_so_number": order.get("external_so_number"),
