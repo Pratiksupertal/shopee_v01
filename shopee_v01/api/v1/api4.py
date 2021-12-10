@@ -371,7 +371,8 @@ def purchaseReceive():
     for item in data['products']:
         new_doc.append("items", {
             "item_code": item['purchase_product_id'],
-            "qty": item['quantity']
+            "qty": item['quantity'],
+            "purchase_order":item['purchase_id']
         })
 
     new_doc.insert()
