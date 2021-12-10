@@ -362,28 +362,24 @@ def warehouseAreas():
 @frappe.whitelist()
 def purchaseReceive():
     data = validate_data(frappe.request.data)
-
     today = dt.datetime.today()
-
     new_doc = frappe.new_doc('Purchase Receipt')
     new_doc.posting_date = today.strftime("%Y-%m-%d")
-    new_doc.supplier = data['supplier_do_number']
+    new_doc.supplier = data['supplier']
+    new_doc.supplier_travel_document_number = data['supplier_do_number']
     new_doc.set_warehouse = data['warehouse_id']
-    new_doc.modified_by = data['create_user_id']
-
     for item in data['products']:
         new_doc.append("items", {
             "item_code": item['purchase_product_id'],
-            "qty": item['quantity'],
-            "purchase_order": data['purchase_id']
+            "qty": item['quantity']
         })
 
     new_doc.insert()
 
-    return format_result(status_code=200, message='Data Created', result={
+    return format_result(status_code=200, message='Purchase Receipt Created', result={
         "id": str(new_doc.name),
         "receive_number": new_doc.name,
-        "supplier_do_number": new_doc.supplier,
+        "supplier_do_number": new_doc.supplier_travel_document_number,
         "receive_date": new_doc.posting_date,
         "supplier_id": new_doc.supplier
     })
