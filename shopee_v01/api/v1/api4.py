@@ -990,3 +990,28 @@ def create_sales_order_all():
             "fail_count": fail_count,
             "sales_order": result
         }, message="success", status_code=200)
+
+
+
+@frappe.whitelist()
+
+def pickList():
+    submitted_pick_list = frappe.db.get_list('Pick List',
+             filters={
+
+                 'docstatus': 1
+             },
+
+             fields=['name']
+      )
+
+    stock_entry_pick_list = frappe.db.get_list('Stock Entry',
+            filters={
+                'pick_list': ['like', '%PICK%']
+            },
+            fields=['pick_list']
+      )
+    submitted_pick_list = [order.get('name') for order in submitted_pick_list]
+    stock_entry_pick_list = [order.get('pick_list') for order in stock_entry_pick_list]
+    result = [order for order in submitted_pick_list if order not in stock_entry_pick_list]
+    return format_result(result=result, status_code=200, message='Data Found')
