@@ -365,7 +365,9 @@ def purchaseReceive():
     today = dt.datetime.today()
     new_doc = frappe.new_doc('Purchase Receipt')
     new_doc.posting_date = today.strftime("%Y-%m-%d")
-    new_doc.supplier = data['supplier']
+    po_name = data['products'][0]['purchase_id']
+    supplier = frappe.db.get_value("Purchase Order",{"name":po_name},"Supplier")
+    new_doc.supplier = supplier
     new_doc.supplier_travel_document_number = data['supplier_do_number']
     new_doc.set_warehouse = data['warehouse_id']
     for item in data['products']:
@@ -374,9 +376,7 @@ def purchaseReceive():
             "qty": item['quantity'],
             "purchase_order":item['purchase_id']
         })
-
     new_doc.insert()
-
     return format_result(status_code=200, message='Purchase Receipt Created', result={
         "id": str(new_doc.name),
         "receive_number": new_doc.name,
