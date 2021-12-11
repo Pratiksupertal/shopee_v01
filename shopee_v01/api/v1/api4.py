@@ -15,6 +15,7 @@ from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry, create
 from erpnext.stock.doctype.material_request.material_request import create_pick_list
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
 from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
+from frappe import _
 
 def validate_data(data):
     if len(data) == 0 or data is None:
@@ -1015,3 +1016,53 @@ def pickList():
     stock_entry_pick_list = [order.get('pick_list') for order in stock_entry_pick_list]
     result = [order for order in submitted_pick_list if order not in stock_entry_pick_list]
     return format_result(result=result, status_code=200, message='Data Found')
+
+def update_stock_entry_based_on_material_request(pick_list, stock_entry):
+    from  erpnext.stock.doctype.pick_list.pick_list import update_common_item_properties
+    for location in pick_list.locations:
+        target_warehouse = None
+        if location.material_request_item:
+            target_warehouse = frappe.get_value('Material Request Item',
+				location.material_request_item, 'warehouse')
+        item = frappe._dict()
+        update_common_item_properties(item, location)
+        item.t_warehouse = "Collecting Area Finish Good Out - ISS"
+        stock_entry.append('items', item)
+    return stock_entry
+
+@frappe.whitelist()
+def submit_picklist():
+    data = validate_data(frappe.request.data)
+    pick_list = frappe.get_doc('Pick List',data['picklist'])
+    pick_list.submit()
+    from  erpnext.stock.doctype.pick_list.pick_list import validate_item_locations
+    from  erpnext.stock.doctype.pick_list.pick_list import update_stock_entry_items_with_no_reference
+    validate_item_locations(pick_list)
+    if frappe.db.exists('Stock Entry', {'pick_list': data['picklist'],'docstatus' :1 }):
+        return frappe.msgprint(_('Stock Entry has been already created against this Pick List'))
+    stock_entry = frappe.new_doc('Stock Entry')
+    stock_entry.pick_list = pick_list.get('name')
+    stock_entry.purpose = pick_list.get('purpose')
+    stock_entry.set_stock_entry_type()
+    if pick_list.get('material_request'):
+        stock_entry = update_stock_entry_based_on_material_request(pick_list, stock_entry)
+    else:
+        stock_entry = update_stock_entry_items_with_no_reference(pick_list, stock_entry)
+    stock_entry.set_incoming_rate()
+    stock_entry.set_actual_qty()
+    stock_entry.calculate_rate_and_amount(update_finished_item_rate=False)
+    stock_entry.save()
+    stock_entry.submit()
+    return format_result(result={
+            "stock_entry": stock_entry.name,
+            "picklist": stock_entry.pick_list
+        }, message="success", status_code=200)
+    return stock_entry
+
+
+@frappe.whitelist()
+def update_current_stock():
+    data = validate_data(frappe.request.data)
+    doc = frappe.get_doc("Pick List",data['picklist'])
+    doc.set_item_locations(save=True)
+    return format_result(message="success", status_code=200)
