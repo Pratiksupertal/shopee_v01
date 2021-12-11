@@ -17,6 +17,7 @@ from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as 
 from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 from frappe import _
 
+
 def validate_data(data):
     if len(data) == 0 or data is None:
         return None
@@ -995,17 +996,14 @@ def create_sales_order_all():
 
 
 @frappe.whitelist()
-
 def pickList():
     submitted_pick_list = frappe.db.get_list('Pick List',
              filters={
-
                  'docstatus': 1
              },
 
              fields=['name']
       )
-
     stock_entry_pick_list = frappe.db.get_list('Stock Entry',
             filters={
                 'pick_list': ['like', '%PICK%']
@@ -1016,6 +1014,7 @@ def pickList():
     stock_entry_pick_list = [order.get('pick_list') for order in stock_entry_pick_list]
     result = [order for order in submitted_pick_list if order not in stock_entry_pick_list]
     return format_result(result=result, status_code=200, message='Data Found')
+
 
 def update_stock_entry_based_on_material_request(pick_list, stock_entry):
     from  erpnext.stock.doctype.pick_list.pick_list import update_common_item_properties
@@ -1029,6 +1028,7 @@ def update_stock_entry_based_on_material_request(pick_list, stock_entry):
         item.t_warehouse = "Collecting Area Finish Good Out - ISS"
         stock_entry.append('items', item)
     return stock_entry
+
 
 @frappe.whitelist()
 def submit_picklist():
@@ -1066,3 +1066,52 @@ def update_current_stock():
     doc = frappe.get_doc("Pick List",data['picklist'])
     doc.set_item_locations(save=True)
     return format_result(message="success", status_code=200)
+
+
+def pick_list_with_mtr():
+    """
+    Filter by `material_request type` = [ Material Transfer | Manufacture | Material Issue ]
+    """
+    material_request_list = frappe.db.get_list('Material Request',
+        filters={
+            'material_request_type': ['in', ['Material Transfer', 'Manufacture', 'Material Issue']]
+        },
+        fields=['name', 'material_request_type']
+    )
+    return material_request_list
+    
+
+def pick_list_with_so():
+    """
+    For Sales Order
+    """
+    pick_list_items = frappe.db.get_list('Pick List Item',
+             filters={
+                'sales_order': ['like', 'SAL-ORD-%']
+             },
+             fields=['parent', 'sales_order', 'item_code', 'warehouse', 'qty']
+      )
+    pick_list_for_so = {}
+    for item in pick_list_items:
+        pick_list_id = item.get('parent')
+        if not pick_list_id: continue
+        if pick_list_id not in pick_list_for_so:
+            pick_list_for_so[pick_list_id] = {}
+            pick_list_for_so[pick_list_id]["sales_order"] = item.get("sales_order")
+            pick_list_for_so[pick_list_id]["items"] = []
+        pick_list_for_so[pick_list_id]["items"].append({
+            "item_code": item.get("item_code"),
+            "warehouse": item.get("warehouse"),
+            "qty": item.get("qty")
+        })
+    return pick_list_for_so
+
+
+@frappe.whitelist()
+def pick_list_with_mtr_and_so():
+    pick_list_for_mtr = pick_list_with_mtr()
+    pick_list_for_so = pick_list_with_so()
+    return format_result(result={
+        "pick_list_for_mtr": pick_list_for_mtr,
+        "pick_list_for_so": pick_list_for_so
+    }, status_code=200, message='Data Found')
