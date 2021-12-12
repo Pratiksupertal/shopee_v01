@@ -1087,7 +1087,7 @@ def pick_list_with_mtr():
     Filter by `material_request type` = [ Material Transfer | Manufacture | Material Issue ]
     """
     material_request_list = frappe.db.sql(
-        "select name, purpose, for_qty from `tabPick List` where purpose like '%Material Transfer%' or purpose like '%Manufacture%' or purpose like '%Material Issue%';"
+        "select name, purpose, for_qty from `tabPick List` where docstatus=1 and (purpose like '%Material Transfer%' or purpose like '%Manufacture%' or purpose like '%Material Issue%');"
         )
     result = {}
     for item in material_request_list:
@@ -1105,7 +1105,8 @@ def pick_list_with_so():
     """
     pick_list_items = frappe.db.get_list('Pick List Item',
              filters={
-                'sales_order': ['like', 'SAL-ORD-%']
+                'sales_order': ['like', 'SAL-ORD-%'],
+                'docstatus': 1
              },
              fields=['parent', 'sales_order', 'item_code', 'warehouse', 'qty']
       )
