@@ -1015,7 +1015,6 @@ def pickList():
     result = [order for order in submitted_pick_list if order not in stock_entry_pick_list]
     return format_result(result=result, status_code=200, message='Data Found')
 
-
 def update_stock_entry_based_on_material_request(pick_list, stock_entry):
     from  erpnext.stock.doctype.pick_list.pick_list import update_common_item_properties
     for location in pick_list.locations:
@@ -1025,29 +1024,42 @@ def update_stock_entry_based_on_material_request(pick_list, stock_entry):
 				location.material_request_item, 'warehouse')
         item = frappe._dict()
         update_common_item_properties(item, location)
+        item.t_warehouse = target_warehouse
+        stock_entry.append('items', item)
+    return stock_entry
+
+def update_stock_entry_based_on_sales_order(pick_list, stock_entry):
+    from  erpnext.stock.doctype.pick_list.pick_list import update_common_item_properties
+    for location in pick_list.locations:
+        target_warehouse = None
+        item = frappe._dict()
+        update_common_item_properties(item, location)
         item.t_warehouse = "Collecting Area Finish Good Out - ISS"
         stock_entry.append('items', item)
     return stock_entry
 
-
 @frappe.whitelist()
 def submit_picklist():
     data = validate_data(frappe.request.data)
-    pick_list = frappe.get_doc('Pick List',data['picklist'])
-    pick_list.submit()
+    try:
+        pick_list = frappe.get_doc('Pick List',data['picklist'])
+        if pick_list.docstatus == 0 :
+            pick_list.submit()
+    except Exception as e:
+        frappe.log_error(title="submit_picklist API",message =frappe.get_traceback())
+        return e
     from  erpnext.stock.doctype.pick_list.pick_list import validate_item_locations
-    from  erpnext.stock.doctype.pick_list.pick_list import update_stock_entry_items_with_no_reference
     validate_item_locations(pick_list)
     if frappe.db.exists('Stock Entry', {'pick_list': data['picklist'],'docstatus' :1 }):
         return frappe.msgprint(_('Stock Entry has been already created against this Pick List'))
     stock_entry = frappe.new_doc('Stock Entry')
     stock_entry.pick_list = pick_list.get('name')
-    stock_entry.purpose = pick_list.get('purpose')
+    stock_entry.purpose = pick_list.get('purpose') if pick_list.get('purpose') !="Delivery" else ""
     stock_entry.set_stock_entry_type()
     if pick_list.get('material_request'):
         stock_entry = update_stock_entry_based_on_material_request(pick_list, stock_entry)
     else:
-        stock_entry = update_stock_entry_items_with_no_reference(pick_list, stock_entry)
+        return frappe.msgprint(_('Stock Entry for Sales Order linked Pick List cant be done'))
     stock_entry.set_incoming_rate()
     stock_entry.set_actual_qty()
     stock_entry.calculate_rate_and_amount(update_finished_item_rate=False)
@@ -1057,16 +1069,17 @@ def submit_picklist():
             "stock_entry": stock_entry.name,
             "picklist": stock_entry.pick_list
         }, message="success", status_code=200)
-    return stock_entry
-
 
 @frappe.whitelist()
 def update_current_stock():
-    data = validate_data(frappe.request.data)
-    doc = frappe.get_doc("Pick List",data['picklist'])
-    doc.set_item_locations(save=True)
-    return format_result(message="success", status_code=200)
-
+    try:
+        data = validate_data(frappe.request.data)
+        doc = frappe.get_doc("Pick List",data['picklist'])
+        doc.set_item_locations(save=True)
+        return format_result(message="success", status_code=200)
+    except Exception as e:
+        frappe.log_error(title="update_current_stock API",message =frappe.get_traceback())
+        return e
 
 def pick_list_with_mtr():
     """
@@ -1079,7 +1092,7 @@ def pick_list_with_mtr():
         fields=['name', 'material_request_type']
     )
     return material_request_list
-    
+
 
 def pick_list_with_so():
     """
