@@ -178,7 +178,7 @@ def purchases():
     result = []
 
     each_data_list = list(map(lambda x: frappe.get_doc('Purchase Order', x),
-                              [i['name'] for i in frappe.get_list('Purchase Order')]))
+                              [i['name'] for i in frappe.get_list('Purchase Order',filters={'docstatus':1})]))
 
     for each_data in each_data_list:
         temp_dict = {
@@ -197,6 +197,7 @@ def purchases():
                 "product_code": i.item_code,
                 "barcode": fill_barcode(i.item_code),
                 "price": str(int(i.amount) if i.amount else ''),
+                "warehouse":i.warehouse,
                 "quantity": str(int(i.qty) if i.qty else ''),
                 "unit_id": str(i.idx),
                 "discount": str(int(i.discount_amount) if i.discount_amount else ''),
