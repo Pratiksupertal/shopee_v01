@@ -1082,25 +1082,40 @@ def update_current_stock():
         frappe.log_error(title="update_current_stock API",message =frappe.get_traceback())
         return e
 
-
-def pick_list_with_mtr():
+      
+def pick_list_with_mtr(stock_entry_pick_list):
     """
+    Filter by status - only Submitted PL allowed
     Filter by `material_request type` = [ Material Transfer | Manufacture | Material Issue ]
+    Filter by Stock Entry - overlapped PL will be removed
     """
-    material_request_list = frappe.db.sql(
-        "select name, purpose, for_qty from `tabPick List` where docstatus=1 and (purpose like '%Material Transfer%' or purpose like '%Manufacture%' or purpose like '%Material Issue%');"
+    pick_list = frappe.db.get_list('Pick List',
+        filters={
+            "docstatus": 1,
+            "purpose": ["in", ["Material Transfer", "Material Transfer for Manufecture", "Manufacture", "Material Issue"]]
+        },
+        fields=["name", "purpose", "parent_warehouse"]
+    )
+
+    pick_list_for_mtr = {}
+    for item in pick_list:
+        pick_list_id = item.get('name')
+        if not pick_list_id: continue
+        # if the pick list is in the stock entry, we have to filter them out
+        if pick_list_id in stock_entry_pick_list: continue
+        pick_list_for_mtr[pick_list_id] = {}
+        pick_list_for_mtr[pick_list_id]["type"] = item.get("purpose")
+        pick_list_for_mtr[pick_list_id]["parent_warehouse"] = item.get("parent_warehouse")
+        pick_list_for_mtr[pick_list_id]["items"] = frappe.db.get_list('Pick List Item',
+            filters={
+                "parent": pick_list_id
+            },
+            fields=["item_code", "item_name", "warehouse", "uom", "qty"]
         )
-    result = {}
-    for item in material_request_list:
-        pick_list_id = item[0]
-        result[pick_list_id] = {
-            "type": item[1],
-            "qty": item[2]
-        }
-    return result
+    return pick_list_for_mtr
 
 
-def pick_list_with_so():
+def pick_list_with_so(stock_entry_pick_list):
     """
     For Sales Order
     """
@@ -1109,19 +1124,23 @@ def pick_list_with_so():
                 'sales_order': ['like', 'SAL-ORD-%'],
                 'docstatus': 1
              },
-             fields=['parent', 'sales_order', 'item_code', 'warehouse', 'qty']
+             fields=['parent', 'sales_order', 'item_code', 'item_name', 'warehouse', "uom", 'qty']
       )
     pick_list_for_so = {}
     for item in pick_list_items:
         pick_list_id = item.get('parent')
         if not pick_list_id: continue
+        # if the pick list is in the stock entry, we have to filter them out
+        if pick_list_id in stock_entry_pick_list: continue
         if pick_list_id not in pick_list_for_so:
             pick_list_for_so[pick_list_id] = {}
             pick_list_for_so[pick_list_id]["sales_order"] = item.get("sales_order")
             pick_list_for_so[pick_list_id]["items"] = []
         pick_list_for_so[pick_list_id]["items"].append({
             "item_code": item.get("item_code"),
+            "item_name": item.get("item_name"),
             "warehouse": item.get("warehouse"),
+            "uom": item.get("uom"),
             "qty": item.get("qty")
         })
     return pick_list_for_so
@@ -1129,8 +1148,16 @@ def pick_list_with_so():
 
 @frappe.whitelist()
 def pick_list_with_mtr_and_so():
-    pick_list_for_mtr = pick_list_with_mtr()
-    pick_list_for_so = pick_list_with_so()
+    stock_entry_pick_list = frappe.db.get_list('Stock Entry',
+            filters={
+                'pick_list': ['like', '%PICK%']
+            },
+            fields=['pick_list']
+      )
+    stock_entry_pick_list = list(map(lambda order: order.get('pick_list'), list(stock_entry_pick_list)))
+
+    pick_list_for_mtr = pick_list_with_mtr(stock_entry_pick_list)
+    pick_list_for_so = pick_list_with_so(stock_entry_pick_list)
     return format_result(result={
         "pick_list_for_mtr": pick_list_for_mtr,
         "pick_list_for_so": pick_list_for_so
