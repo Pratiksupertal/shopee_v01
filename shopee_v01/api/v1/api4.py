@@ -363,22 +363,29 @@ def warehouseAreas():
 
 @frappe.whitelist()
 def purchaseReceive():
-    data = validate_data(frappe.request.data)
-    today = dt.datetime.today()
-    new_doc = frappe.new_doc('Purchase Receipt')
-    new_doc.posting_date = today.strftime("%Y-%m-%d")
-    po_name = data['products'][0]['purchase_id']
-    supplier = frappe.db.get_value("Purchase Order",{"name":po_name},"Supplier")
-    new_doc.supplier = supplier
-    new_doc.supplier_travel_document_number = data['supplier_do_number']
-    new_doc.set_warehouse = data['warehouse_id']
-    for item in data['products']:
-        new_doc.append("items", {
-            "item_code": item['purchase_product_id'],
-            "qty": item['quantity'],
-            "purchase_order":item['purchase_id']
-        })
-    new_doc.insert()
+    try:
+        data = validate_data(frappe.request.data)
+        today = dt.datetime.today()
+        po_name = data['products'][0]['purchase_id']
+        validate_po = frappe.db.get_list('Purchase Order',filters = {'name':'WVN202107-0001','docstatus':1,'status':['not in',['Closed', 'On Hold']],'per_received':['<', 99.99] },fields = ['name'])
+        if len(validate_po) > 0:
+            return frappe.msgprint(_('Purchase Receiving for this Purchase Order is done'))
+        new_doc = frappe.new_doc('Purchase Receipt')
+        new_doc.posting_date = today.strftime("%Y-%m-%d")
+        supplier = frappe.db.get_value("Purchase Order",{"name":po_name},"supplier")
+        new_doc.supplier = supplier
+        new_doc.supplier_travel_document_number = data['supplier_do_number']
+        new_doc.set_warehouse = data['warehouse_id']
+        for item in data['products']:
+            new_doc.append("items", {
+                "item_code": item['purchase_product_id'],
+                "qty": item['quantity'],
+                "purchase_order":item['purchase_id']
+            })
+        new_doc.insert()
+        new_doc.submit()
+    except Exception as e:
+        return e
     return format_result(status_code=200, message='Purchase Receipt Created', result={
         "id": str(new_doc.name),
         "receive_number": new_doc.name,
@@ -386,7 +393,6 @@ def purchaseReceive():
         "receive_date": new_doc.posting_date,
         "supplier_id": new_doc.supplier
     })
-
 
 @frappe.whitelist()
 def stockOpname():
@@ -1081,7 +1087,6 @@ def update_current_stock():
         frappe.log_error(title="update_current_stock API",message =frappe.get_traceback())
         return e
 
-      
 def pick_list_with_mtr(stock_entry_pick_list):
     """
     Filter by status - only Submitted PL allowed
@@ -1095,7 +1100,7 @@ def pick_list_with_mtr(stock_entry_pick_list):
         },
         fields=["name", "purpose", "parent_warehouse"]
     )
-    
+
     pick_list_for_mtr = {}
     for item in pick_list:
         pick_list_id = item.get('name')
@@ -1113,7 +1118,7 @@ def pick_list_with_mtr(stock_entry_pick_list):
         )
     return pick_list_for_mtr
 
-  
+
 def pick_list_with_so(stock_entry_pick_list):
     """
     For Sales Order
@@ -1154,7 +1159,7 @@ def pick_list_with_mtr_and_so():
             fields=['pick_list']
       )
     stock_entry_pick_list = list(map(lambda order: order.get('pick_list'), list(stock_entry_pick_list)))
-    
+
     pick_list_for_mtr = pick_list_with_mtr(stock_entry_pick_list)
     pick_list_for_so = pick_list_with_so(stock_entry_pick_list)
     return format_result(result={
