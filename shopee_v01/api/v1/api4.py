@@ -496,6 +496,7 @@ def orders():
                 "price": j.rate,
                 "barcode": fill_barcode(j.item_code),
                 "quantity": j.qty,
+                "source_warehouse": j.warehouse,
                 "unit_id": j.item_group,
                 "discount": j.discount_amount,
                 "subtotal_amount": j.base_net_amount,
