@@ -379,6 +379,7 @@ def purchaseReceive():
             "purchase_order":item['purchase_id']
         })
     new_doc.insert()
+    new_doc.submit()
     return format_result(status_code=200, message='Purchase Receipt Created', result={
         "id": str(new_doc.name),
         "receive_number": new_doc.name,
@@ -1081,7 +1082,7 @@ def update_current_stock():
         frappe.log_error(title="update_current_stock API",message =frappe.get_traceback())
         return e
 
-      
+
 def pick_list_with_mtr():
     """
     Filter by `material_request type` = [ Material Transfer | Manufacture | Material Issue ]
@@ -1098,7 +1099,7 @@ def pick_list_with_mtr():
         }
     return result
 
-  
+
 def pick_list_with_so():
     """
     For Sales Order
