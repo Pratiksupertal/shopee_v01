@@ -367,7 +367,10 @@ def purchaseReceive():
         data = validate_data(frappe.request.data)
         today = dt.datetime.today()
         po_name = data['products'][0]['purchase_id']
-        validate_po = frappe.db.get_list('Purchase Order',filters = {'name':'WVN202107-0001','docstatus':1,'status':['not in',['Closed', 'On Hold']],'per_received':['<', 99.99] },fields = ['name'])
+        validate_po = frappe.db.get_list('Purchase Order',
+        filters = {'name':po_name,'docstatus':1,'status':['not in',['Closed', 'On Hold']],'per_received':['<', 99.99] },
+        fields = ['name']
+        )
         if len(validate_po) > 0:
             return frappe.msgprint(_('Purchase Receiving for this Purchase Order is done'))
         new_doc = frappe.new_doc('Purchase Receipt')
