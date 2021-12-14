@@ -1066,11 +1066,11 @@ def submit_picklist():
             pick_list.submit()
     except Exception as e:
         frappe.log_error(title="submit_picklist API",message =frappe.get_traceback())
-        return e
+        return format_result(success="False",status_code=500, message = "PickList is not Submitted")
     from  erpnext.stock.doctype.pick_list.pick_list import validate_item_locations
     validate_item_locations(pick_list)
     if frappe.db.exists('Stock Entry', {'pick_list': data['picklist'],'docstatus' :1 }):
-        return frappe.msgprint(_('Stock Entry has been already created against this Pick List'))
+        return format_result(success="False",status_code=500, message = "Stock Entry has been already created against this Pick List")
     stock_entry = frappe.new_doc('Stock Entry')
     stock_entry.pick_list = pick_list.get('name')
     stock_entry.purpose = pick_list.get('purpose') if pick_list.get('purpose') !="Delivery" else ""
@@ -1078,6 +1078,7 @@ def submit_picklist():
     if pick_list.get('material_request'):
         stock_entry = update_stock_entry_based_on_material_request(pick_list, stock_entry)
     else:
+        return format_result(success="False",status_code=500, message = "Stock Entry has been already created against this Pick List")
         return frappe.msgprint(_('Stock Entry for Sales Order linked Pick List cant be done'))
     stock_entry.set_incoming_rate()
     stock_entry.set_actual_qty()
