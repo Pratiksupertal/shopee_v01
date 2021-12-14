@@ -28,9 +28,9 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def format_result(result=None, message=None, status_code=None):
+def format_result(success=None,result=None, message=None, status_code=None):
     return {
-        "success": True,
+        "success": success,
         "message": message,
         "status_code": str(status_code),
         "data": result
@@ -372,31 +372,34 @@ def purchaseReceive():
         filters = {'name':po_name,'docstatus':1,'status':['not in',['Closed', 'On Hold']],'per_received':['<', 99.99] },
         fields = ['name']
         )
-        if len(validate_po) > 0:
-            return frappe.msgprint(_('Purchase Receiving for this Purchase Order is done'))
-        new_doc = frappe.new_doc('Purchase Receipt')
-        new_doc.posting_date = today.strftime("%Y-%m-%d")
-        supplier = frappe.db.get_value("Purchase Order",{"name":po_name},"supplier")
-        new_doc.supplier = supplier
-        new_doc.supplier_travel_document_number = data['supplier_do_number']
-        new_doc.set_warehouse = data['warehouse_id']
-        for item in data['products']:
-            new_doc.append("items", {
-                "item_code": item['purchase_product_id'],
-                "qty": item['quantity'],
-                "purchase_order":item['purchase_id']
+        if len(validate_po) < 1:
+            msg = "Purchase Receipt is not created for Purchase order {0}".format(po_name)
+            return format_result(success="False",status_code=500, message = msg, result={
             })
-        new_doc.insert()
-        new_doc.submit()
+        else:
+            new_doc = frappe.new_doc('Purchase Receipt')
+            new_doc.posting_date = today.strftime("%Y-%m-%d")
+            supplier = frappe.db.get_value("Purchase Order",{"name":po_name},"supplier")
+            new_doc.supplier = supplier
+            new_doc.supplier_travel_document_number = data['supplier_do_number']
+            new_doc.set_warehouse = data['warehouse_id']
+            for item in data['products']:
+                new_doc.append("items", {
+                    "item_code": item['purchase_product_id'],
+                    "qty": item['quantity'],
+                    "purchase_order":item['purchase_id']
+                })
+            new_doc.insert()
+            new_doc.submit()
+            return format_result(status_code=200, message='Purchase Receipt Created', result={
+                "id": str(new_doc.name),
+                "receive_number": new_doc.name,
+                "supplier_do_number": new_doc.supplier_travel_document_number,
+                "receive_date": new_doc.posting_date,
+                "supplier_id": new_doc.supplier
+            })
     except Exception as e:
-        return e
-    return format_result(status_code=200, message='Purchase Receipt Created', result={
-        "id": str(new_doc.name),
-        "receive_number": new_doc.name,
-        "supplier_do_number": new_doc.supplier_travel_document_number,
-        "receive_date": new_doc.posting_date,
-        "supplier_id": new_doc.supplier
-    })
+        return format_result(success="False",status_code=500, message = "Purchase Receipt API Fail", result=e)
 
 @frappe.whitelist()
 def stockOpname():
@@ -868,31 +871,33 @@ def submit_stock_entry():
 
 @frappe.whitelist()
 def stock_entry_send_to_warehouse():
-    data = validate_data(frappe.request.data)
-    new_doc = frappe.new_doc('Stock Entry')
-    new_doc.purpose = 'Send To Warehouse'
-    new_doc.company = data['company']
-    new_doc._comments = data['notes']
-    for item in data['items']:
-        new_doc.append("items", {
-            "item_code": item['item_code'],
-            "t_warehouse": 'Virtual Transit - ISS',
-            "s_warehouse": item['s_warehouse'],
-            "qty": str(item['qty'])
-        })
-    new_doc.set_stock_entry_type()
-    new_doc.insert()
-    new_doc.submit()
-    return {
-        "success": True,
-        "status_code": 200,
-        "message": 'Data created',
-        "data": {
-            "transfer_number": new_doc.name,
-            "items": new_doc.items
-        },
-    }
-
+    try:
+        data = validate_data(frappe.request.data)
+        new_doc = frappe.new_doc('Stock Entry')
+        new_doc.purpose = 'Send To Warehouse'
+        new_doc.company = data['company']
+        new_doc._comments = data['notes']
+        for item in data['items']:
+            new_doc.append("items", {
+                "item_code": item['item_code'],
+                "t_warehouse": 'Virtual Transit - ISS',
+                "s_warehouse": item['s_warehouse'],
+                "qty": str(item['qty'])
+            })
+        new_doc.set_stock_entry_type()
+        new_doc.insert()
+        new_doc.submit()
+        return {
+            "success": True,
+            "status_code": 200,
+            "message": 'Data created',
+            "data": {
+                "transfer_number": new_doc.name,
+                "items": new_doc.items
+            },
+        }
+    except Exception as e:
+        return format_result(success = "False",message='Stock Entry is not created', status_code=500)
 
 @frappe.whitelist()
 def get_stock_entry_send_to_warehouse():
@@ -908,31 +913,34 @@ def get_stock_entry_send_to_warehouse():
 
 @frappe.whitelist()
 def stock_entry_receive_at_warehouse():
-    data = validate_data(frappe.request.data)
-    new_doc = frappe.new_doc('Stock Entry')
-    new_doc.purpose = 'Receive at Warehouse'
-    new_doc.company = data['company']
-    new_doc.outgoing_stock_entry = data['send_to_warehouse_id']
-    new_doc._comments = data['notes']
-    for item in data['items']:
-        new_doc.append("items", {
-            "item_code": item['item_code'],
-            "t_warehouse": item['t_warehouse'],
-            "s_warehouse": item['s_warehouse'],
-            "qty": int(item['qty'])
-        })
-    new_doc.set_stock_entry_type()
-    new_doc.insert()
-    new_doc.submit()
-    return {
-        "success": True,
-        "status_code": 200,
-        "message": 'Data created',
-        "data": {
-            "transfer_number": new_doc.name,
-            "items": new_doc.items
-        },
-    }
+    try:
+        data = validate_data(frappe.request.data)
+        new_doc = frappe.new_doc('Stock Entry')
+        new_doc.purpose = 'Receive at Warehouse'
+        new_doc.company = data['company']
+        new_doc.outgoing_stock_entry = data['send_to_warehouse_id']
+        new_doc._comments = data['notes']
+        for item in data['items']:
+            new_doc.append("items", {
+                "item_code": item['item_code'],
+                "t_warehouse": item['t_warehouse'],
+                "s_warehouse": item['s_warehouse'],
+                "qty": int(item['qty'])
+            })
+        new_doc.set_stock_entry_type()
+        new_doc.insert()
+        new_doc.submit()
+        return {
+            "success": True,
+            "status_code": 200,
+            "message": 'Data created',
+            "data": {
+                "transfer_number": new_doc.name,
+                "items": new_doc.items
+            },
+        }
+    except Exception as e:
+        return format_result(success="False",message='Stock Entry is not created', status_code=500)
 
 
 @frappe.whitelist()
