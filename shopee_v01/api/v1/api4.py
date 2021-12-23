@@ -946,50 +946,53 @@ def stock_entry_receive_at_warehouse():
 
 @frappe.whitelist()
 def create_sales_order():
-    res = {}
-    order=validate_data(frappe.request.data)
-    if not order.get("delivery_date"):
-        order["delivery_date"]=today()
+    try:
+        res = {}
+        order=validate_data(frappe.request.data)
+        if not order.get("delivery_date"):
+            order["delivery_date"]=today()
 
-    if not order.get("delivery_date"):
-        order["delivery_date"] = today()
+        if not order.get("delivery_date"):
+            order["delivery_date"] = today()
 
-    if not order.get("external_so_number") or not order.get("source_app_name"):
-        raise Exception("Sales order Number and Source app name both are required")
-    parts = urlparse(frappe.request.url)
-    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
-    url = base + '/api/resource/Sales%20Order'
-    res_api_response = requests.post(url.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    },data=json.dumps(order))
-    if res_api_response.status_code==200:
-        dn_data = res_api_response.json()
-        dn_data = dn_data["data"]
-        url = base + '/api/resource/Sales%20Order/'+dn_data['name']
+        if not order.get("external_so_number") or not order.get("source_app_name"):
+            raise Exception("Sales order Number and Source app name both are required")
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        url = base + '/api/resource/Sales%20Order'
         res_api_response = requests.post(url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
-        res['sales_order']=dn_data
-        dn_json = {}
-        try:
-            delivery_note = frappe.new_doc("Delivery Note")
-            delivery_note.customer = dn_data["customer"]
-            for item in dn_data['items']:
-                delivery_note.append("items", {
-                    "item_code": item['item_code'],
-                    "qty": str(item['qty']),
-                    "warehouse": item['warehouse'],
-                    "rate":item['rate']
-                    # "against_sales_order":item['parent']
-                })
-            delivery_note.save()
-            delivery_note.submit()
-            res['delivery_note']= delivery_note.name
-        except Exception as e:
-            return format_result(success="False",result="Delivery Note Failed",message = e)
-        return format_result(success="True",result=res)
+        },data=json.dumps(order))
+        if res_api_response.status_code==200:
+            dn_data = res_api_response.json()
+            dn_data = dn_data["data"]
+            url = base + '/api/resource/Sales%20Order/'+dn_data['name']
+            res_api_response = requests.post(url.replace("'", '"'), headers={
+                "Authorization": frappe.request.headers["Authorization"]
+            },data={ "run_method": "submit" })
+            res['sales_order']=dn_data
+            dn_json = {}
+            try:
+                delivery_note = frappe.new_doc("Delivery Note")
+                delivery_note.customer = dn_data["customer"]
+                for item in dn_data['items']:
+                    delivery_note.append("items", {
+                        "item_code": item['item_code'],
+                        "qty": str(item['qty']),
+                        "warehouse": item['warehouse'],
+                        "rate":item['rate']
+                        # "against_sales_order":item['parent']
+                    })
+                delivery_note.save()
+                delivery_note.submit()
+                res['delivery_note']= delivery_note.name
+            except Exception as e:
+                return format_result(success="False",result="Delivery Note Failed",message = e)
+            return format_result(success="True",result=res)
 
-    return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
+        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
+    except Exception as e:
+        return format_result(result="Sales Order not created", message=e,status_code=res_api_response.status_code)
 
 
 @frappe.whitelist()
