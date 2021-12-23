@@ -61,7 +61,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
-  "value": "SAL-ORD-.YYYY.-"
+  "value": "SAL-ORD-.YYYY.-\nSAL-ORD-.YYYY.-\n"
  },
  {
   "default_value": null,
@@ -2398,5 +2398,53 @@
   "property": "in_list_view",
   "property_type": "Check",
   "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Order",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2021-12-22 11:32:24.212185",
+  "name": "Sales Order-naming_series-default",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "default",
+  "property_type": "Text",
+  "value": "SAL-ORD-.YYYY..MM.-"
+ },
+{
+  "default_value": null,
+  "doc_type": "Sales Invoice",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2021-12-22 12:12:54.438101",
+  "name": "Sales Invoice-naming_series-options",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "options",
+  "property_type": "Text",
+  "value": "ACC-SINV-.YYYY.-\nACC-SINV-.YYYY..MM.-\n"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Invoice",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2021-12-22 12:12:54.483714",
+  "name": "Sales Invoice-naming_series-default",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "default",
+  "property_type": "Text",
+  "value": "ACC-SINV-.YYYY..MM.-"
  }
 ]
