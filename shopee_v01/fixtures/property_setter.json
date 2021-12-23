@@ -61,7 +61,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
-  "value": "SAL-ORD-.YYYY.-"
+  "value": "SAL-ORD-.YYYY.-\nSAL-ORD-.YYYY.-\n"
  },
  {
   "default_value": null,
