@@ -3,8 +3,8 @@
   "docstatus": 0,
   "doctype": "Workflow",
   "document_type": "Purchase Order",
-  "is_active": 0,
-  "modified": "2021-10-07 16:28:16.591574",
+  "is_active": 1,
+  "modified": "2021-12-24 10:26:49.897193",
   "name": "Purchase Order",
   "override_status": 0,
   "parent": null,
@@ -158,7 +158,7 @@
   "doctype": "Workflow",
   "document_type": "Purchase Invoice",
   "is_active": 1,
-  "modified": "2021-12-22 01:24:27.479428",
+  "modified": "2021-12-24 10:36:23.270974",
   "name": "Purchase Invoice",
   "override_status": 0,
   "parent": null,
@@ -166,32 +166,6 @@
   "parenttype": null,
   "send_email_alert": 1,
   "states": [
-   {
-    "allow_edit": "Purchase User",
-    "doc_status": "0",
-    "is_optional_state": 0,
-    "message": null,
-    "next_action_email_template": null,
-    "parent": "Purchase Invoice",
-    "parentfield": "states",
-    "parenttype": "Workflow",
-    "state": "Checking PI by Purchaser",
-    "update_field": null,
-    "update_value": null
-   },
-   {
-    "allow_edit": "Purchase User",
-    "doc_status": "0",
-    "is_optional_state": 0,
-    "message": null,
-    "next_action_email_template": null,
-    "parent": "Purchase Invoice",
-    "parentfield": "states",
-    "parenttype": "Workflow",
-    "state": "Rejected",
-    "update_field": null,
-    "update_value": null
-   },
    {
     "allow_edit": "Purchase AP",
     "doc_status": "0",
@@ -272,28 +246,6 @@
    }
   ],
   "transitions": [
-   {
-    "action": "Approve",
-    "allow_self_approval": 1,
-    "allowed": "Purchase User",
-    "condition": null,
-    "next_state": "Pending by Purchase AP",
-    "parent": "Purchase Invoice",
-    "parentfield": "transitions",
-    "parenttype": "Workflow",
-    "state": "Checking PI by Purchaser"
-   },
-   {
-    "action": "Reject",
-    "allow_self_approval": 1,
-    "allowed": "Purchase User",
-    "condition": null,
-    "next_state": "Rejected",
-    "parent": "Purchase Invoice",
-    "parentfield": "transitions",
-    "parenttype": "Workflow",
-    "state": "Checking PI by Purchaser"
-   },
    {
     "action": "Reject",
     "allow_self_approval": 1,
