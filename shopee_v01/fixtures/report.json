@@ -9,6 +9,162 @@
   "javascript": null,
   "json": null,
   "letter_head": null,
+  "modified": "2021-08-02 08:14:09.572392",
+  "module": "Stock",
+  "name": "Stock List Quantity",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "prepared_report": 0,
+  "query": "SELECT\n\t  a.item_name as \"Item Name::170\",\n\t  a.item_code as \"Item Code::180\",\n\t  a.item_group as \"Item Group:Link/Item Group:50\",\n\t  a.division_group as \"Division Group::50\",\n\t  a.retail_group as \"Retail Group::50\",\n\t  a.brand as \"Brand:Link/Brand:80\",\n\t  format(max(d.price_list_rate),0) as \"Price::80\",\n\t  b.actual_qty as \"Balance Qty:Float:70\",\n\t  c.delivered_qty as \"Delivered Qty:Float:70\",\n\t  (c.qty - ifnull(c.delivered_qty, 0)) as \"Qty to Deliver:Float:70\",\n\t  b.projected_qty as \"Projected Qty:Float:70\",\n\t  b.warehouse as \"Warehouse:Link/Warehouse:140\"\n\t\nFROM `tabItem` a LEFT JOIN `tabBin` b\n    ON a.item_code = b.item_code\nLEFT JOIN `tabSales Order Item` c\n    ON a.item_code = c.item_code\nLEFT JOIN `tabItem Price` d\n    ON a.item_code = d.item_code\n    \n\ngroup by a.item_code, b.warehouse\norder by a.item_name asc",
+  "ref_doctype": "Delivery Note",
+  "reference_report": null,
+  "report_name": "Stock List Quantity",
+  "report_script": null,
+  "report_type": "Query Report",
+  "roles": [
+   {
+    "parent": "Stock List Quantity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Stock List Quantity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   },
+   {
+    "parent": "Stock List Quantity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Stock List Quantity",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ]
+ },
+ {
+  "add_total_row": 0,
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "is_standard": "No",
+  "javascript": null,
+  "json": "[{\"fieldtype\":\"Link\",\"options\":\"Item\",\"width\":120,\"label\":\"Item\",\"fieldname\":\"item\",\"id\":\"item\",\"name\":\"Item\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Data\",\"width\":120,\"label\":\"Item Name\",\"fieldname\":\"item_name\",\"id\":\"item_name\",\"name\":\"Item Name\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Jan (Qty)\",\"fieldname\":\"jan_(qty)\",\"id\":\"jan_(qty)\",\"name\":\"Jan (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Jan (Amt)\",\"fieldname\":\"jan_(amt)\",\"id\":\"jan_(amt)\",\"name\":\"Jan (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Feb (Qty)\",\"fieldname\":\"feb_(qty)\",\"id\":\"feb_(qty)\",\"name\":\"Feb (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Feb (Amt)\",\"fieldname\":\"feb_(amt)\",\"id\":\"feb_(amt)\",\"name\":\"Feb (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Mar (Qty)\",\"fieldname\":\"mar_(qty)\",\"id\":\"mar_(qty)\",\"name\":\"Mar (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Mar (Amt)\",\"fieldname\":\"mar_(amt)\",\"id\":\"mar_(amt)\",\"name\":\"Mar (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Apr (Qty)\",\"fieldname\":\"apr_(qty)\",\"id\":\"apr_(qty)\",\"name\":\"Apr (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Apr (Amt)\",\"fieldname\":\"apr_(amt)\",\"id\":\"apr_(amt)\",\"name\":\"Apr (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"May (Qty)\",\"fieldname\":\"may_(qty)\",\"id\":\"may_(qty)\",\"name\":\"May (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"May (Amt)\",\"fieldname\":\"may_(amt)\",\"id\":\"may_(amt)\",\"name\":\"May (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Jun (Qty)\",\"fieldname\":\"jun_(qty)\",\"id\":\"jun_(qty)\",\"name\":\"Jun (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Jun (Amt)\",\"fieldname\":\"jun_(amt)\",\"id\":\"jun_(amt)\",\"name\":\"Jun (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Jul (Qty)\",\"fieldname\":\"jul_(qty)\",\"id\":\"jul_(qty)\",\"name\":\"Jul (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Jul (Amt)\",\"fieldname\":\"jul_(amt)\",\"id\":\"jul_(amt)\",\"name\":\"Jul (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Aug (Qty)\",\"fieldname\":\"aug_(qty)\",\"id\":\"aug_(qty)\",\"name\":\"Aug (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Aug (Amt)\",\"fieldname\":\"aug_(amt)\",\"id\":\"aug_(amt)\",\"name\":\"Aug (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Sep (Qty)\",\"fieldname\":\"sep_(qty)\",\"id\":\"sep_(qty)\",\"name\":\"Sep (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Sep (Amt)\",\"fieldname\":\"sep_(amt)\",\"id\":\"sep_(amt)\",\"name\":\"Sep (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Oct (Qty)\",\"fieldname\":\"oct_(qty)\",\"id\":\"oct_(qty)\",\"name\":\"Oct (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Oct (Amt)\",\"fieldname\":\"oct_(amt)\",\"id\":\"oct_(amt)\",\"name\":\"Oct (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Nov (Qty)\",\"fieldname\":\"nov_(qty)\",\"id\":\"nov_(qty)\",\"name\":\"Nov (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Nov (Amt)\",\"fieldname\":\"nov_(amt)\",\"id\":\"nov_(amt)\",\"name\":\"Nov (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Dec (Qty)\",\"fieldname\":\"dec_(qty)\",\"id\":\"dec_(qty)\",\"name\":\"Dec (Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Dec (Amt)\",\"fieldname\":\"dec_(amt)\",\"id\":\"dec_(amt)\",\"name\":\"Dec (Amt)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Float\",\"width\":120,\"label\":\"Total(Qty)\",\"fieldname\":\"total(qty)\",\"id\":\"total(qty)\",\"name\":\"Total(Qty)\",\"editable\":false,\"compareValue\":null},{\"fieldtype\":\"Currency\",\"width\":120,\"label\":\"Total(Amt)\",\"fieldname\":\"total(amt)\",\"id\":\"total(amt)\",\"name\":\"Total(Amt)\",\"editable\":false,\"compareValue\":null}]",
+  "letter_head": null,
+  "modified": "2021-11-20 13:02:25.826933",
+  "module": "Selling",
+  "name": "Sales Order Trends 1",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Sales Order",
+  "reference_report": "Sales Order Trends",
+  "report_name": "Sales Order Trends 1",
+  "report_script": null,
+  "report_type": "Custom Report",
+  "roles": [
+   {
+    "parent": "Sales Order Trends 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Sales Order Trends 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Maintenance User"
+   },
+   {
+    "parent": "Sales Order Trends 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales User"
+   },
+   {
+    "parent": "Sales Order Trends 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   },
+   {
+    "parent": "Sales Order Trends 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Sales Manager"
+   },
+   {
+    "parent": "Sales Order Trends 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   }
+  ]
+ },
+ {
+  "add_total_row": 1,
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "is_standard": "No",
+  "javascript": null,
+  "json": "{}",
+  "letter_head": null,
+  "modified": "2021-12-20 01:00:17.156171",
+  "module": "Stock",
+  "name": "Stock Summary Custom 1",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Stock Entry",
+  "reference_report": null,
+  "report_name": "Stock Summary Custom 1",
+  "report_script": null,
+  "report_type": "Report Builder",
+  "roles": [
+   {
+    "parent": "Stock Summary Custom 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Stock Summary Custom 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock User"
+   },
+   {
+    "parent": "Stock Summary Custom 1",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Stock Manager"
+   }
+  ]
+ },
+ {
+  "add_total_row": 0,
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "is_standard": "Yes",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
   "modified": "2021-08-03 14:53:56.738256",
   "module": "Stock",
   "name": "Stock Quantity List",
