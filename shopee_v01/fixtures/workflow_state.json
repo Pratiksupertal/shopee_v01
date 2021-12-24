@@ -2,18 +2,6 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
-  "icon": "",
-  "modified": "2021-12-20 13:26:11.160645",
-  "name": "Pending by Accounts Manager",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
-  "style": "",
-  "workflow_state_name": "Pending by Accounts Manager"
- },
- {
-  "docstatus": 0,
-  "doctype": "Workflow State",
   "icon": "question-sign",
   "modified": "2021-02-26 16:15:38.012005",
   "name": "Pending",
