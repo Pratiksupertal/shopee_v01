@@ -950,7 +950,7 @@ def create_sales_order():
         res = {}
         order=validate_data(frappe.request.data)
         if not order.get("delivery_date"):
-            order["delivery_date"]=today()
+            order["delivery_date"] = today()
 
         if not order.get("delivery_date"):
             order["delivery_date"] = today()
@@ -987,12 +987,11 @@ def create_sales_order():
                 delivery_note.submit()
                 res['delivery_note']= delivery_note.name
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message = e)
+                return format_result(success="False",result="Delivery Note Failed",message=str(e))
             return format_result(success="True",result=res)
-
         return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
     except Exception as e:
-        return format_result(result="Sales Order not created", message=e,status_code=res_api_response.status_code)
+        return format_result(result="Sales Order not created", message=str(e),status_code=400)
 
 
 @frappe.whitelist()
@@ -1227,3 +1226,5 @@ def pick_list_with_mtr_and_so():
         "pick_list_for_mtr": pick_list_for_mtr,
         "pick_list_for_so": pick_list_for_so
     }, status_code=200, message='Data Found')
+
+
