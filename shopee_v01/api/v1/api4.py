@@ -1317,6 +1317,7 @@ def create_sales_order_from_web():
                 except Exception as e:
                     raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")        
             except Exception as e:
+                if str(e).find("stage #3") >= 0: raise Exception(str(e))
                 raise Exception(f"Error in stage #2 : Creating sales invoice failed : {str(e)}")
         else:
             raise Exception(f"Error in stage #1 : Creating sales order failed : {str(res_api_response.text)}")
