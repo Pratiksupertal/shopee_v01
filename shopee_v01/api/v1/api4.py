@@ -1312,6 +1312,7 @@ def create_sales_order_from_web():
                     sales_payment_data.reference_date = payment_data.get("reference_date")
                     sales_payment_data.save()
                     sales_payment_data.submit()
+                    sales_payment_data.remarks = sales_payment_data.remarks + f"\nAmount {sales_payment_data.paid_to_account_currency} {sales_payment_data.paid_amount} against Sales Invoice {sales_invoice_data.name}"
                     response['payment']= sales_payment_data
                     return format_result(success="True", result=response, status_code=200)
                 except Exception as e:
