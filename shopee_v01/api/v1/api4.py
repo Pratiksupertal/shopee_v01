@@ -950,7 +950,7 @@ def create_sales_order():
         res = {}
         order=validate_data(frappe.request.data)
         if not order.get("delivery_date"):
-            order["delivery_date"]=today()
+            order["delivery_date"] = today()
 
         if not order.get("delivery_date"):
             order["delivery_date"] = today()
@@ -987,10 +987,9 @@ def create_sales_order():
                 delivery_note.submit()
                 res['delivery_note']= delivery_note.name
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message = str(e))
+                return format_result(success="False",result="Delivery Note Failed",message=str(e))
             return format_result(success="True",result=res)
-
-        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=400)
+        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
     except Exception as e:
         return format_result(result="Sales Order not created", message=str(e),status_code=400)
 
@@ -1227,3 +1226,100 @@ def pick_list_with_mtr_and_so():
         "pick_list_for_mtr": pick_list_for_mtr,
         "pick_list_for_so": pick_list_for_so
     }, status_code=200, message='Data Found')
+
+
+@frappe.whitelist()
+def create_sales_order_from_web():
+    response = {}
+    try:
+        data = validate_data(frappe.request.data)
+        print(data)
+        order_data = data.get('order_data')
+        invoice_data = data.get('invoice_data')
+        payment_data = data.get('payment_data')
+        
+        if not order_data.get("delivery_date"):
+            order_data["delivery_date"] = today()
+        if not order_data.get("delivery_date"):
+            order_data["delivery_date"] = today()
+        if not order_data.get("items"):
+            raise Exception("Required data missing : Unable to proceed : Items are required")
+        if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
+            raise Exception("Required data missing : Unable to proceed : Sales order Number and Source app name both are required")
+        
+        if not invoice_data.get("due_date"):
+            raise Exception("Required data missing : Unable to proceed : Payment Due Date is required")
+        if not invoice_data.get("debit_to"):
+            raise Exception("Required data missing : Unable to proceed : Debit to is required")
+        
+        if not payment_data.get("paid_from"):
+            raise Exception("Required data missing : Unable to proceed : Paid from is required")
+        if not payment_data.get("paid_to"):
+            raise Exception("Required data missing : Unable to proceed : Paid to is required")
+        if not payment_data.get("paid_from_account_currency"):
+            raise Exception("Required data missing : Unable to proceed : Paid from account currency is required")
+        if not payment_data.get("paid_to_account_currency"):
+            raise Exception("Required data missing : Unable to proceed : Paid to accountcurrency is required")
+        if not payment_data.get("paid_amount"):
+            raise Exception("Required data missing : Unable to proceed : Paid amount is required")
+        if not payment_data.get("received_amount"):
+            raise Exception("Required data missing : Unable to proceed : Received amount is required")
+        
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        url = base + '/api/resource/Sales%20Order'
+        
+        res_api_response = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(order_data))
+        
+        if res_api_response.status_code == 200:
+            sales_order_data = res_api_response.json()
+            sales_order_data = sales_order_data["data"]
+            url = base + '/api/resource/Sales%20Order/'+sales_order_data['name']
+            res_api_response = requests.post(url.replace("'", '"'), headers={
+                "Authorization": frappe.request.headers["Authorization"]
+            },data={ "run_method": "submit" })
+            response['sales_order'] = sales_order_data
+            
+            try:
+                sales_invoice_data = frappe.new_doc("Sales Invoice")
+                sales_invoice_data.customer = order_data["customer"]
+                for item in order_data['items']:
+                    sales_invoice_data.append("items", {
+                        "item_code": item['item_code'],
+                        "qty": str(item['qty']),
+                        "warehouse": item['warehouse'],
+                        "rate":item['rate']
+                    })
+                sales_invoice_data.due_date = invoice_data["due_date"]
+                sales_invoice_data.debit_to = invoice_data["debit_to"]
+                sales_invoice_data.save()
+                sales_invoice_data.submit()
+                response['sales_invoice']= sales_invoice_data
+                
+                try:
+                    sales_payment_data = frappe.new_doc("Payment Entry")
+                    sales_payment_data.paid_from = payment_data["paid_from"]
+                    sales_payment_data.paid_to = payment_data["paid_to"]
+                    sales_payment_data.paid_from_account_currency = payment_data["paid_from_account_currency"]
+                    sales_payment_data.paid_to_account_currency = payment_data["paid_to_account_currency"]
+                    sales_payment_data.paid_amount = payment_data["paid_amount"]
+                    sales_payment_data.received_amount = payment_data["received_amount"]
+                    sales_payment_data.party_type = payment_data.get("party_type")
+                    sales_payment_data.party = payment_data.get("party")
+                    sales_payment_data.reference_no = payment_data.get("reference_no")
+                    sales_payment_data.reference_date = payment_data.get("reference_date")
+                    sales_payment_data.save()
+                    sales_payment_data.submit()
+                    response['payment']= sales_payment_data
+                    return format_result(success="True", result=response, status_code=200)
+                except Exception as e:
+                    raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")        
+            except Exception as e:
+                if str(e).find("stage #3") >= 0: raise Exception(str(e))
+                raise Exception(f"Error in stage #2 : Creating sales invoice failed : {str(e)}")
+        else:
+            raise Exception(f"Error in stage #1 : Creating sales order failed : {str(res_api_response.text)}")
+    except Exception as e:
+        return format_result(success=False, result=response, message=str(e), status_code=400)
