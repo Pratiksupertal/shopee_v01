@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import base64
 import os
 import barcode
-import traceback
+import tracebac
 from urllib.parse import urlparse, unquote, parse_qs
 import datetime as dt
 from frappe.utils import today
