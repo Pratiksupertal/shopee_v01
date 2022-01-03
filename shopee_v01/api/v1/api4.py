@@ -987,12 +987,12 @@ def create_sales_order():
                 delivery_note.submit()
                 res['delivery_note']= delivery_note.name
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message = e)
+                return format_result(success="False",result="Delivery Note Failed",message = str(e))
             return format_result(success="True",result=res)
 
-        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
+        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=400)
     except Exception as e:
-        return format_result(result="Sales Order not created", message=e,status_code=res_api_response.status_code)
+        return format_result(result="Sales Order not created", message=str(e),status_code=400)
 
 
 @frappe.whitelist()
