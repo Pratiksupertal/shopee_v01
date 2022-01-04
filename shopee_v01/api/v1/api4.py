@@ -1313,9 +1313,9 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
                 "due_date": None,
                 "bill_no": None,
                 "payment_term": None,
-                "total_amount": sales_invoice_data_2.get("total"),
-                "outstanding_amount": sales_invoice_data_2.get("total"),
-                "allocated_amount": sales_invoice_data_2.get("total"),
+                "total_amount": sales_invoice_data_2.get("grand_total"),
+                "outstanding_amount": sales_invoice_data_2.get("grand_total"),
+                "allocated_amount": sales_invoice_data_2.get("grand_total"),
                 "exchange_rate": 0,
                 "doctype": "Payment Entry Reference"
         }]
