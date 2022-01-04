@@ -1226,8 +1226,8 @@ def pick_list_with_mtr_and_so():
         "pick_list_for_mtr": pick_list_for_mtr,
         "pick_list_for_so": pick_list_for_so
     }, status_code=200, message='Data Found')
-
-
+   
+    
 @frappe.whitelist()
 def create_sales_order_from_web():
     response = {}
@@ -1235,7 +1235,6 @@ def create_sales_order_from_web():
         data = validate_data(frappe.request.data)
         print(data)
         order_data = data.get('order_data')
-        invoice_data = data.get('invoice_data')
         payment_data = data.get('payment_data')
         
         if not order_data.get("delivery_date"):
@@ -1246,11 +1245,6 @@ def create_sales_order_from_web():
             raise Exception("Required data missing : Unable to proceed : Items are required")
         if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
             raise Exception("Required data missing : Unable to proceed : Sales order Number and Source app name both are required")
-        
-        if not invoice_data.get("due_date"):
-            raise Exception("Required data missing : Unable to proceed : Payment Due Date is required")
-        if not invoice_data.get("debit_to"):
-            raise Exception("Required data missing : Unable to proceed : Debit to is required")
         
         if not payment_data.get("paid_from"):
             raise Exception("Required data missing : Unable to proceed : Paid from is required")
@@ -1264,11 +1258,15 @@ def create_sales_order_from_web():
             raise Exception("Required data missing : Unable to proceed : Paid amount is required")
         if not payment_data.get("received_amount"):
             raise Exception("Required data missing : Unable to proceed : Received amount is required")
+        if not payment_data.get("reference_no"):
+            raise Exception("Required data missing : Unable to proceed : Reference no is required")
+        if not payment_data.get("reference_date"):
+            raise Exception("Required data missing : Unable to proceed : Reference date is required")
         
         parts = urlparse(frappe.request.url)
         base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
-        url = base + '/api/resource/Sales%20Order'
         
+        url = base + '/api/resource/Sales%20Order'
         res_api_response = requests.post(url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         },data=json.dumps(order_data))
@@ -1276,47 +1274,98 @@ def create_sales_order_from_web():
         if res_api_response.status_code == 200:
             sales_order_data = res_api_response.json()
             sales_order_data = sales_order_data["data"]
+            
             url = base + '/api/resource/Sales%20Order/'+sales_order_data['name']
             res_api_response = requests.post(url.replace("'", '"'), headers={
                 "Authorization": frappe.request.headers["Authorization"]
             },data={ "run_method": "submit" })
+            
+            res_api_response_final = requests.get(url.replace("'", '"'), headers={
+                "Authorization": frappe.request.headers["Authorization"]
+            },data={})
+            
+            sales_order_data = res_api_response_final.json().get("data")
             response['sales_order'] = sales_order_data
             
             try:
-                sales_invoice_data = frappe.new_doc("Sales Invoice")
-                sales_invoice_data.customer = order_data["customer"]
-                for item in order_data['items']:
-                    sales_invoice_data.append("items", {
-                        "item_code": item['item_code'],
-                        "qty": str(item['qty']),
-                        "warehouse": item['warehouse'],
-                        "rate":item['rate']
-                    })
-                sales_invoice_data.due_date = invoice_data["due_date"]
-                sales_invoice_data.debit_to = invoice_data["debit_to"]
-                sales_invoice_data.save()
-                sales_invoice_data.submit()
-                response['sales_invoice']= sales_invoice_data
+                invoice_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice'
+                invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
+                    "Authorization": frappe.request.headers["Authorization"]
+                },data={"source_name": sales_order_data.get("name")})
                 
-                try:
-                    sales_payment_data = frappe.new_doc("Payment Entry")
-                    sales_payment_data.paid_from = payment_data["paid_from"]
-                    sales_payment_data.paid_to = payment_data["paid_to"]
-                    sales_payment_data.paid_from_account_currency = payment_data["paid_from_account_currency"]
-                    sales_payment_data.paid_to_account_currency = payment_data["paid_to_account_currency"]
-                    sales_payment_data.paid_amount = payment_data["paid_amount"]
-                    sales_payment_data.received_amount = payment_data["received_amount"]
-                    sales_payment_data.party_type = payment_data.get("party_type")
-                    sales_payment_data.party = payment_data.get("party")
-                    sales_payment_data.reference_no = payment_data.get("reference_no")
-                    sales_payment_data.reference_date = payment_data.get("reference_date")
-                    sales_payment_data.save()
-                    sales_payment_data.submit()
-                    sales_payment_data.remarks = sales_payment_data.remarks + f"\nAmount {sales_payment_data.paid_to_account_currency} {sales_payment_data.paid_amount} against Sales Invoice {sales_invoice_data.name}"
-                    response['payment']= sales_payment_data
-                    return format_result(success="True", result=response, status_code=200)
-                except Exception as e:
-                    raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")        
+                if invoice_res_api_response.status_code == 200:
+                    sales_invoice_data = invoice_res_api_response.json()
+                    sales_invoice_data = sales_invoice_data.get("message")
+                    invoice_url_2 = base + '/api/resource/Sales%20Invoice'
+                    invoice_res_api_response_2 = requests.post(invoice_url_2.replace("'", '"'), headers={
+                        "Authorization": frappe.request.headers["Authorization"]
+                    },data=json.dumps(sales_invoice_data))
+                    sales_invoice_data_2 = invoice_res_api_response_2.json()
+                    sales_invoice_data_2 = sales_invoice_data_2.get("data")
+                    
+                    invoice_url_3 = base + '/api/resource/Sales%20Invoice/'+sales_invoice_data_2.get('name')
+                    res_api_response = requests.post(invoice_url_3.replace("'", '"'), headers={
+                        "Authorization": frappe.request.headers["Authorization"]
+                    },data={ "run_method": "submit" })
+                    
+                    res_api_response_final = requests.get(invoice_url_3.replace("'", '"'), headers={
+                        "Authorization": frappe.request.headers["Authorization"]
+                    },data={})
+                    
+                    sales_invoice_data_2 = res_api_response_final.json().get("data")
+                    response['sales_invoice'] = sales_invoice_data_2
+                    
+                    try:
+                        payment_url = base + '/api/resource/Payment%20Entry'
+                        payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
+                            "Authorization": frappe.request.headers["Authorization"]
+                        },data=json.dumps({
+                            "paid_from": payment_data["paid_from"],
+                            "paid_to": payment_data["paid_to"],
+                            "paid_from_account_currency": payment_data["paid_from_account_currency"],
+                            "paid_to_account_currency": payment_data["paid_to_account_currency"],
+                            "paid_amount": payment_data["paid_amount"],
+                            "received_amount": payment_data["received_amount"],
+                            "party": payment_data.get("party"),
+                            "party_type": payment_data.get("party_type"),
+                            "reference_no": payment_data.get("reference_no"),
+                            "reference_date": payment_data.get("reference_date"),
+                            "references": [{
+                                    "parenttype": "Payment Entry",
+                                    "reference_doctype": "Sales Invoice",
+                                    "reference_name": sales_invoice_data_2.get("name"),
+                                    "due_date": None,
+                                    "bill_no": None,
+                                    "payment_term": None,
+                                    "total_amount": sales_invoice_data_2.get("total"),
+                                    "outstanding_amount": sales_invoice_data_2.get("total"),
+                                    "allocated_amount": sales_invoice_data_2.get("total"),
+                                    "exchange_rate": 0,
+                                    "doctype": "Payment Entry Reference"
+                            }]
+                        }))
+                        if payment_res_api_response.status_code == 200:
+                            payment_data = payment_res_api_response.json()
+                            payment_data = payment_data.get("data")
+                            
+                            payment_url_2 = base + '/api/resource/Payment%20Entry/'+payment_data.get('name')
+                            res_api_response = requests.post(payment_url_2.replace("'", '"'), headers={
+                                "Authorization": frappe.request.headers["Authorization"]
+                            },data={ "run_method": "submit" })
+                            
+                            res_api_response_final = requests.get(payment_url_2.replace("'", '"'), headers={
+                                "Authorization": frappe.request.headers["Authorization"]
+                            },data={})
+                            
+                            payment_data = res_api_response_final.json().get("data")
+                            response['payment']= payment_data
+                            return format_result(success="True", result=response, status_code=200)
+                        else:
+                            raise Exception(f"{str(payment_res_api_response.text)}") 
+                    except Exception as e:
+                        raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")  
+                else:
+                    raise Exception(f"{str(invoice_res_api_response.text)}")
             except Exception as e:
                 if str(e).find("stage #3") >= 0: raise Exception(str(e))
                 raise Exception(f"Error in stage #2 : Creating sales invoice failed : {str(e)}")
