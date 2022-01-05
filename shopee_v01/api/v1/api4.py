@@ -985,7 +985,7 @@ def create_sales_order():
                 },data=json.dumps(dn_raw))
                 res['delivery_note']= delivery_note_api_response.json().get("data").get("name")
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message=str(e),status_code=400)
+                return format_result(success="False",result="Delivery Note Failed",message=str(e))
             return format_result(success="True",result=res)
 
         return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
