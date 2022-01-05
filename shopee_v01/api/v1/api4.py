@@ -1263,10 +1263,10 @@ def submit_and_sales_order_data_for_sales_order_from_web(base, res_api_response)
         "Authorization": frappe.request.headers["Authorization"]
     },data={ "run_method": "submit" })
     
-    res_api_response_final = requests.get(url.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    },data={})
-    sales_order_data = res_api_response_final.json().get("data")
+    # res_api_response_final = requests.get(url.replace("'", '"'), headers={
+    #     "Authorization": frappe.request.headers["Authorization"]
+    # },data={})
+    # sales_order_data = res_api_response_final.json().get("data")
     return sales_order_data
 
 
@@ -1284,10 +1284,10 @@ def submit_and_sales_invoice_data_for_sales_order_from_web(base, invoice_res_api
         "Authorization": frappe.request.headers["Authorization"]
     },data={ "run_method": "submit" })
     
-    res_api_response_final = requests.get(invoice_url_3.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    },data={})
-    sales_invoice_data_2 = res_api_response_final.json().get("data")
+    # res_api_response_final = requests.get(invoice_url_3.replace("'", '"'), headers={
+    #     "Authorization": frappe.request.headers["Authorization"]
+    # },data={})
+    # sales_invoice_data_2 = res_api_response_final.json().get("data")
     return sales_invoice_data_2
 
 
@@ -1331,10 +1331,10 @@ def submit_and_payment_data_for_sales_order_from_web(base, payment_res_api_respo
         "Authorization": frappe.request.headers["Authorization"]
     },data={ "run_method": "submit" })
     
-    res_api_response_final = requests.get(payment_url_2.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    },data={})
-    payment_data = res_api_response_final.json().get("data")
+    # res_api_response_final = requests.get(payment_url_2.replace("'", '"'), headers={
+    #     "Authorization": frappe.request.headers["Authorization"]
+    # },data={})
+    # payment_data = res_api_response_final.json().get("data")
     return payment_data
    
     
@@ -1362,7 +1362,7 @@ def create_sales_order_from_web():
                 base=base,
                 res_api_response=res_api_response
             )
-            response['sales_order'] = sales_order_data
+            response['sales_order'] = sales_order_data.get("name")
             try:
                 invoice_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice'
                 invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
@@ -1374,7 +1374,7 @@ def create_sales_order_from_web():
                         base=base,
                         invoice_res_api_response=invoice_res_api_response
                     )
-                    response['sales_invoice'] = sales_invoice_data_2
+                    response['sales_invoice'] = sales_invoice_data_2.get("name")
                     try:
                         payment_res_api_response = create_payment_for_sales_order_from_web(
                             base=base,
@@ -1386,10 +1386,10 @@ def create_sales_order_from_web():
                                 base=base,
                                 payment_res_api_response=payment_res_api_response
                             )
-                            response['payment']= payment_data
+                            response['payment'] = payment_data.get("name")
                             return format_result(success="True", result=response, status_code=200)
                         else:
-                            raise Exception(f"{str(payment_res_api_response.text)}") 
+                            raise Exception(f"Please, provide valid payment information.") 
                     except Exception as e:
                         raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")  
                 else:
