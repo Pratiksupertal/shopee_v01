@@ -16,7 +16,8 @@ from erpnext.stock.doctype.material_request.material_request import create_pick_
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
 from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 from frappe import _
-
+parts = urlparse(frappe.request.url)
+base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
 def validate_data(data):
     if len(data) == 0 or data is None:
@@ -1006,37 +1007,29 @@ def create_sales_order_all():
                 order["delivery_date"] = today()
             if not order.get("external_so_number") or not  order.get("source_app_name"):
                 raise Exception("Sales order Number and Source app name both are required")
-            new_so = frappe.new_doc("Sales Order")
-            new_so.customer = order.get("customer")
-            new_so.delivery_date = order.get("delivery_date")
-            item_dict = {}
-            for item in order.get("items"):
-                new_so.append("items",{
-                    "description":item['description'],
-                    "item_code":item['item_code'],
-                    "qty":item['qty'],
-                    "rate":item['rate'],
-                    "warehouse":item['warehouse']
-                })
-            new_so.save()
-            new_so.submit()
-            frappe.db.commit()
-            res["sales_order"]= new_so.name
-            try:
-                delivery_note = frappe.new_doc("Delivery Note")
-                delivery_note.customer = order.get("customer")
-                for item in order.get("items"):
-                    delivery_note.append("items", {
-                        "item_code": item['item_code'],
-                        "qty": str(item['qty']),
-                        "warehouse": item['warehouse'],
-                        # "against_sales_order":item['parent']
-                    })
-                delivery_note.save()
-                delivery_note.submit()
-                # res['delivery_note']= delivery_note.name
-            except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message = e)
+            url = base + '/api/resource/Sales%20Order'
+            order["docstatus"]=1
+            res_api_response = requests.post(url.replace("'", '"'), headers={
+                "Authorization": frappe.request.headers["Authorization"]
+            },data=json.dumps(order))
+            if res_api_response.status_code==200:
+                dn_data = res_api_response.json()
+                dn_data = dn_data["data"]
+                dn_json = {}
+                try:
+                    dn_raw_data = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
+                    dn_res_api_response = requests.post(dn_raw_data.replace("'", '"'), headers={
+                        "Authorization": frappe.request.headers["Authorization"]
+                    },data={"source_name": dn_data.get("name")})
+                    dn_raw = dn_res_api_response.json().get("message")
+                    dn_raw['docstatus']=1
+                    dn_url = base + '/api/resource/Delivery%20Note'
+                    delivery_note_api_response = requests.post(dn_url.replace("'", '"'), headers={
+                        "Authorization": frappe.request.headers["Authorization"]
+                    },data=json.dumps(dn_raw))
+                    # return True
+                except Exception as e:
+                    return format_result(success="False",result="Delivery Note Failed",message = e)
             success_count += 1
             result.append({
                     "external_so_number": order.get("external_so_number"),
