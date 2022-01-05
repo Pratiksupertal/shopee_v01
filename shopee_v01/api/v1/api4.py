@@ -973,26 +973,24 @@ def create_sales_order():
             res['sales_order']=dn_data
             dn_json = {}
             try:
-                delivery_note = frappe.new_doc("Delivery Note")
-                delivery_note.customer = dn_data["customer"]
-                for item in dn_data['items']:
-                    delivery_note.append("items", {
-                        "item_code": item['item_code'],
-                        "qty": str(item['qty']),
-                        "warehouse": item['warehouse'],
-                        "rate":item['rate']
-                        # "against_sales_order":item['parent']
-                    })
-                delivery_note.save()
-                delivery_note.submit()
-                res['delivery_note']= delivery_note.name
+                dn_raw_data = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
+                dn_res_api_response = requests.post(dn_raw_data.replace("'", '"'), headers={
+                    "Authorization": frappe.request.headers["Authorization"]
+                },data={"source_name": dn_data.get("name")})
+                dn_raw = dn_res_api_response.json().get("message")
+                dn_raw['docstatus']=1
+                dn_url = base + '/api/resource/Delivery%20Note'
+                delivery_note_api_response = requests.post(dn_url.replace("'", '"'), headers={
+                    "Authorization": frappe.request.headers["Authorization"]
+                },data=json.dumps(dn_raw))
+                res['delivery_note']= delivery_note_api_response.json().get("data").get("name")
             except Exception as e:
                 return format_result(success="False",result="Delivery Note Failed",message = e)
             return format_result(success="True",result=res)
 
         return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
     except Exception as e:
-        return format_result(result="Sales Order not created", message=e,status_code=res_api_response.status_code)
+        return format_result(result="Sales Order not created", message=e)
 
 
 @frappe.whitelist()
