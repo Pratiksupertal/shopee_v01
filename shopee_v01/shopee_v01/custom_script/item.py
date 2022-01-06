@@ -130,7 +130,7 @@ def create_variant(item, args):
 			"attribute_value": args.get(d.attribute)
 		})
     variant.set("attributes", variant_attributes)
-    custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group","valuation_rate","inveinvent_size_id","size_index","warranty_period","model","price","standard_rate"]
+    custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group","valuation_rate","inveinvent_size_id","size_index","warranty_period","model","price","standard_rate","color","status_code"]
     temp = template.__dict__
     for i in custom_fields:
         if template.get(i):
