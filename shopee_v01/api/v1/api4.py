@@ -29,12 +29,19 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def format_result(success=None,result=None, message=None, status_code=None):
+def format_result(success=None,result=None, message=None, status_code=None, exception=None):
     return {
         "success": success,
         "message": message,
         "status_code": str(status_code),
-        "data": result
+        "data": result,
+        "_server_messages": [
+            {
+                "message": exception,
+                "indicator": "red",
+                "raise_exception": 1
+            }
+        ]
     }
 
 
@@ -899,7 +906,7 @@ def stock_entry_send_to_warehouse():
             },
         }
     except Exception as e:
-        return format_result(success = "False",message='Stock Entry is not created', status_code=500)
+        return format_result(success = "False",message='Stock Entry is not created', status_code=500, exception=str(e))
 
 @frappe.whitelist()
 def get_stock_entry_send_to_warehouse():
