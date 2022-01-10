@@ -247,4 +247,4 @@ def stock_entry_receive_at_warehouse():
             },
         }
     except Exception as e:
-        return format_result(success="False",message='Stock Entry is not created', status_code=500)
+        return format_result(success = "False",message='Stock Entry is not created', status_code=500, exception=str(e))
