@@ -1432,3 +1432,66 @@ def filter_picklist():
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
+    
+    
+def data_validation_for_submit_picklist_and_create_stockentry(data):
+    if not data.get("picklist_name"):
+        raise Exception("Required data missing : Unable to proceed : PickList name is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Unable to proceed : Stock Entry Type is required")
+    if not data.get("target_warehouse"):
+        raise Exception("Required data missing : Unable to proceed : Target Warehouse is required")
+
+
+@frappe.whitelist()
+def submit_picklist_and_create_stockentry():
+    try:
+        data = validate_data(frappe.request.data)
+        
+        data_validation_for_submit_picklist_and_create_stockentry(data=data)
+        
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        
+        """Submit Pick List"""
+        
+        url = base + '/api/resource/Pick%20List/'+ data.get('picklist_name')
+        _ = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={ "run_method": "submit" })
+        
+        """GET Pick List Details"""
+        
+        picklist_details = requests.get(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={})
+        
+        if picklist_details.status_code != 200:
+            raise Exception("Picklist name is not found")
+        
+        picklist_details = picklist_details.json().get("data")
+        
+        """Create new stick entry, save and submit"""
+        
+        new_doc_stock_entry = frappe.new_doc('Stock Entry')
+        new_doc_stock_entry.company = picklist_details.get('company')
+        new_doc_stock_entry.purpose = picklist_details.get('purpose')
+        
+        new_doc_stock_entry.pick_list = data.get('picklist_name')
+        
+        for item in picklist_details.get('locations'):
+            new_doc_stock_entry.append("items", {
+                "item_code": item['item_code'],
+                "item_name": item['item_name'],
+                "t_warehouse": data.get("target_warehouse"),
+                "s_warehouse": item['warehouse'],
+                "qty": item['qty']
+            })
+        new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
+        new_doc_stock_entry.save()
+        
+        return format_result(result={'stock entry': new_doc_stock_entry.name,
+                                 'items': new_doc_stock_entry.items
+                                 }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
