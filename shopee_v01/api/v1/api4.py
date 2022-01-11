@@ -264,6 +264,7 @@ def products():
         query_limit = len(data_list)
         query_page = 0
 
+
     result = []
 
     for i in each_data_list:
@@ -1399,3 +1400,35 @@ def create_sales_order_from_web():
             raise Exception(f"Error in stage #1 : Creating sales order failed : Please, provide valid order information.")
     except Exception as e:
         return format_result(success=False, result=response, message=str(e), status_code=400)
+
+
+@frappe.whitelist()
+def filter_picklist():
+    try:
+        url = frappe.request.url
+        docstatus = parse_qs(urlparse(url).query).get('docstatus')
+        purpose = parse_qs(urlparse(url).query).get('purpose')
+        if docstatus is not None: docstatus = docstatus[0]
+        if purpose is not None: purpose = purpose[0]
+        filtered_picklist = frappe.db.get_list('Pick List',
+                filters={
+                    'docstatus': docstatus,
+                    'purpose': purpose
+                },
+                fields=['name']
+        )
+        result = [
+            {
+                "name": pl.get("name"),
+                "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
+                    filters={
+                        'parent': pl.get("name"),
+                        'parentfield': 'locations'
+                    },
+                    fields=['sales_order']
+                )]))
+            } for pl in filtered_picklist
+        ]
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
