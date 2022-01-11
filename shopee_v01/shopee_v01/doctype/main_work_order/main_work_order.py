@@ -61,7 +61,8 @@ class MainWorkOrder(Document):
 					"bom":row.bom
 				})
 				doc.reference_main_work_order = self.name
-				taxes_and_charges = frappe.get_doc('Purchase Taxes and Charges Template',{"tax_category":doc.tax_category,"is_default":1})
+				tax_category = frappe.get_value("Supplier",doc.supplier,"tax_category")
+				taxes_and_charges = frappe.get_doc('Purchase Taxes and Charges Template',{"tax_category":tax_category})
 				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', taxes_and_charges.name)
 				doc.append("taxes",{
 					"category" : "Total",
