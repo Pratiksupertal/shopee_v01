@@ -1447,18 +1447,11 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
 def submit_picklist_and_create_stockentry():
     try:
         data = validate_data(frappe.request.data)
-        
         data_validation_for_submit_picklist_and_create_stockentry(data=data)
         
         parts = urlparse(frappe.request.url)
         base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
-        
-        """Submit Pick List"""
-        
         url = base + '/api/resource/Pick%20List/'+ data.get('picklist_name')
-        _ = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
         
         """GET Pick List Details"""
         
@@ -1470,6 +1463,15 @@ def submit_picklist_and_create_stockentry():
             raise Exception("Picklist name is not found")
         
         picklist_details = picklist_details.json().get("data")
+        
+        if picklist_details.get("docstatus") != 0:
+            raise Exception(f"Unable to proceed : Pick List - {data.get('picklist_name')} already submitted")
+        
+        """Submit Pick List"""
+        
+        _ = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={ "run_method": "submit" })
         
         """Create new stick entry, save and submit"""
         
