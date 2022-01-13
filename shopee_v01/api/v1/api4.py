@@ -1497,3 +1497,35 @@ def submit_picklist_and_create_stockentry():
                                  }, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
+    
+
+@frappe.whitelist()
+def filter_stock_entry():
+    try:
+        url = frappe.request.url
+        stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')
+        purpose = parse_qs(urlparse(url).query).get('purpose')
+        if stock_entry_type is not None: docstatus = stock_entry_type[0]
+        if purpose is not None: purpose = purpose[0]
+        filtered_picklist = frappe.db.get_list('Stock Entry',
+                filters={
+                    'stock_entry_type': stock_entry_type,
+                    'purpose': purpose
+                },
+                fields=['name']
+        )
+        result = [
+            {
+                "name": pl.get("name"),
+                "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
+                    filters={
+                        'parent': pl.get("name"),
+                        'parentfield': 'locations'
+                    },
+                    fields=['sales_order']
+                )]))
+            } for pl in filtered_picklist
+        ]
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
