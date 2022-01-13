@@ -1415,18 +1415,19 @@ def filter_picklist():
                     'docstatus': docstatus,
                     'purpose': purpose
                 },
-                fields=['name']
+                fields=['name', 'customer']
         )
         result = [
             {
                 "name": pl.get("name"),
+                "customer": pl.get("customer"),
                 "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': pl.get("name"),
                         'parentfield': 'locations'
                     },
                     fields=['sales_order']
-                )]))
+                )]))[0]
             } for pl in filtered_picklist
         ]
         return format_result(result=result, success=True, status_code=200, message='Data Found')
@@ -1527,7 +1528,7 @@ def submit_picklist_and_create_stockentry():
         )
         
         return format_result(result={'stock entry': new_doc_stock_entry.name,
-                                 'items': new_doc_stock_entry.items
-                                 }, success=True, message='Data Created', status_code=200)
+                             'items': new_doc_stock_entry.items
+        }, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
