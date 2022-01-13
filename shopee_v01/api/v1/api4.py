@@ -1415,18 +1415,19 @@ def filter_picklist():
                     'docstatus': docstatus,
                     'purpose': purpose
                 },
-                fields=['name']
+                fields=['name', 'customer']
         )
         result = [
             {
                 "name": pl.get("name"),
+                "customer": pl.get("customer"),
                 "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': pl.get("name"),
                         'parentfield': 'locations'
                     },
                     fields=['sales_order']
-                )]))
+                )]))[0]
             } for pl in filtered_picklist
         ]
         return format_result(result=result, success=True, status_code=200, message='Data Found')
