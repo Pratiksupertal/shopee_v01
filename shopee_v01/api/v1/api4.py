@@ -1443,6 +1443,44 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Unable to proceed : Target Warehouse is required")
 
 
+def check_all_item_processed_or_not(picklist_details):
+    try:
+        for item in picklist_details.get('locations'):
+            print(item['item_code'], item['picked_qty'], item['sales_order'])
+            soi_qty = frappe.db.get_list('Sales Order Item',
+                filters={
+                    'parent': item['sales_order'],
+                    'item_code': item['item_code']
+                },
+                fields=['qty']
+            )
+            if not soi_qty[0].get('qty') == item['picked_qty']:
+                raise Exception(f"Unable to proceed : Item - {item['item_code']} is not fully processed.")
+    except Exception as e:
+        raise Exception(f'{str(e)}')
+
+
+def create_new_stock_entry_for_warehouse(picklist_details, data):
+    new_doc_stock_entry = frappe.new_doc('Stock Entry')
+    new_doc_stock_entry.company = picklist_details.get('company')
+    new_doc_stock_entry.purpose = picklist_details.get('purpose')
+    
+    new_doc_stock_entry.pick_list = data.get('picklist_name')
+    
+    for item in picklist_details.get('locations'):
+        new_doc_stock_entry.append("items", {
+            "item_code": item['item_code'],
+            "item_name": item['item_name'],
+            "t_warehouse": data.get("target_warehouse"),
+            "s_warehouse": item['warehouse'],
+            "qty": item['qty']
+        })
+    new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
+    new_doc_stock_entry.save()
+    new_doc_stock_entry.submit()
+    return new_doc_stock_entry
+
+
 @frappe.whitelist()
 def submit_picklist_and_create_stockentry():
     try:
@@ -1464,8 +1502,16 @@ def submit_picklist_and_create_stockentry():
         
         picklist_details = picklist_details.json().get("data")
         
+        """check is it already submitted or not, if submitted, then raise exception"""
+        
         if picklist_details.get("docstatus") != 0:
             raise Exception(f"Unable to proceed : Pick List - {data.get('picklist_name')} already submitted")
+        
+        """check all item processed or not, if not, raise exception"""
+        
+        check_all_item_processed_or_not(picklist_details=picklist_details)
+        
+        """___all looks good___time to proceed___"""
         
         """Submit Pick List"""
         
@@ -1475,22 +1521,10 @@ def submit_picklist_and_create_stockentry():
         
         """Create new stick entry, save and submit"""
         
-        new_doc_stock_entry = frappe.new_doc('Stock Entry')
-        new_doc_stock_entry.company = picklist_details.get('company')
-        new_doc_stock_entry.purpose = picklist_details.get('purpose')
-        
-        new_doc_stock_entry.pick_list = data.get('picklist_name')
-        
-        for item in picklist_details.get('locations'):
-            new_doc_stock_entry.append("items", {
-                "item_code": item['item_code'],
-                "item_name": item['item_name'],
-                "t_warehouse": data.get("target_warehouse"),
-                "s_warehouse": item['warehouse'],
-                "qty": item['qty']
-            })
-        new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
-        new_doc_stock_entry.save()
+        new_doc_stock_entry = create_new_stock_entry_for_warehouse(
+            picklist_details=picklist_details,
+            data=data
+        )
         
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
