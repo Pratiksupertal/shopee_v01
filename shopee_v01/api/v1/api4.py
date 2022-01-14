@@ -1536,32 +1536,51 @@ def submit_picklist_and_create_stockentry():
     
 
 @frappe.whitelist()
-def filter_stock_entry():
+def filter_stock_entry_for_warehouse_app():
     try:
         url = frappe.request.url
         stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')
-        purpose = parse_qs(urlparse(url).query).get('purpose')
-        if stock_entry_type is not None: docstatus = stock_entry_type[0]
-        if purpose is not None: purpose = purpose[0]
-        filtered_picklist = frappe.db.get_list('Stock Entry',
+        order_purpose = parse_qs(urlparse(url).query).get('order_purpose')
+        if stock_entry_type is not None: stock_entry_type = stock_entry_type[0]
+        if order_purpose is not None: order_purpose = order_purpose[0]
+        
+        """filter by 
+        1. stock entry type as per request
+        2. not fully transferred (status in Draft or Goods In Transit)
+        3. picklist be there
+        """
+        filtered_se = frappe.db.get_list('Stock Entry',
                 filters={
                     'stock_entry_type': stock_entry_type,
-                    'purpose': purpose
+                    'per_transferred': ('!=', int(100)),
+                    'pick_list': ('not in', (None, ''))
                 },
-                fields=['name']
+                fields=['name', 'pick_list']
         )
-        result = [
-            {
-                "name": pl.get("name"),
-                "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
+        
+        """filter by
+        4. order purpose as per request
+        """
+        filtered_se = [se for se in filtered_se
+            if order_purpose == frappe.db.get_value('Pick List', se.get('pick_list'), 'purpose')
+        ]
+        
+        """find and add other necessary fields"""
+        for se in filtered_se:
+            se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
+            items = frappe.db.get_list('Pick List Item',
                     filters={
-                        'parent': pl.get("name"),
+                        'parent': se.get("pick_list"),
                         'parentfield': 'locations'
                     },
-                    fields=['sales_order']
-                )]))
-            } for pl in filtered_picklist
-        ]
-        return format_result(result=result, success=True, status_code=200, message='Data Found')
+                    fields=['sales_order', 'qty']
+                )
+            print(se, items)
+            if len(items) < 1: continue
+            se['sales_order'] = items[0].get('sales_order')
+            se['total_product'] = len(items)
+            se['total qty'] = sum([it['qty'] for it in items])
+        
+        return format_result(result=filtered_se, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
