@@ -1253,6 +1253,8 @@ def data_validation_for_create_sales_order_web(order_data, payment_data):
         raise Exception("Required data missing : Unable to proceed : Reference no is required")
     if not payment_data.get("reference_date"):
         raise Exception("Required data missing : Unable to proceed : Reference date is required")
+    if not payment_data.get("mode_of_payment"):
+        raise Exception("Required data missing : Unable to proceed : Payment Mode is required")
 
 
 def submit_and_sales_order_data_for_sales_order_from_web(base, res_api_response):
@@ -1292,9 +1294,7 @@ def submit_and_sales_invoice_data_for_sales_order_from_web(base, invoice_res_api
 
 def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_data_2):
     payment_url = base + '/api/resource/Payment%20Entry'
-    payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    },data=json.dumps({
+    payment_data_final = {
         "paid_from": payment_data["paid_from"],
         "paid_to": payment_data["paid_to"],
         "paid_from_account_currency": payment_data["paid_from_account_currency"],
@@ -1305,6 +1305,7 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
         "party_type": payment_data.get("party_type"),
         "reference_no": payment_data.get("reference_no"),
         "reference_date": payment_data.get("reference_date"),
+        "mode_of_payment": payment_data.get("mode_of_payment"),
         "references": [{
                 "parenttype": "Payment Entry",
                 "reference_doctype": "Sales Invoice",
@@ -1318,7 +1319,12 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
                 "exchange_rate": 0,
                 "doctype": "Payment Entry Reference"
         }]
-    }))
+    }
+    if payment_data.get("payment_type"):
+        payment_data_final["payment_type"] = payment_data.get("payment_type")
+    payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
+        "Authorization": frappe.request.headers["Authorization"]
+    },data=json.dumps(payment_data_final))
     return payment_res_api_response
 
 
