@@ -207,6 +207,7 @@ def purchases():
                 "price": str(int(i.amount) if i.amount else ''),
                 "warehouse":i.warehouse,
                 "quantity": str(int(i.qty) if i.qty else ''),
+                "received_qty": str(int(i.received_qty) if i.received_qty else ''),
                 "unit_id": str(i.idx),
                 "discount": str(int(i.discount_amount) if i.discount_amount else ''),
                 "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
