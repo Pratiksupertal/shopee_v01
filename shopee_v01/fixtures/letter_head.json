@@ -1,0 +1,34 @@
+[
+ {
+  "content": "",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Letter Head",
+  "footer": null,
+  "image": null,
+  "is_default": 0,
+  "letter_head_name": "Sales Invoice Letter Head",
+  "modified": "2022-01-07 19:05:03.965513",
+  "name": "Sales Invoice Letter Head",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source": "Image"
+ },
+ {
+  "content": "<center><img src=\"/files/test.jpg\" style=\"width: 100%;\"></center> ",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Letter Head",
+  "footer": "",
+  "image": "/files/Kop Surat.jpg",
+  "is_default": 1,
+  "letter_head_name": "Purchase Order Letter Head",
+  "modified": "2022-01-14 10:36:22.374141",
+  "name": "Purchase Order Letter Head",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source": "HTML"
+ }
+]
