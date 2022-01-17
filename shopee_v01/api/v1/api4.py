@@ -16,6 +16,7 @@ from erpnext.stock.doctype.material_request.material_request import create_pick_
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
 from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 from frappe import _
+from frappe.utils import now_datetime
 parts = urlparse(frappe.request.url)
 base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
@@ -30,6 +31,8 @@ def validate_data(data):
 
 
 def format_result(success=None,result=None, message=None, status_code=None, exception=None):
+    indicator = "green" if success ==True else "red"
+    exception_code = 0 if success == True else 1
     return {
         "success": success,
         "message": message,
@@ -38,8 +41,8 @@ def format_result(success=None,result=None, message=None, status_code=None, exce
         "_server_messages": [
             {
                 "message": exception,
-                "indicator": "red",
-                "raise_exception": 1
+                "indicator": indicator,
+                "raise_exception": exception_code
             }
         ]
     }
@@ -1517,5 +1520,36 @@ def create_receive_at_warehouse():
             return format_result(result=result, success=True, status_code=200, message='Data Found')
         else:
             return format_result(message="Received at warehouse is already done for this Stock entry",success=False)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
+
+@frappe.whitelist()
+def create_material_transfer_for_picklist():
+    try:
+        data = validate_data(frappe.request.data)
+        pick_list = data.get("pick_list")
+        picklist = frappe.get_doc("Pick List",pick_list)
+        new_doc = frappe.new_doc('Stock Entry')
+        new_doc.pick_list =pick_list
+        new_doc.start_time = now_datetime()
+        new_doc.end_time = now_datetime()
+        new_doc.purpose = 'Material Transfer'
+        new_doc.set_stock_entry_type()
+        for item in picklist.locations:
+            new_doc.append("items", {
+                "item_code": item.item_code,
+                "qty": item.qty,
+                "s_warehouse":item.warehouse,
+                "t_warehouse": data['t_warehouse']
+            })
+
+        new_doc.save()
+        new_doc.submit()
+        result = {
+                    "Stock Entry":new_doc.name,
+                    "Purpose":new_doc.purpose,
+                    "Pick List":new_doc.pick_list
+                }
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
