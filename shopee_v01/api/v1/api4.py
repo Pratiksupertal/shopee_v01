@@ -35,7 +35,8 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
         success = True if status_code in [None, 200, 201] and not exception else False
     if status_code == None:
         status_code = 200 if success and not exception else 400
-    message = exception if not message and exception else "success"
+    if message == None:
+        message = exception if not message and exception else "success"
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
     return {
