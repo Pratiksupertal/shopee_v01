@@ -1562,22 +1562,28 @@ def data_validation_for_save_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Item code is required")
     if not data.get("picked_qty"):
         raise Exception("Required data missing : Picked quantity is required")
+    if not data.get("warehouse_sorted_location"):
+        raise Exception("Required data missing : Warehouse sorted location is required")
+    if not data.get("warehouse_location"):
+        raise Exception("Required data missing : Warehouse location is required")
     if not data.get("t_warehouse"):
         raise Exception("Required data missing : Target Warehouse is required")
     if not data.get("stock_entry_type"):
         raise Exception("Required data missing : Stock entry type is required")
 
 
-def picklist_item(pick_list, item_code, parentfield):
+def picklist_item(data, parentfield):
+    warehouse = data.get('warehouse_location') if parentfield == 'locations' else data.get('warehouse_sorted_location')
     item = frappe.db.get_list('Pick List Item',
                 filters={
-                    'parent': pick_list,
-                    'item_code': item_code,
+                    'parent': data.get("pick_list"),
+                    'item_code': data.get('item_code'),
+                    'warehouse': warehouse,
                     'parentfield': parentfield
                 },
                 fields=['name', 'item_name', 'qty', 'picked_qty', 'warehouse']
             )
-    if len(item) < 1: raise Exception('Pick list or item code invalid!')
+    if len(item) < 1: raise Exception('Pick list, item code or warehouse invalid!')
     return item[0]
 
 
@@ -1592,8 +1598,7 @@ def create_new_stock_entry_for_single_item(data):
     
     """GET Pick List Item (locations) Details"""
     item = picklist_item(
-        pick_list=data.get('pick_list'),
-        item_code=data.get('item_code'),
+        data=data,
         parentfield='locations'
     )
     
@@ -1619,8 +1624,7 @@ def save_picklist_and_create_stockentry():
         
         """GET Pick List Item (sorted_locations) Details"""
         item_of_sorted_loc = picklist_item(
-            pick_list=data.get('pick_list'),
-            item_code=data.get('item_code'),
+            data=data,
             parentfield='sorted_locations'
         )
         
