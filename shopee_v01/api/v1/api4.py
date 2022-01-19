@@ -1427,8 +1427,19 @@ def filter_picklist():
                 },
                 fields=['name', 'customer']
         )
-        result = [
-            {
+        result = []
+        for pl in filtered_picklist:
+            items = frappe.db.get_list('Pick List Item',
+                    filters={
+                        'parent': pl.get("name"),
+                        'parentfield': 'sorted_locations'
+                    },
+                    fields=['qty', 'picked_qty']
+                )
+            sum_qty = sum([it.get('qty') for it in items])
+            sum_picked_qty = sum([it.get('picked_qty') for it in items])
+            
+            result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
                 "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
@@ -1437,9 +1448,10 @@ def filter_picklist():
                         'parentfield': 'locations'
                     },
                     fields=['sales_order']
-                )]))[0]
-            } for pl in filtered_picklist
-        ]
+                )]))[0],
+                "total_product": len(items),
+                "total_qty": f"{sum_picked_qty}/{sum_qty}"
+            })
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
