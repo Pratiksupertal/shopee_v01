@@ -214,5 +214,89 @@
   "parenttype": null,
   "style": "",
   "workflow_state_name": "Checking PO by Purchaser"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:13:48.650136",
+  "name": "Checking PI by Purchaser",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Checking PI by Purchaser"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:14:02.356932",
+  "name": "Approved by Accounts Manager",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Approved by Accounts Manager"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:14:16.536271",
+  "name": "Pending by Purchase AP",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Pending by Purchase AP"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:26:14.276105",
+  "name": "Rejected by Purchase AP",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Rejected by Purchase AP"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:26:36.883934",
+  "name": "Approved by Purchase AP",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Approved by Purchase AP"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:27:05.700307",
+  "name": "Pending by Accounts Manger",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Pending by Accounts Manger"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-12-20 15:27:29.792237",
+  "name": "Rejected by Accounts Manager",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Rejected by Accounts Manager"
  }
 ]

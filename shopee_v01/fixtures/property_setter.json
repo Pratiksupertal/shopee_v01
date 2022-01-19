@@ -1,5 +1,53 @@
 [
-  {
+ {
+  "default_value": null,
+  "doc_type": "Budget",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "budget_against",
+  "modified": "2021-12-08 19:13:31.984486",
+  "name": "Budget-budget_against-options",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "options",
+  "property_type": "Text",
+  "value": "\nCost Center\nProject\n\nBranch\nDepartment\nDivision Group\nBrand\nCustomer Group"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Order Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "base_rate",
+  "modified": "2021-11-22 12:44:06.586300",
+  "name": "Sales Order Item-base_rate-hidden",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "hidden",
+  "property_type": "Check",
+  "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Consolidated SI Items",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "barcode",
+  "modified": "2021-12-22 09:54:54.212608",
+  "name": "Consolidated SI Items-barcode-hidden",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "hidden",
+  "property_type": "Check",
+  "value": "0"
+ },
+ {
   "default_value": null,
   "doc_type": "Purchase Order",
   "docstatus": 0,
@@ -61,7 +109,7 @@
   "parenttype": null,
   "property": "options",
   "property_type": "Text",
-  "value": "SAL-ORD-.YYYY.-"
+  "value": "SAL-ORD-.YYYY.-\nSAL-ORD-.YYYY..MM.-\n"
  },
  {
   "default_value": null,
@@ -2398,5 +2446,53 @@
   "property": "in_list_view",
   "property_type": "Check",
   "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Order",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2021-12-22 11:32:24.212185",
+  "name": "Sales Order-naming_series-default",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "default",
+  "property_type": "Text",
+  "value": "SAL-ORD-.YYYY..MM.-"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Invoice",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2021-12-22 12:12:54.438101",
+  "name": "Sales Invoice-naming_series-options",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "options",
+  "property_type": "Text",
+  "value": "ACC-SINV-.YYYY.-\nACC-SINV-.YYYY..MM.-\n"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Sales Invoice",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "naming_series",
+  "modified": "2021-12-22 12:12:54.483714",
+  "name": "Sales Invoice-naming_series-default",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "default",
+  "property_type": "Text",
+  "value": "ACC-SINV-.YYYY..MM.-"
  }
 ]

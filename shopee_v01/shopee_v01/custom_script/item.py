@@ -6,20 +6,21 @@ from frappe.utils import cstr, flt
 
 def validate(doc,method):
     try:
-        if doc.get("__islocal"):
-            sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
-            pre_barcode = frappe.db.sql(sql,as_dict=True)
-            barcode = int(pre_barcode[0].barcode)+1
-            if len(pre_barcode)>0:
-                barcode = barcode_design(barcode)
-                doc.append("barcodes",{
-                "barcode":str(barcode)
-                })
-            else:
-                doc.append("barcodes",{
-                "barcode":"1000001"
-                })
-        doc.item_bar_code = doc.barcodes[0].barcode
+        if not doc.upload:
+            if doc.get("__islocal"):
+                sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
+                pre_barcode = frappe.db.sql(sql,as_dict=True)
+                barcode = int(pre_barcode[0].barcode)+1
+                if len(pre_barcode)>0:
+                    barcode = barcode_design(barcode)
+                    doc.append("barcodes",{
+                    "barcode":str(barcode)
+                    })
+                else:
+                    doc.append("barcodes",{
+                    "barcode":"1000001"
+                    })
+            doc.item_bar_code = doc.barcodes[0].barcode
     except :
         raise
 
@@ -130,7 +131,7 @@ def create_variant(item, args):
 			"attribute_value": args.get(d.attribute)
 		})
     variant.set("attributes", variant_attributes)
-    custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group","valuation_rate","inveinvent_size_id","size_index","warranty_period","model","price","standard_rate"]
+    custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group","valuation_rate","inveinvent_size_id","size_index","warranty_period","model","price","standard_rate","color","status_code"]
     temp = template.__dict__
     for i in custom_fields:
         if template.get(i):
