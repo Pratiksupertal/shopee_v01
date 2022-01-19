@@ -1553,3 +1553,94 @@ def create_material_transfer_for_picklist():
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
+
+
+def data_validation_for_submit_picklist_and_create_stockentry(data):
+    if not data.get("pick_list"):
+        raise Exception("Required data missing : Pick List name is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Stock Entry Type is required")
+    if not data.get("s_warehouse"):
+        raise Exception("Required data missing : Source Warehouse is required")
+    if not data.get("t_warehouse"):
+        raise Exception("Required data missing : Target Warehouse is required")
+
+
+def picklist_details_for_warehouse_app(url):
+    picklist_details = requests.get(url.replace("'", '"'), headers={
+        "Authorization": frappe.request.headers["Authorization"]
+    },data={})
+    if picklist_details.status_code != 200:
+        raise Exception("Picklist name is not found")
+    return picklist_details.json().get("data")
+
+
+def validation_to_proceed_for_submit_picklist_and_create_stockentry(data, picklist_details):
+    if picklist_details.get("docstatus") != 0:
+            raise Exception(f"Unable to proceed with this picklist : Pick List - {data.get('pick_list')} already submitted or cancelled")
+    for item in picklist_details.get('sorted_locations'):
+        if item['qty'] > item['picked_qty']:
+            raise Exception(f"Unable to proceed : {item['item_name']} is not fully transferred. Total qty to transfer is {item['qty']}. Transferred qty is {item['picked_qty']}.")
+
+
+def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, picklist_details):
+    new_doc_stock_entry = frappe.new_doc('Stock Entry')
+    new_doc_stock_entry.company = picklist_details.get('company')
+    new_doc_stock_entry.purpose = picklist_details.get('purpose')
+    
+    new_doc_stock_entry.pick_list = data.get('pick_list')
+    
+    for item in picklist_details.get('locations'):
+        new_doc_stock_entry.append("items", {
+            "item_code": item['item_code'],
+            "item_name": item['item_name'],
+            "t_warehouse": data.get("t_warehouse"),
+            "s_warehouse": data.get("s_warehouse"),
+            "qty": item['qty']
+        })
+    new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
+    new_doc_stock_entry.save()
+    return new_doc_stock_entry
+
+
+@frappe.whitelist()
+def submit_picklist_and_create_stockentry():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_submit_picklist_and_create_stockentry(data=data)
+        
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        url = base + '/api/resource/Pick%20List/'+ data.get('pick_list')
+        
+        """GET Pick List Details"""
+        
+        picklist_details = picklist_details_for_warehouse_app(url=url)
+        
+        """Check is all item picked and all good to go"""
+        
+        validation_to_proceed_for_submit_picklist_and_create_stockentry(
+            data=data,
+            picklist_details=picklist_details
+        )
+        
+        """___ALL GOOD TO GO___"""
+        
+        """Submit Pick List"""
+        
+        _ = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={ "run_method": "submit" })
+        
+        """Create new stick entry, save and submit"""
+        
+        new_doc_stock_entry = create_and_submit_stock_entry_submit_picklist_and_create_stockentry(
+            data=data,
+            picklist_details=picklist_details
+        )
+        
+        return format_result(result={'stock entry': new_doc_stock_entry.name,
+                                 'items': new_doc_stock_entry.items
+                                 }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
