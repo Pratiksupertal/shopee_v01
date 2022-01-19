@@ -1612,6 +1612,7 @@ def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, pi
         })
     new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
     new_doc_stock_entry.save()
+    new_doc_stock_entry.submit()
     return new_doc_stock_entry
 
 
