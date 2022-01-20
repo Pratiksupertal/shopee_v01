@@ -209,8 +209,8 @@ def purchases():
                 "barcode": fill_barcode(i.item_code),
                 "price": str(int(i.amount) if i.amount else ''),
                 "warehouse":i.warehouse,
-                "quantity": str(int(i.qty) if i.qty else ''),
-                "received_qty": str(int(i.received_qty) if i.received_qty else ''),
+                "quantity": int(i.qty) if i.qty else '0',
+                "received_qty": int(i.received_qty) if i.received_qty else '0',
                 "unit_id": str(i.idx),
                 "discount": str(int(i.discount_amount) if i.discount_amount else ''),
                 "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
@@ -402,8 +402,25 @@ def purchaseReceive():
                     "qty": item['quantity'],
                     "purchase_order":item['purchase_id']
                 })
+                """Adding receive_qty"""
+                purchase_order_item = frappe.db.get_list('Purchase Order Item',
+                                       filters = {
+                                           'parent': item['purchase_id'],
+                                           'item_code': item['purchase_product_id'],
+                                       },
+                                       fields=['name', 'received_qty']
+                                       )
+                if len(purchase_order_item)==1:
+                    purchase_order_item=purchase_order_item[0]
+                    frappe.db.set_value('Purchase Order Item', purchase_order_item.get('name'), {
+                        'received_qty': purchase_order_item.get('received_qty') + item['quantity']
+                    })
+                else:
+                    print(purchase_order_item, item['purchase_id'], item['purchase_product_id'])
+
             new_doc.insert()
             new_doc.submit()
+
             return format_result(status_code=200, message='Purchase Receipt Created', result={
                 "id": str(new_doc.name),
                 "receive_number": new_doc.name,
