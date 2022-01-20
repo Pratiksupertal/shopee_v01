@@ -1450,7 +1450,8 @@ def filter_picklist():
                     fields=['sales_order']
                 )]))[0],
                 "total_product": len(items),
-                "total_qty": f"{sum_picked_qty}/{sum_qty}"
+                "total_qty": sum_qty,
+                "total_qty_received": sum_picked_qty
             })
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
