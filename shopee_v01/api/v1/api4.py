@@ -1665,7 +1665,7 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Target Warehouse is required")
 
 
-def picklist_details_for_warehouse_app(url):
+def picklist_details_for_submit_picklist_and_create_stockentry(url):
     picklist_details = requests.get(url.replace("'", '"'), headers={
         "Authorization": frappe.request.headers["Authorization"]
     },data={})
@@ -1719,7 +1719,7 @@ def submit_picklist_and_create_stockentry():
         
         """GET Pick List Details"""
         
-        picklist_details = picklist_details_for_warehouse_app(url=url)
+        picklist_details = picklist_details_for_submit_picklist_and_create_stockentry(url=url)
         
         # """Check is all item picked and all good to go"""
         
@@ -1746,5 +1746,48 @@ def submit_picklist_and_create_stockentry():
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
                                  }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
+    
+@frappe.whitelist()
+def picklist_details_for_warehouse_app():
+    try:
+        pick_list = get_last_parameter(frappe.request.url, 'picklist_details_for_warehouse_app')
+        
+        print(pick_list, '\n\n\n')
+        
+        picklist_details = frappe.db.get_value('Pick List', pick_list, [
+            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified'
+        ], as_dict=1)
+        
+        if not picklist_details:
+            raise Exception('Invalid pick list name')
+        
+        items = frappe.db.get_list('Pick List Item',
+            filters={
+                'parent': pick_list,
+                'parentfield': 'locations'
+            },
+            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+        )
+        
+        picklist_details.sales_order = items[0].sales_order
+        
+        so_details = frappe.db.get_value('Sales Order', picklist_details.sales_order, [
+            'creation', 'delivery_date'
+        ], as_dict=1)
+        
+        picklist_details.so_date = so_details.creation
+        picklist_details.delivery_date = so_details.delivery_date
+        
+        for it in items:
+            it.picked_qty = it.qty - it.picked_qty
+            
+        picklist_details.items = items        
+        
+        return format_result(result={
+            'pick_list': picklist_details
+        }, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
