@@ -1,0 +1,197 @@
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+<div class="print-heading">
+	<h2>Purchase Invoice<br><small>{{ doc.name }}</small></h2>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Supplier Name</b></td>
+        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+      </tr>
+    </table>
+	<br>
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">Due Date</td>
+        <td width="60%">{{ doc.due_date or '' }}</td>
+      </tr>
+    </table>
+	<br>
+	<table width="100%" style="table-layout: auto;">
+      <tr>
+        <td width="40%">{% if doc.address_display is not none %} Address {% endif %}
+		</td>
+        <td width="60%"><b>{% if doc.address_display is not none %} {{ doc.address_display or '' }} {% endif %}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+  </div>
+</div>
+<br><table width="100%" style="table-layout: auto; overflow-x:auto;" border="1px" bordercolor="#d1d8dd">
+    <tr>
+        <th class="tac" width="6%"><b>No.</b></th>
+        <th class="tac" width="18%"><b>Nama Barang</b></th>
+        <th class="tac" width="32%"><b>Deskripsi</b></th>
+        <th class="tac" width="15%"><b>Received Qty</b></th>
+        <th class="tac" width="15%"><b>Accepted Qty</b></th>
+        <th class="tac" width="15%"><b>Rejected Qty</b></th>
+        <th class="tac" width="15%"><b>Diskon</b></th>
+        <th class="tac" width="15%"><b>Harga</b></th>
+        <th class="tac" width="20%"><b>Total</b></th>
+        <th class="tac" width="15%"><b>Accepted Warehouse</b></th>
+        <th class="tac" width="15%"><b>Purchase Order</b></th>
+    </tr>
+
+{% set amt=namespace(price_amount=0) %}
+{% set uom=namespace(uom_name="") %}
+{% set disc=namespace(discount=0) %}
+{% for row in doc.items %}
+<tr>
+        <td class="tac" width="6%">{{ row.idx or '' }}</td>
+        <td width="18%">{{ row.item_name or '' }}</td>
+        <td width="32%">{{ row.description or '' }}</td>
+        <td class="tac" width="15%"> {{row.qty}}&nbsp; {{ row.uom or 0}}</td>
+        {% set uom.uom_name= row.uom%}
+    <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+        <td class="tac" width="15%"> {% if doc.currency == "IDR" %}
+          {{doc.currency}} {{ row.discount_amount or '0'}} {% endif %} {% if doc.currency == "USD" %}
+          {{doc.currency}} {{ row.discount_amount or '0'}} {% endif %}
+        </td>
+        <td class="tac" width="15%"> {% if doc.currency == "IDR" %}
+          {{doc.currency}} {{ row.rate or ''}} {% endif %} {% if doc.currency == "USD" %}
+          {{doc.currency}} {{ row.rate or ''}} {% endif %}
+        </td>
+        <td class="tac" width="20%"> {% if doc.currency == "IDR" %}
+          {{doc.currency}} {{ row.amount or ''}} {% endif %} {% if doc.currency == "USD" %}
+          {{doc.currency}} {{ row.amount or ''}} {% endif %}
+        </td>
+        <td width="15%">{{ row.weight_per_unit or 0 }}</td>
+        <td width="15%">{{ row.total_weight or 0 }}</td>
+        <td width="15%">{{ doc.set_warehouse or "" }}</td>
+        <td width="15%">{{ row.purchase_order or "" }}</td>
+    </tr>
+{% endfor %}
+</table><br>
+
+{% set tot_disc = disc.discount+doc.discount_amount %}
+{% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+{% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+{% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+{% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
+{% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+{% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+{% set tot_disc = disc.discount+doc.discount_amount %}
+{% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+{% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
+      <tr>
+        <td class="tac" colspan="6">Total Quantity</td>
+		<td class="tac">{{uom.uom_name}}&nbsp;{{doc.total_qty}}</td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;    margin-left: 15px;">
+      <tr>
+		<td colspan="6"><b>Total</b></td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ doc.total or '0'}}</td>
+	  </tr>
+	</table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: auto;    margin-left: 15px;">
+      <tr>
+		<td colspan="6"><b>Diskon</b></td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ disc.discount+doc.discount_amount or '0'}}</td>
+	  </tr>
+	</table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: auto;    margin-left: 15px;">
+      <tr>
+        <td colspan="6"><b>Total setelah Diskon</b></td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ doc.net_total }}</td>
+      </tr>
+	</table>
+  </div>
+</div>
+<div class="row section-break f_font">
+    <div class="col-xs-6">
+    </div>
+	<div class="col-xs-6">
+	  <table width="100%" style="table-layout: auto;    margin-left: 15px;">
+		  {% if doc.taxes_and_charges %}
+		  <tr>
+			<td colspan="6"><b>PPN</b></td>
+			<td colspan="6" style="text-align: right;"> {{doc.currency}} {{doc.total_taxes_and_charges}}
+			</td>
+		  </tr>
+		  {% endif %}
+		<tr>
+	  </table>
+	</div>
+</div>
+<div class="row section-break f_font">
+    <div class="col-xs-6">
+    </div>
+	<div class="col-xs-6">
+	   <table width="100%" style="table-layout: auto;    margin-left: 15px;">
+	     <tr>
+			<td colspan="6"><b>Grand Total</b></td>
+			<td colspan="6" style="text-align: right;"> {{doc.currency}} {{doc.grand_total}}
+			</td>
+		 </tr>
+	   </table>
+	</div>
+</div>
+
+
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
+
+<tr><td colspan="12" height="70px"></td></tr>
+{% set username = ""%}
+{% if frappe.session.user != "Administrator" %}
+{% set user = frappe.get_doc('User', frappe.session.user)%}
+{% set username= user.full_name %} {% endif%}
+{% if frappe.session.user == "Administrator"%}
+{% set username= frappe.session.user %} {% endif%}
+<tr>
+<td colspan="3" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_pi or ""}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_pi or ""}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Administrator&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+</tr>
+
+<tr>
+<td colspan="3" class="tac"><b>Approved By</b></td>
+<td colspan="3" class="tac"><b>Checked By</b></td>
+<td colspan="3" class="tac"><b>Prepared By</b></td>
+<td colspan="3" class="tac"><b>Reviewed By</b></td>
+</tr>
+</table>
+</div>
+</div>
