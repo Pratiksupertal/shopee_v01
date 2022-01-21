@@ -1527,33 +1527,48 @@ def filter_stock_entry_for_warehouse_app():
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
 
+
+def data_validation_for_create_receive_at_warehouse(data):
+    if not data.get("outgoing_stock_entry"):
+        raise Exception("Required data missing : Outgoing Stock Entry name is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Stock Entry Type name is required")
+    if not data.get("t_warehouse"):
+        raise Exception("Required data missing : Target Warehouse is required")
+    
+    outgoing_stock_entry = frappe.get_list("Stock Entry", {"outgoing_stock_entry": data.get("outgoing_stock_entry")})
+    if len(outgoing_stock_entry) > 0:
+        raise Exception('Received at warehouse is already done for this Stock entry')
+
+
 @frappe.whitelist()
 def create_receive_at_warehouse():
-    response = {}
     try:
         data = validate_data(frappe.request.data)
-        outgoing_stock_entry = frappe.get_list("Stock Entry",{"outgoing_stock_entry":data.get("send_to_warehouse")})
-        if len(outgoing_stock_entry)<1:
-            send_to_ste = base + '/api/method/erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry'
-            stock_entry = requests.post(send_to_ste.replace("'", '"'), headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },data={"source_name": data.get("send_to_warehouse")})
-            stock_entry_data = stock_entry.json().get("message")
-            stock_entry_data["to_warehouse"] = data.get("to_warehouse")
-            stock_entry_data["docstatus"] = 1
-            receive_ste_url = base + '/api/resource/Stock%20Entry'
-            receive_ste_url_api_response = requests.post(receive_ste_url.replace("'", '"'), headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },data=json.dumps(stock_entry_data))
-            result = {
-                "name": receive_ste_url_api_response.json().get("data").get("name"),
-                "message": "Received Warehouse stock Entry is created"
-            }
-            return format_result(result=result, success=True, status_code=200, message='Data Found')
-        else:
-            return format_result(message="Received at warehouse is already done for this Stock entry",success=False)
+        data_validation_for_create_receive_at_warehouse(data=data)
+        
+        send_to_ste = base + '/api/method/erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry'
+        stock_entry = requests.post(send_to_ste.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={"source_name": data.get("outgoing_stock_entry")})
+        
+        stock_entry_data = stock_entry.json().get("message")
+        stock_entry_data["to_warehouse"] = data.get("t_warehouse")
+        stock_entry_data["stock_entry_type"] = data.get("stock_entry_type")
+        stock_entry_data["docstatus"] = 1
+        
+        receive_ste_url = base + '/api/resource/Stock%20Entry'
+        receive_ste_url_api_response = requests.post(receive_ste_url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(stock_entry_data))
+        
+        result = {
+            "name": receive_ste_url_api_response.json().get("data").get("name")
+        }
+        return format_result(result=result, success=True, status_code=200, message='Received Warehouse Stock Entry is created')
     except Exception as e:
-        return format_result(result=None, success=False, status_code=400, message=str(e))
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
 
 @frappe.whitelist()
 def create_material_transfer_for_picklist():
