@@ -209,8 +209,8 @@ def purchases():
                 "barcode": fill_barcode(i.item_code),
                 "price": str(int(i.amount) if i.amount else ''),
                 "warehouse":i.warehouse,
-                "quantity": str(int(i.qty) if i.qty else ''),
-                "received_qty": str(int(i.received_qty) if i.received_qty else ''),
+                "quantity": int(i.qty) if i.qty else '0',
+                "received_qty": int(i.received_qty) if i.received_qty else '0',
                 "unit_id": str(i.idx),
                 "discount": str(int(i.discount_amount) if i.discount_amount else ''),
                 "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
@@ -402,8 +402,25 @@ def purchaseReceive():
                     "qty": item['quantity'],
                     "purchase_order":item['purchase_id']
                 })
+                """Adding receive_qty"""
+                purchase_order_item = frappe.db.get_list('Purchase Order Item',
+                                       filters = {
+                                           'parent': item['purchase_id'],
+                                           'item_code': item['purchase_product_id'],
+                                       },
+                                       fields=['name', 'received_qty']
+                                       )
+                if len(purchase_order_item)==1:
+                    purchase_order_item=purchase_order_item[0]
+                    frappe.db.set_value('Purchase Order Item', purchase_order_item.get('name'), {
+                        'received_qty': purchase_order_item.get('received_qty') + item['quantity']
+                    })
+                else:
+                    print(purchase_order_item, item['purchase_id'], item['purchase_product_id'])
+
             new_doc.insert()
             new_doc.submit()
+
             return format_result(status_code=200, message='Purchase Receipt Created', result={
                 "id": str(new_doc.name),
                 "receive_number": new_doc.name,
@@ -1432,9 +1449,9 @@ def filter_picklist():
             items = frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': pl.get("name"),
-                        'parentfield': 'sorted_locations'
+                        'parentfield': 'locations'
                     },
-                    fields=['qty', 'picked_qty']
+                    fields=['qty', 'picked_qty', 'sales_order']
                 )
             sum_qty = sum([it.get('qty') for it in items])
             sum_picked_qty = sum([it.get('picked_qty') for it in items])
@@ -1442,16 +1459,10 @@ def filter_picklist():
             result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
-                "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
-                    filters={
-                        'parent': pl.get("name"),
-                        'parentfield': 'locations'
-                    },
-                    fields=['sales_order']
-                )]))[0],
+                "sales_order": items[0].get('sales_order'),
                 "total_product": len(items),
                 "total_qty": sum_qty,
-                "total_qty_received": sum_picked_qty
+                "total_qty_received": sum_qty-sum_picked_qty
             })
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
@@ -1491,18 +1502,26 @@ def filter_stock_entry_for_warehouse_app():
         """find and add other necessary fields"""
         for se in filtered_se:
             se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
-            items = frappe.db.get_list('Pick List Item',
+            items_pl = frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': se.get("pick_list"),
                         'parentfield': 'locations'
                     },
                     fields=['sales_order', 'qty']
                 )
-            print(se, items)
-            if len(items) < 1: continue
-            se['sales_order'] = items[0].get('sales_order')
-            se['total_product'] = len(items)
-            se['total qty'] = sum([it['qty'] for it in items])
+            print(se, items_pl)
+            if len(items_pl) < 1: continue
+            se['sales_order'] = items_pl[0].get('sales_order')
+            
+            items_se = frappe.db.get_list('Stock Entry Detail',
+                    filters={
+                        'parent': se.get("name")
+                    },
+                    fields=['qty']
+                )
+            
+            se['total_product'] = len(items_se)
+            se['total qty'] = sum([ise.get('qty') for ise in items_se])
 
         return format_result(result=filtered_se, success=True, status_code=200, message='Data Found')
     except Exception as e:
@@ -1590,32 +1609,29 @@ def data_validation_for_save_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Item code is required")
     if not data.get("picked_qty"):
         raise Exception("Required data missing : Picked quantity is required")
-    if not data.get("warehouse_sorted_location"):
-        raise Exception("Required data missing : Warehouse sorted location is required")
-    if not data.get("warehouse_location"):
-        raise Exception("Required data missing : Warehouse location is required")
+    if not data.get("s_warehouse"):
+        raise Exception("Required data missing : Source Warehouse is required")
     if not data.get("t_warehouse"):
         raise Exception("Required data missing : Target Warehouse is required")
     if not data.get("stock_entry_type"):
         raise Exception("Required data missing : Stock entry type is required")
 
 
-def picklist_item(data, parentfield):
-    warehouse = data.get('warehouse_location') if parentfield == 'locations' else data.get('warehouse_sorted_location')
+def picklist_item(data):
     item = frappe.db.get_list('Pick List Item',
                 filters={
                     'parent': data.get("pick_list"),
                     'item_code': data.get('item_code'),
-                    'warehouse': warehouse,
-                    'parentfield': parentfield
+                    'warehouse': data.get('s_warehouse'),
+                    'parentfield': 'locations'
                 },
-                fields=['name', 'item_name', 'qty', 'picked_qty', 'warehouse']
+                fields=['name', 'item_name', 'qty', 'picked_qty']
             )
     if len(item) < 1: raise Exception('Pick list, item code or warehouse invalid!')
     return item[0]
 
 
-def create_new_stock_entry_for_single_item(data):
+def create_new_stock_entry_for_single_item(data, item):
     picklist_details = frappe.db.get_value('Pick List', data.get('pick_list'), ['company', 'purpose'])
     
     new_doc_stock_entry = frappe.new_doc('Stock Entry')
@@ -1624,17 +1640,11 @@ def create_new_stock_entry_for_single_item(data):
     
     new_doc_stock_entry.pick_list = data.get('pick_list')
     
-    """GET Pick List Item (locations) Details"""
-    item = picklist_item(
-        data=data,
-        parentfield='locations'
-    )
-    
     new_doc_stock_entry.append("items", {
         "item_code": data.get("item_code"),
         "item_name": item.get("item_name"),
         "t_warehouse": data.get("t_warehouse"),
-        "s_warehouse": item.get("warehouse"),
+        "s_warehouse": data.get("s_warehouse"),
         "qty": data.get("picked_qty")
     })
     new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
@@ -1651,23 +1661,23 @@ def save_picklist_and_create_stockentry():
         print(data)
         
         """GET Pick List Item (sorted_locations) Details"""
-        item_of_sorted_loc = picklist_item(
-            data=data,
-            parentfield='sorted_locations'
-        )
-        
-        """Validate picked quantity"""
-        new_picked_qty = int(item_of_sorted_loc.get('picked_qty')) + int(data.get('picked_qty'))
-        if new_picked_qty > int(item_of_sorted_loc.get('qty')):
-            raise Exception(f"Please, check the picked qty provided. Total qty is {item_of_sorted_loc.get('qty')}. Already picked {item_of_sorted_loc.get('picked_qty')}.")
-        
-        """Create stock entry"""
-        stock_entry = create_new_stock_entry_for_single_item(
+        item = picklist_item(
             data=data
         )
         
+        """Validate picked quantity, we are decreasing the value actually"""
+        new_picked_qty = int(item.get('picked_qty')) - int(data.get('picked_qty'))
+        if new_picked_qty < 0.0:
+            raise Exception(f"Picked quantity can not be more than total quantity.")
+        
+        """Create stock entry"""
+        stock_entry = create_new_stock_entry_for_single_item(
+            data=data,
+            item=item
+        )
+        
         """Update picklist item picked qty"""
-        frappe.db.set_value('Pick List Item', item_of_sorted_loc.get('name'), {
+        frappe.db.set_value('Pick List Item', item.get('name'), {
             'picked_qty': new_picked_qty
         })
         
@@ -1687,7 +1697,7 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Target Warehouse is required")
 
 
-def picklist_details_for_warehouse_app(url):
+def picklist_details_for_submit_picklist_and_create_stockentry(url):
     picklist_details = requests.get(url.replace("'", '"'), headers={
         "Authorization": frappe.request.headers["Authorization"]
     },data={})
@@ -1696,12 +1706,12 @@ def picklist_details_for_warehouse_app(url):
     return picklist_details.json().get("data")
 
 
-def validation_to_proceed_for_submit_picklist_and_create_stockentry(data, picklist_details):
-    if picklist_details.get("docstatus") != 0:
-            raise Exception(f"Unable to proceed with this picklist : Pick List - {data.get('pick_list')} already submitted or cancelled")
-    for item in picklist_details.get('sorted_locations'):
-        if item['qty'] > item['picked_qty']:
-            raise Exception(f"Unable to proceed : {item['item_name']} is not fully transferred. Total qty to transfer is {item['qty']}. Transferred qty is {item['picked_qty']}.")
+# def validation_to_proceed_for_submit_picklist_and_create_stockentry(data, picklist_details):
+#     if picklist_details.get("docstatus") != 0:
+#             raise Exception(f"Unable to proceed with this picklist : Pick List - {data.get('pick_list')} already submitted or cancelled")
+#     for item in picklist_details.get('sorted_locations'):
+#         if item['qty'] > item['picked_qty']:
+#             raise Exception(f"Unable to proceed : {item['item_name']} is not fully transferred. Total qty to transfer is {item['qty']}. Transferred qty is {item['picked_qty']}.")
 
 
 def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, picklist_details):
@@ -1712,13 +1722,17 @@ def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, pi
     new_doc_stock_entry.pick_list = data.get('pick_list')
     
     for item in picklist_details.get('locations'):
+        picked_qty = item['qty'] - item['picked_qty']
+        if picked_qty <= 0.0: continue
         new_doc_stock_entry.append("items", {
             "item_code": item['item_code'],
             "item_name": item['item_name'],
             "t_warehouse": data.get("t_warehouse"),
             "s_warehouse": data.get("s_warehouse"),
-            "qty": item['qty']
+            "qty": picked_qty
         })
+    if len(new_doc_stock_entry.get("items")) <= 0:
+        raise Exception('No picked items found. Can not create stock entry.')
     new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
     new_doc_stock_entry.save()
     new_doc_stock_entry.submit()
@@ -1737,22 +1751,16 @@ def submit_picklist_and_create_stockentry():
         
         """GET Pick List Details"""
         
-        picklist_details = picklist_details_for_warehouse_app(url=url)
+        picklist_details = picklist_details_for_submit_picklist_and_create_stockentry(url=url)
         
-        """Check is all item picked and all good to go"""
+        # """Check is all item picked and all good to go"""
         
-        validation_to_proceed_for_submit_picklist_and_create_stockentry(
-            data=data,
-            picklist_details=picklist_details
-        )
+        # validation_to_proceed_for_submit_picklist_and_create_stockentry(
+        #     data=data,
+        #     picklist_details=picklist_details
+        # )
         
         """___ALL GOOD TO GO___"""
-        
-        """Submit Pick List"""
-        
-        _ = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
         
         """Create new stick entry, save and submit"""
         
@@ -1761,8 +1769,57 @@ def submit_picklist_and_create_stockentry():
             picklist_details=picklist_details
         )
         
+        """Submit Pick List"""
+        
+        _ = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={ "run_method": "submit" })
+        
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
                                  }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
+    
+@frappe.whitelist()
+def picklist_details_for_warehouse_app():
+    try:
+        pick_list = get_last_parameter(frappe.request.url, 'picklist_details_for_warehouse_app')
+        
+        print(pick_list, '\n\n\n')
+        
+        picklist_details = frappe.db.get_value('Pick List', pick_list, [
+            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified'
+        ], as_dict=1)
+        
+        if not picklist_details:
+            raise Exception('Invalid pick list name')
+        
+        items = frappe.db.get_list('Pick List Item',
+            filters={
+                'parent': pick_list,
+                'parentfield': 'locations'
+            },
+            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+        )
+        
+        picklist_details.sales_order = items[0].sales_order
+        
+        so_details = frappe.db.get_value('Sales Order', picklist_details.sales_order, [
+            'creation', 'delivery_date'
+        ], as_dict=1)
+        
+        picklist_details.so_date = so_details.creation
+        picklist_details.delivery_date = so_details.delivery_date
+        
+        for it in items:
+            it.picked_qty = it.qty - it.picked_qty
+            
+        picklist_details.items = items        
+        
+        return format_result(result={
+            'pick_list': picklist_details
+        }, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
