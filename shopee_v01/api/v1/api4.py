@@ -413,7 +413,8 @@ def purchaseReceive():
                 if len(purchase_order_item)==1:
                     purchase_order_item=purchase_order_item[0]
                     frappe.db.set_value('Purchase Order Item', purchase_order_item.get('name'), {
-                        'received_qty': purchase_order_item.get('received_qty') + item['quantity']
+                        'received_qty': (int(purchase_order_item.get('received_qty')) if purchase_order_item.get(
+                            'received_qty') else 0.0) + int(item['quantity'])
                     })
                 else:
                     print(purchase_order_item, item['purchase_id'], item['purchase_product_id'])
