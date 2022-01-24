@@ -4,7 +4,11 @@
 </h2><br>
 <h2 style="font-size:10px">
 {{ doc.items[0].sales_order or "" }}<br></h2>
-<h2 style="font-size:10px">{{ doc.items[0].delivery_note or "" }}</h2></div>
+{% set delivery = frappe.get_all('Delivery Note Item', filters={'against_sales_invoice': doc.name}, fields=['parent']) %}
+{% for delivery in delivery %}
+    <h2 style="font-size:10px">{{ delivery.parent or "" }}</h2>
+{% endfor %}
+</div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">

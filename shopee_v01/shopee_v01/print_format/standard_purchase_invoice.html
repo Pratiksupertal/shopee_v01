@@ -61,16 +61,12 @@
         <td class="tac" width="6%">{{ row.idx or '' }}</td>
         <td width="18%">{{ row.item_name or '' }}</td>
         <td width="32%">{{ row.description or '' }}</td>
-        <td class="tac" width="15%"> {{row.qty}}&nbsp; {{ row.uom or 0}}</td>
+        <td class="tac" width="15%"> {{row.received_qty}}&nbsp; {{ row.uom or 0}}</td>
         {% set uom.uom_name= row.uom%}
     <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-        <td class="tac" width="15%"> {% if doc.currency == "IDR" %}
-          {{doc.currency}} {{ row.discount_amount or '0'}} {% endif %} {% if doc.currency == "USD" %}
-          {{doc.currency}} {{ row.discount_amount or '0'}} {% endif %}
+        <td class="tac" width="15%"> {{ row.qty or ''}}&nbsp;{{ row.uom or ''}}
         </td>
-        <td class="tac" width="15%"> {% if doc.currency == "IDR" %}
-          {{doc.currency}} {{ row.rate or ''}} {% endif %} {% if doc.currency == "USD" %}
-          {{doc.currency}} {{ row.rate or ''}} {% endif %}
+        <td class="tac" width="15%"> {{ row.rejected_qty or ''}}&nbsp;{{ row.uom or ''}}
         </td>
         <td class="tac" width="20%"> {% if doc.currency == "IDR" %}
           {{doc.currency}} {{ row.amount or ''}} {% endif %} {% if doc.currency == "USD" %}
@@ -98,8 +94,9 @@
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
       <tr>
-        <td class="tac" colspan="6">Total Quantity</td>
-		<td class="tac">{{uom.uom_name}}&nbsp;{{doc.total_qty}}</td>
+				<td class="tac" width="40%">Total Quantity</td>
+        <td class="tac" width="35%"></td>
+				<td class="tac" width="25%">{{doc.total_qty}}&nbsp;{{uom.uom_name}}</td>
       </tr>
     </table>
   </div>
