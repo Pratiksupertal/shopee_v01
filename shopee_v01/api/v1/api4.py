@@ -1436,8 +1436,8 @@ def filter_picklist():
         url = frappe.request.url
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         purpose = parse_qs(urlparse(url).query).get('purpose')
-        if docstatus is not None: docstatus = docstatus[0]
-        if purpose is not None: purpose = purpose[0]
+        if docstatus: docstatus = docstatus[0]
+        if purpose: purpose = purpose[0]
         filtered_picklist = frappe.db.get_list('Pick List',
                 filters={
                     'docstatus': docstatus,
@@ -1454,8 +1454,10 @@ def filter_picklist():
                     },
                     fields=['qty', 'picked_qty', 'sales_order']
                 )
-            sum_qty = sum([it.get('qty') for it in items])
-            sum_picked_qty = sum([it.get('picked_qty') for it in items])
+            sum_qty = sum([it.get('qty') if it.get('qty') not in ['', None] else 0 for it in items])
+            sum_picked_qty = sum([it.get('picked_qty') if it.get('picked_qty') not in ['', None] else 0 for it in items])
+            
+            if len(items) < 1: continue
             
             result.append({
                 "name": pl.get("name"),
