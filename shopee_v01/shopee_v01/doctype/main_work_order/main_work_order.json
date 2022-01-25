@@ -34,11 +34,12 @@
   {
    "fieldname": "transaction_date",
    "fieldtype": "Date",
+   "hidden": 1,
    "label": "Transaction Date"
   }
  ],
  "is_submittable": 1,
- "modified": "2022-01-25 20:24:37.315851",
+ "modified": "2022-01-25 20:36:05.666219",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Main Work Order",
