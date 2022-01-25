@@ -209,8 +209,8 @@ def purchases():
                 "barcode": fill_barcode(i.item_code),
                 "price": str(int(i.amount) if i.amount else ''),
                 "warehouse":i.warehouse,
-                "quantity": int(i.qty) if i.qty else '0',
-                "received_qty": int(i.received_qty) if i.received_qty else '0',
+                "quantity": int(i.qty) if i.qty else 0,
+                "received_qty": int(i.received_qty) if i.received_qty else 0,
                 "unit_id": str(i.idx),
                 "discount": str(int(i.discount_amount) if i.discount_amount else ''),
                 "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
