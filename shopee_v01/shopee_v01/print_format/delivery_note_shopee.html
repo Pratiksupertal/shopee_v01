@@ -1,0 +1,150 @@
+<div class="print-heading">
+  <h2>Delivery Note Shopee<br><small>{{ doc.name }}</small>
+  </h2>
+</div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Company</b></td>
+        <td width="60%"><b>{{ doc.company or '' }}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Date</b></td>
+        <td width="60%"><b>{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</b></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.po_contact_person is not none %} Kepada Yth : {% endif %}</td>
+        <td width="60%"><b>{% if doc.po_contact_person is not none %} {{ doc.po_contact_person or '' }} {% endif %}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.mwo_name is not none %} SPK {% endif %}</td>
+        <td width="60%">{% if doc.mwo_name is not none %} {{ doc.mwo_name or '' }} {% endif %}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.supplier is not none %} Penerima {% endif %}</td>
+        <td width="60%"><b>{% if doc.supplier is not none %} {{ doc.supplier or '' }} {% endif %}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.po_reference is not none %} PO Number {% endif %}</td>
+        <td width="60%">{% if doc.po_reference is not none %} {{ doc.po_reference or '' }} {% endif %}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.supplier_address is not none %} Alamat {% endif %}</td>
+        <td width="60%"><b>{% if doc.supplier_address is not none %} {{ doc.supplier_address or '' }} {% endif %}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.vehicle_no is not none %} Vehicle No {% endif %}</td>
+        <td width="60%">{% if doc.vehicle_no is not none %} {{ doc.vehicle_no or '' }} {% endif %}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.po_address_display is not none %} Shipping Address {% endif %}</td>
+        <td width="60%"><b>{% if doc.po_address_display is not none %} {{ doc.po_address_display or '' }} {% endif %}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.driver_name is not none %} Driver Name {% endif %}</td>
+        <td width="60%">{% if doc.driver_name is not none %} {{ doc.driver_name or '' }} {% endif %}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+{% set disc=namespace(discount=0) %}
+{% set amt=namespace(price_amount=0) %}
+{% set uom=namespace(uom_name="") %}
+<br><table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+    <tr>
+        <th class="tac" width="5%"><b>No.</b></th>
+        <th class="tac" width="25%"><b>Kode Barang</b></th>
+        <th class="tac" width="25%"><b>Nama Barang</b></th>
+        <th class="tac" width="15%"><b>Quantity</b></th>
+        <th class="tac" width="30%"><b>Deskripsi</b></th>
+
+    </tr>
+{% for row in doc.items %}
+<tr>
+        <td class="tac" width="5%">{{ row.idx or '' }}</td>
+        <td width="25%">{{ row.item_code or '' }}</td>
+        <td width="25%">{{ row.item_name or '' }}</td>
+        <td class="tac" width="15%"> {{row.qty}}&nbsp; {{ row.uom or 0}}</td>
+		<td width="30%">{{ row.description or '' }}</td>
+
+    </tr>
+{% endfor %}
+</table><br>
+
+<div class="row section-break f_font">
+  {% set tot_disc = disc.discount+doc.discount_amount %}
+  {% set tot_ppn = doc.grand_total - (doc.total - tot_disc) %}
+  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+  {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+  {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
+  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+  {% set tot_disc = disc.discount+doc.discount_amount %}
+  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+  {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+  <div class="col-xs-8">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Total Quantity</b></td>
+        <td width="30%"><b></b></td>
+          <td width="20%"><b></b></td>
+        <!--<td width="60%"><b>{{ fmt_total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>-->
+        <td width="10%"><b>{{ doc.total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-4">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b></b></td>
+        <td colspan="60%"></td>
+      </tr>
+    </table>
+  </div>
+</div>
