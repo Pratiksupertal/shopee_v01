@@ -1,0 +1,221 @@
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+
+<div class="row section-break f_font">
+    <div class="col-xs-6">
+    </div>
+    <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
+      <tr>
+        <td width="40%"></td>
+        <td width="60%" class="fsize tac blh brs bbh" style="text-align:right"><b>Sales Order</b></td>
+      </tr>
+      <tr>
+        <td width="40%"></td>
+        <td width="60%" style="text-align:right">{{ doc.name or '' }}</td>
+      </tr>
+    </table>
+    </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Customer Name</b></td>
+        <td width="60%"><b>{{ doc.customer_name or '' }}</b></td>
+      </tr>
+    </table>
+	<br>
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b></b></td>
+        <td width="60%"></td>
+      </tr>
+    </table>
+	<br>
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">Alamat
+		</td>
+        <td width="60%">{{ doc.address_display or '' }}</td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Tanggal</b></td>
+        <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('transaction_date'), "dd-mm-yyyy") }}</td>
+      </tr>
+    </table>
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Tanggal Pengiriman</b></td>
+        <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('delivery_date'), "dd-mm-yyyy") }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="row section-break f_font">
+<div class="col-xs-12" style="overflow-x:auto;">
+<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+<tr>
+<th class="tac" width="3%"><b>No</b></th>
+<th class="tac" width="25%"><b>Kode Barang</b></th>
+<!-- <th class="tac" width="15%"> <b>Image</b></th> -->
+<th class="tac" width="25%"><b>Description</b></th>
+<th class="tac" width="15%"><b>Quantity</b></th>
+<th class="tac" width="12%"><b>Diskon</b></th>
+<th class="tac" width="15%"><b>Harga</b></th>
+<th class="tac" width="18%"><b>Total</b></th>
+</tr>
+{% set uom=namespace(uom_name="") %}
+{% set disc=namespace(discount=0) %}
+{% for row in doc.items %}
+<tr>
+<td class="tac" width="3%">{{ row.idx or '' }}</td>
+<td width="25%">{{ row.item_code or '' }}</td>
+<td width="25%">{{ row.description or '' }}</td>
+{% set uom.uom_name= row.uom%}
+{% set fmtrate =  frappe.utils.fmt_money(row.rate,currency="") %}
+{% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+{% set fmt_qty =  frappe.utils.fmt_money(row.qty,currency="") %}
+{% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="") %}
+{% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+{% set discount = row.discount_amount * row.qty%}
+{% set disc.discount=disc.discount+ discount %}
+
+<!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+<td class="tac" width="15%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
+<td class="tac" width="12%" >{{doc.currency}}{{ fmtdiscount_amount or ''}}</td>
+<td class="tac" width="15%" >{{doc.currency}}{{ fmtrate or ''}}</td>
+<td class="tac" width="18%" >{{doc.currency}}{{ fmtamount or ''}}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+</div>
+<div class="row section-break f_font">
+  {% set tot_disc = disc.discount+doc.discount_amount %}
+  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+  {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+  {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
+  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+  {% set tot_disc = disc.discount+doc.discount_amount %}
+  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+  {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Total</b></td>
+        <td width="60%"><b>{{ fmt_total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b>Total</b></td>
+        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b>Diskon</b></td>
+        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_disc or '' }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b>Total Setelah Diskon</b></td>
+        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_net_total or '' }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<br>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b>PPN</b></td>
+        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_tax or '' }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b>Grand Total</b></td>
+        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_rounded_total or '' }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="40%"><b>Terbilang</b></td>
+        <td colspan="60%">{{ doc.in_words or '' }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
+
+<tr><td colspan="12" height="70px"></td></tr>
+{% set username = ""%}
+{% if frappe.session.user != "Administrator" %}
+{% set user = frappe.get_doc('User', frappe.session.user)%}
+{% set username= user.full_name %} {% endif%}
+{% if frappe.session.user == "Administrator"%}
+{% set username= frappe.session.user %} {% endif%}
+<tr>
+<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_pi or ""}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_pi or ""}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+</tr>
+
+<tr>
+<td colspan="4" class="tac"><b>Approved By</b></td>
+<td colspan="4" class="tac"><b>Checked By</b></td>
+<td colspan="4" class="tac"><b>Prepared By</b></td>
+</tr>
+</table>
+</div>
+</div>

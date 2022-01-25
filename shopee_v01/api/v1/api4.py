@@ -17,6 +17,7 @@ from erpnext.stock.doctype.material_request.material_request import create_pick_
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
 from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 from frappe import _
+from frappe.utils import now_datetime
 parts = urlparse(frappe.request.url)
 base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
@@ -206,29 +207,29 @@ def purchases():
             "po_date": each_data.creation,
             "supplier_id": each_data.supplier,
             "supplier_name": each_data.supplier_name,
-            "total_amount": str(each_data.grand_total),
-            "total_product": str(each_data.total_qty),
+            "total_amount": each_data.grand_total,
+            "total_product": each_data.total_qty,
             "products": [{
-                "id": str(i.idx),
+                "id": i.idx,
                 "purchase_id": i.parent,
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "barcode": fill_barcode(i.item_code),
-                "price": str(int(i.amount) if i.amount else ''),
+                "price": i.amount,
                 "warehouse":i.warehouse,
-                "quantity": str(int(i.qty) if i.qty else ''),
-                "received_qty": str(int(i.received_qty) if i.received_qty else ''),
-                "unit_id": str(i.idx),
-                "discount": str(int(i.discount_amount) if i.discount_amount else ''),
-                "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
+                "quantity": int(i.qty) if i.qty else 0,
+                "received_qty": int(i.received_qty) if i.received_qty else 0,
+                "unit_id": i.idx,
+                "discount": i.discount_amount,
+                "subtotal_amount": i.net_amount
             } for i in each_data.items],
             "type": each_data.po_type,
             "rejected_by": each_data.modified_by if each_data.docstatus == 2 else None,
             "cancelled_by": each_data.modified_by if each_data.status == 2 else None,
             "supplier_is_taxable": None,
-            "total_amount_excluding_tax": str(each_data.base_total),
-            "tax_amount": str(each_data.total_taxes_and_charges),
+            "total_amount_excluding_tax": each_data.base_total,
+            "tax_amount": each_data.total_taxes_and_charges,
             "delivery_contact_person": None,
             "supplier_email": None,
             "supplier_work_phone": None,
@@ -410,8 +411,26 @@ def purchaseReceive():
                     "qty": item['quantity'],
                     "purchase_order":item['purchase_id']
                 })
+                """Adding receive_qty"""
+                purchase_order_item = frappe.db.get_list('Purchase Order Item',
+                                       filters = {
+                                           'parent': item['purchase_id'],
+                                           'item_code': item['purchase_product_id'],
+                                       },
+                                       fields=['name', 'received_qty']
+                                       )
+                if len(purchase_order_item)==1:
+                    purchase_order_item=purchase_order_item[0]
+                    frappe.db.set_value('Purchase Order Item', purchase_order_item.get('name'), {
+                        'received_qty': (int(purchase_order_item.get('received_qty')) if purchase_order_item.get(
+                            'received_qty') else 0.0) + int(item['quantity'])
+                    })
+                else:
+                    print(purchase_order_item, item['purchase_id'], item['purchase_product_id'])
+
             new_doc.insert()
             new_doc.submit()
+
             return format_result(status_code=200, message='Purchase Receipt Created', result={
                 "id": str(new_doc.name),
                 "receive_number": new_doc.name,
@@ -1247,7 +1266,7 @@ def data_validation_for_create_sales_order_web(order_data, payment_data):
         raise Exception("Required data missing : Unable to proceed : Items are required")
     if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
         raise Exception("Required data missing : Unable to proceed : Sales order Number and Source app name both are required")
-    
+
     if not payment_data.get("paid_from"):
         raise Exception("Required data missing : Unable to proceed : Paid from is required")
     if not payment_data.get("paid_to"):
@@ -1274,7 +1293,7 @@ def submit_and_sales_order_data_for_sales_order_from_web(base, res_api_response)
     res_api_response = requests.post(url.replace("'", '"'), headers={
         "Authorization": frappe.request.headers["Authorization"]
     },data={ "run_method": "submit" })
-    
+
     # res_api_response_final = requests.get(url.replace("'", '"'), headers={
     #     "Authorization": frappe.request.headers["Authorization"]
     # },data={})
@@ -1290,12 +1309,12 @@ def submit_and_sales_invoice_data_for_sales_order_from_web(base, invoice_res_api
     },data=json.dumps(sales_invoice_data))
     sales_invoice_data_2 = invoice_res_api_response_2.json()
     sales_invoice_data_2 = sales_invoice_data_2.get("data")
-    
+
     invoice_url_3 = base + '/api/resource/Sales%20Invoice/'+sales_invoice_data_2.get('name')
     res_api_response = requests.post(invoice_url_3.replace("'", '"'), headers={
         "Authorization": frappe.request.headers["Authorization"]
     },data={ "run_method": "submit" })
-    
+
     # res_api_response_final = requests.get(invoice_url_3.replace("'", '"'), headers={
     #     "Authorization": frappe.request.headers["Authorization"]
     # },data={})
@@ -1341,19 +1360,19 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
 
 def submit_and_payment_data_for_sales_order_from_web(base, payment_res_api_response):
     payment_data = payment_res_api_response.json().get("data")
-                            
+
     payment_url_2 = base + '/api/resource/Payment%20Entry/'+payment_data.get('name')
     res_api_response = requests.post(payment_url_2.replace("'", '"'), headers={
         "Authorization": frappe.request.headers["Authorization"]
     },data={ "run_method": "submit" })
-    
+
     # res_api_response_final = requests.get(payment_url_2.replace("'", '"'), headers={
     #     "Authorization": frappe.request.headers["Authorization"]
     # },data={})
     # payment_data = res_api_response_final.json().get("data")
     return payment_data
-   
-    
+
+
 @frappe.whitelist()
 def create_sales_order_from_web():
     response = {}
@@ -1362,17 +1381,17 @@ def create_sales_order_from_web():
         print(data)
         order_data = data.get('order_data')
         payment_data = data.get('payment_data')
-        
+
         data_validation_for_create_sales_order_web(order_data=order_data, payment_data=payment_data)
-        
+
         parts = urlparse(frappe.request.url)
         base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
-        
+
         url = base + '/api/resource/Sales%20Order'
         res_api_response = requests.post(url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         },data=json.dumps(order_data))
-        
+
         if res_api_response.status_code == 200:
             sales_order_data = submit_and_sales_order_data_for_sales_order_from_web(
                 base=base,
@@ -1384,7 +1403,7 @@ def create_sales_order_from_web():
                 invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
                     "Authorization": frappe.request.headers["Authorization"]
                 },data={"source_name": sales_order_data.get("name")})
-                
+
                 if invoice_res_api_response.status_code == 200:
                     sales_invoice_data_2 = submit_and_sales_invoice_data_for_sales_order_from_web(
                         base=base,
@@ -1405,9 +1424,9 @@ def create_sales_order_from_web():
                             response['payment'] = payment_data.get("name")
                             return format_result(success="True", result=response, status_code=200)
                         else:
-                            raise Exception(f"Please, provide valid payment information.") 
+                            raise Exception(f"Please, provide valid payment information.")
                     except Exception as e:
-                        raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")  
+                        raise Exception(f"Error in stage #3 : Creating payment failed : {str(e)}")
                 else:
                     raise Exception(f"{str(invoice_res_api_response.text)}")
             except Exception as e:
@@ -1425,8 +1444,8 @@ def filter_picklist():
         url = frappe.request.url
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         purpose = parse_qs(urlparse(url).query).get('purpose')
-        if docstatus is not None: docstatus = docstatus[0]
-        if purpose is not None: purpose = purpose[0]
+        if docstatus: docstatus = docstatus[0]
+        if purpose: purpose = purpose[0]
         filtered_picklist = frappe.db.get_list('Pick List',
                 filters={
                     'docstatus': docstatus,
@@ -1434,23 +1453,32 @@ def filter_picklist():
                 },
                 fields=['name', 'customer']
         )
-        result = [
-            {
-                "name": pl.get("name"),
-                "customer": pl.get("customer"),
-                "sales_order": list(set([sl.get('sales_order') for sl in frappe.db.get_list('Pick List Item',
+        result = []
+        for pl in filtered_picklist:
+            items = frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': pl.get("name"),
                         'parentfield': 'locations'
                     },
-                    fields=['sales_order']
-                )]))[0]
-            } for pl in filtered_picklist
-        ]
+                    fields=['qty', 'picked_qty', 'sales_order']
+                )
+            sum_qty = sum([it.get('qty') if it.get('qty') not in ['', None] else 0 for it in items])
+            sum_picked_qty = sum([it.get('picked_qty') if it.get('picked_qty') not in ['', None] else 0 for it in items])
+            
+            if len(items) < 1: continue
+            
+            result.append({
+                "name": pl.get("name"),
+                "customer": pl.get("customer"),
+                "sales_order": items[0].get('sales_order'),
+                "total_product": len(items),
+                "total_qty": sum_qty,
+                "total_qty_received": sum_qty-sum_picked_qty
+            })
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
-    
+
 
 @frappe.whitelist()
 def filter_stock_entry_for_warehouse_app():
@@ -1460,8 +1488,8 @@ def filter_stock_entry_for_warehouse_app():
         order_purpose = parse_qs(urlparse(url).query).get('order_purpose')
         if stock_entry_type is not None: stock_entry_type = stock_entry_type[0]
         if order_purpose is not None: order_purpose = order_purpose[0]
-        
-        """filter by 
+
+        """filter by
         1. stock entry type as per request
         2. not fully transferred (status in Draft or Goods In Transit)
         3. picklist be there
@@ -1474,30 +1502,335 @@ def filter_stock_entry_for_warehouse_app():
                 },
                 fields=['name', 'pick_list']
         )
-        
+
         """filter by
         4. order purpose as per request
         """
         filtered_se = [se for se in filtered_se
             if order_purpose == frappe.db.get_value('Pick List', se.get('pick_list'), 'purpose')
         ]
-        
+
         """find and add other necessary fields"""
         for se in filtered_se:
             se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
-            items = frappe.db.get_list('Pick List Item',
+            items_pl = frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': se.get("pick_list"),
                         'parentfield': 'locations'
                     },
                     fields=['sales_order', 'qty']
                 )
-            print(se, items)
-            if len(items) < 1: continue
-            se['sales_order'] = items[0].get('sales_order')
-            se['total_product'] = len(items)
-            se['total qty'] = sum([it['qty'] for it in items])
-        
+            print(se, items_pl)
+            if len(items_pl) < 1: continue
+            se['sales_order'] = items_pl[0].get('sales_order')
+            
+            items_se = frappe.db.get_list('Stock Entry Detail',
+                    filters={
+                        'parent': se.get("name")
+                    },
+                    fields=['qty']
+                )
+            
+            se['total_product'] = len(items_se)
+            se['total qty'] = sum([ise.get('qty') for ise in items_se])
+
         return format_result(result=filtered_se, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
+
+
+def data_validation_for_create_receive_at_warehouse(data):
+    if not data.get("outgoing_stock_entry"):
+        raise Exception("Required data missing : Outgoing Stock Entry name is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Stock Entry Type name is required")
+    if not data.get("t_warehouse"):
+        raise Exception("Required data missing : Target Warehouse is required")
+    
+    outgoing_stock_entry = frappe.get_list("Stock Entry", {"outgoing_stock_entry": data.get("outgoing_stock_entry")})
+    if len(outgoing_stock_entry) > 0:
+        raise Exception('Received at warehouse is already done for this Stock entry')
+
+
+@frappe.whitelist()
+def create_receive_at_warehouse():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_create_receive_at_warehouse(data=data)
+        
+        send_to_ste = base + '/api/method/erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry'
+        stock_entry = requests.post(send_to_ste.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={"source_name": data.get("outgoing_stock_entry")})
+        
+        stock_entry_data = stock_entry.json().get("message")
+        stock_entry_data["to_warehouse"] = data.get("t_warehouse")
+        stock_entry_data["stock_entry_type"] = data.get("stock_entry_type")
+        stock_entry_data["docstatus"] = 1
+        
+        receive_ste_url = base + '/api/resource/Stock%20Entry'
+        receive_ste_url_api_response = requests.post(receive_ste_url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(stock_entry_data))
+        
+        result = {
+            "name": receive_ste_url_api_response.json().get("data").get("name")
+        }
+        return format_result(result=result, success=True, status_code=200, message='Received Warehouse Stock Entry is created')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
+
+@frappe.whitelist()
+def create_material_transfer_for_picklist():
+    try:
+        data = validate_data(frappe.request.data)
+        pick_list = data.get("pick_list")
+        picklist = frappe.get_doc("Pick List",pick_list)
+        new_doc = frappe.new_doc('Stock Entry')
+        new_doc.pick_list =pick_list
+        new_doc.start_time = now_datetime()
+        new_doc.end_time = now_datetime()
+        new_doc.purpose = 'Material Transfer'
+        new_doc.set_stock_entry_type()
+        for item in picklist.locations:
+            new_doc.append("items", {
+                "item_code": item.item_code,
+                "qty": item.qty,
+                "s_warehouse":item.warehouse,
+                "t_warehouse": data['t_warehouse']
+            })
+
+        new_doc.save()
+        new_doc.submit()
+        result = {
+                    "Stock Entry":new_doc.name,
+                    "Purpose":new_doc.purpose,
+                    "Pick List":new_doc.pick_list
+                }
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
+
+
+def data_validation_for_save_picklist_and_create_stockentry(data):
+    if not data.get("pick_list"):
+        raise Exception("Required data missing : Pick List name is required")
+    if not data.get("item_code"):
+        raise Exception("Required data missing : Item code is required")
+    if not data.get("picked_qty"):
+        raise Exception("Required data missing : Picked quantity is required")
+    if not data.get("s_warehouse"):
+        raise Exception("Required data missing : Source Warehouse is required")
+    if not data.get("t_warehouse"):
+        raise Exception("Required data missing : Target Warehouse is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Stock entry type is required")
+
+
+def picklist_item(data):
+    item = frappe.db.get_list('Pick List Item',
+                filters={
+                    'parent': data.get("pick_list"),
+                    'item_code': data.get('item_code'),
+                    'warehouse': data.get('s_warehouse'),
+                    'parentfield': 'locations'
+                },
+                fields=['name', 'item_name', 'qty', 'picked_qty']
+            )
+    if len(item) < 1: raise Exception('Pick list, item code or warehouse invalid!')
+    return item[0]
+
+
+def create_new_stock_entry_for_single_item(data, item):
+    picklist_details = frappe.db.get_value('Pick List', data.get('pick_list'), ['company', 'purpose'])
+    
+    new_doc_stock_entry = frappe.new_doc('Stock Entry')
+    new_doc_stock_entry.company = picklist_details[0]
+    new_doc_stock_entry.purpose = picklist_details[1]
+    
+    new_doc_stock_entry.pick_list = data.get('pick_list')
+    
+    new_doc_stock_entry.append("items", {
+        "item_code": data.get("item_code"),
+        "item_name": item.get("item_name"),
+        "t_warehouse": data.get("t_warehouse"),
+        "s_warehouse": data.get("s_warehouse"),
+        "qty": data.get("picked_qty")
+    })
+    new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
+    new_doc_stock_entry.save()
+    new_doc_stock_entry.submit()
+    return new_doc_stock_entry
+
+
+@frappe.whitelist()
+def save_picklist_and_create_stockentry():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_save_picklist_and_create_stockentry(data=data)
+        print(data)
+        
+        """GET Pick List Item (sorted_locations) Details"""
+        item = picklist_item(
+            data=data
+        )
+        
+        """Validate picked quantity, we are decreasing the value actually"""
+        new_picked_qty = int(item.get('picked_qty')) - int(data.get('picked_qty'))
+        if new_picked_qty < 0.0:
+            raise Exception(f"Picked quantity can not be more than total quantity.")
+        
+        """Create stock entry"""
+        stock_entry = create_new_stock_entry_for_single_item(
+            data=data,
+            item=item
+        )
+        
+        """Update picklist item picked qty"""
+        frappe.db.set_value('Pick List Item', item.get('name'), {
+            'picked_qty': new_picked_qty
+        })
+        
+        return format_result(result={'stock entry': stock_entry.name}, success=True, message='success', status_code=200)
+    except Exception as e:
+        return format_result(success=False, status_code=400, message=str(e), exception=str(e))
+
+
+def data_validation_for_submit_picklist_and_create_stockentry(data):
+    if not data.get("pick_list"):
+        raise Exception("Required data missing : Pick List name is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Stock Entry Type is required")
+    if not data.get("s_warehouse"):
+        raise Exception("Required data missing : Source Warehouse is required")
+    if not data.get("t_warehouse"):
+        raise Exception("Required data missing : Target Warehouse is required")
+
+
+def picklist_details_for_submit_picklist_and_create_stockentry(url):
+    picklist_details = requests.get(url.replace("'", '"'), headers={
+        "Authorization": frappe.request.headers["Authorization"]
+    },data={})
+    if picklist_details.status_code != 200:
+        raise Exception("Picklist name is not found")
+    return picklist_details.json().get("data")
+
+
+# def validation_to_proceed_for_submit_picklist_and_create_stockentry(data, picklist_details):
+#     if picklist_details.get("docstatus") != 0:
+#             raise Exception(f"Unable to proceed with this picklist : Pick List - {data.get('pick_list')} already submitted or cancelled")
+#     for item in picklist_details.get('sorted_locations'):
+#         if item['qty'] > item['picked_qty']:
+#             raise Exception(f"Unable to proceed : {item['item_name']} is not fully transferred. Total qty to transfer is {item['qty']}. Transferred qty is {item['picked_qty']}.")
+
+
+def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, picklist_details):
+    new_doc_stock_entry = frappe.new_doc('Stock Entry')
+    new_doc_stock_entry.company = picklist_details.get('company')
+    new_doc_stock_entry.purpose = picklist_details.get('purpose')
+    
+    new_doc_stock_entry.pick_list = data.get('pick_list')
+    
+    for item in picklist_details.get('locations'):
+        picked_qty = item['qty'] - item['picked_qty']
+        if picked_qty <= 0.0: continue
+        new_doc_stock_entry.append("items", {
+            "item_code": item['item_code'],
+            "item_name": item['item_name'],
+            "t_warehouse": data.get("t_warehouse"),
+            "s_warehouse": data.get("s_warehouse"),
+            "qty": picked_qty
+        })
+    if len(new_doc_stock_entry.get("items")) <= 0:
+        raise Exception('No picked items found. Can not create stock entry.')
+    new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
+    new_doc_stock_entry.save()
+    new_doc_stock_entry.submit()
+    return new_doc_stock_entry
+
+
+@frappe.whitelist()
+def submit_picklist_and_create_stockentry():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_submit_picklist_and_create_stockentry(data=data)
+        
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        url = base + '/api/resource/Pick%20List/'+ data.get('pick_list')
+        
+        """GET Pick List Details"""
+        
+        picklist_details = picklist_details_for_submit_picklist_and_create_stockentry(url=url)
+        
+        # """Check is all item picked and all good to go"""
+        
+        # validation_to_proceed_for_submit_picklist_and_create_stockentry(
+        #     data=data,
+        #     picklist_details=picklist_details
+        # )
+        
+        """___ALL GOOD TO GO___"""
+        
+        """Create new stick entry, save and submit"""
+        
+        new_doc_stock_entry = create_and_submit_stock_entry_submit_picklist_and_create_stockentry(
+            data=data,
+            picklist_details=picklist_details
+        )
+        
+        """Submit Pick List"""
+        
+        _ = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={ "run_method": "submit" })
+        
+        return format_result(result={'stock entry': new_doc_stock_entry.name,
+                                 'items': new_doc_stock_entry.items
+                                 }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
+    
+@frappe.whitelist()
+def picklist_details_for_warehouse_app():
+    try:
+        pick_list = get_last_parameter(frappe.request.url, 'picklist_details_for_warehouse_app')
+        
+        print(pick_list, '\n\n\n')
+        
+        picklist_details = frappe.db.get_value('Pick List', pick_list, [
+            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified'
+        ], as_dict=1)
+        
+        if not picklist_details:
+            raise Exception('Invalid pick list name')
+        
+        items = frappe.db.get_list('Pick List Item',
+            filters={
+                'parent': pick_list,
+                'parentfield': 'locations'
+            },
+            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+        )
+        
+        picklist_details.sales_order = items[0].sales_order
+        
+        so_details = frappe.db.get_value('Sales Order', picklist_details.sales_order, [
+            'creation', 'delivery_date'
+        ], as_dict=1)
+        
+        picklist_details.so_date = so_details.creation
+        picklist_details.delivery_date = so_details.delivery_date
+        
+        for it in items:
+            it.picked_qty = it.qty - it.picked_qty
+            
+        picklist_details.items = items        
+        
+        return format_result(result={
+            'pick_list': picklist_details
+        }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
