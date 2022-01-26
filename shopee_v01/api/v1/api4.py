@@ -1,4 +1,5 @@
 import datetime
+from distutils.log import error
 import json
 import time
 import frappe
@@ -30,9 +31,15 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def format_result(success=None,result=None, message=None, status_code=None, exception=None):
-    indicator = "green" if success ==True else "red"
-    exception_code = 0 if success == True else 1
+def format_result(success=None, result=None, message=None, status_code=None, exception=None):
+    if success == None:
+        success = True if status_code in [None, 200, 201] and not exception else False
+    if status_code == None:
+        status_code = 200 if success and not exception else 400
+    if message == None:
+        message = exception if not message and exception else "success"
+    indicator = "green" if success else "red"
+    raise_exception = 1 if exception else 0
     return {
         "success": success,
         "message": message,
@@ -42,7 +49,7 @@ def format_result(success=None,result=None, message=None, status_code=None, exce
             {
                 "message": exception,
                 "indicator": indicator,
-                "raise_exception": exception_code
+                "raise_exception": raise_exception
             }
         ]
     }
@@ -150,15 +157,15 @@ def get_label():
 
 @frappe.whitelist(allow_guest=True)
 def login():
-    data = validate_data(frappe.request.data)
-    parts = urlparse(frappe.request.url)
-    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+    try:
+        data = validate_data(frappe.request.data)
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
-    url = base + '/api/method/login'
-    res = requests.post(url.replace("'", '"'), data=data)
-    if res.status_code != 200:
-        return format_result(message='Login Failed', status_code=403, result='Entered credentials are invalid!')
-    else:
+        url = base + '/api/method/login'
+        res = requests.post(url.replace("'", '"'), data=data)
+        if res.status_code != 200:
+            raise Exception('Entered credentials are invalid!')
         user_data = frappe.get_doc('User', {'email': data['usr']})
         url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
@@ -177,6 +184,8 @@ def login():
             "api_key": str(user_data.api_key + ':' + api_secret['message']['api_secret']),
             "warehouse_id": str(warehouse_id)
         })
+    except Exception as e:
+        return format_result(status_code=403, message=f'Login Failed. {str(e)}', exception=str(e))
 
 
 def fill_barcode(item_code):
@@ -1016,11 +1025,11 @@ def create_sales_order():
                 },data=json.dumps(dn_raw))
                 res['delivery_note']= delivery_note_api_response.json().get("data").get("name")
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message=str(e))
-            return format_result(success="True",result=res)
-        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
+                raise Exception('Delivery note failed')
+            return format_result(success=True, result=res)
+        raise Exception('There was a problem creating the Sales Order')
     except Exception as e:
-        return format_result(result="Sales Order not created", message=str(e),status_code=400)
+        return format_result(result=res, message=f'{str(e)}', status_code=400, success=False, exception=str(e))
 
 
 @frappe.whitelist()
@@ -1041,10 +1050,10 @@ def create_sales_order_all():
             res_api_response = requests.post(url.replace("'", '"'), headers={
                 "Authorization": frappe.request.headers["Authorization"]
             },data=json.dumps(order))
+            message = None
             if res_api_response.status_code==200:
                 dn_data = res_api_response.json()
                 dn_data = dn_data["data"]
-                dn_json = {}
                 try:
                     dn_raw_data = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
                     dn_res_api_response = requests.post(dn_raw_data.replace("'", '"'), headers={
@@ -1056,22 +1065,21 @@ def create_sales_order_all():
                     delivery_note_api_response = requests.post(dn_url.replace("'", '"'), headers={
                         "Authorization": frappe.request.headers["Authorization"]
                     },data=json.dumps(dn_raw))
-                    # return True
                 except Exception as e:
-                    return format_result(success="False",result="Delivery Note Failed",message = e)
-            success_count += 1
-            result.append({
-                    "external_so_number": order.get("external_so_number"),
-                    "message": "success"
-                })
-
-
+                    message="Delivery Note Failed"
+                success_count += 1
+                result.append({
+                        "external_so_number": order.get("external_so_number"),
+                        "sales_order": dn_data.get("name"),
+                        "message": "success" if not message else message
+                    })
+            else:
+                raise Exception('Invalid order data. Sales order creation failed.')
         except Exception as err:
-            print("\n\n",str(err),"\n\n")
             fail_count += 1
             result.append({
                 "external_so_number": order.get("external_so_number"),
-                "message": "failed"
+                "message": f"failed: {str(err)}"
             })
     return format_result(result={
             "success_count": success_count,
