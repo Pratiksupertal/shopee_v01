@@ -7,7 +7,8 @@
  "field_order": [
   "bom",
   "item_model",
-  "amended_from"
+  "amended_from",
+  "transaction_date"
  ],
  "fields": [
   {
@@ -29,10 +30,16 @@
    "fieldname": "item_model",
    "fieldtype": "Data",
    "label": "Item Model"
+  },
+  {
+   "fieldname": "transaction_date",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "Transaction Date"
   }
  ],
  "is_submittable": 1,
- "modified": "2021-06-17 14:18:14.282088",
+ "modified": "2022-01-25 20:36:05.666219",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Main Work Order",
