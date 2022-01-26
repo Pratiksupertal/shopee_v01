@@ -1,45 +1,9 @@
 import frappe
 from frappe.utils import today
-from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry, create_delivery_note
+from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry
 from erpnext.stock.doctype.material_request.material_request import create_pick_list
-from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
 
 from shopee_v01.api.v1.helpers import *
-
-
-def set_item_locations(pick_list, save=False):
-    items = pick_list.aggregate_item_qty()
-    pick_list.item_location_map = frappe._dict()
-
-    from_warehouses = None
-    if pick_list.parent_warehouse:
-        from_warehouses = frappe.db.get_descendants('Warehouse', pick_list.parent_warehouse)
-
-    # reset
-    pick_list.delete_key('locations')
-    for item_doc in items:
-        item_code = item_doc.item_code
-
-        pick_list.item_location_map.setdefault(item_code,
-                                          get_available_item_locations(item_code, from_warehouses,
-                                                                       pick_list.item_count_map.get(item_code),
-                                                                       pick_list.company))
-
-        locations = get_items_with_location_and_quantity(item_doc, pick_list.item_location_map)
-
-        item_doc.idx = None
-        item_doc.name = None
-
-        for row in locations:
-            row.update({
-                'picked_qty': row.stock_qty
-            })
-
-            location = item_doc.as_dict()
-            location.update(row)
-            pick_list.append('locations', location)
-
-    return pick_list
 
 
 @frappe.whitelist()
@@ -204,7 +168,7 @@ def stock_entry_send_to_warehouse():
             },
         }
     except Exception as e:
-        return format_result(success = "False",message='Stock Entry is not created', status_code=500)
+        return format_result(success = "False",message='Stock Entry is not created', status_code=500, exception=str(e))
 
 @frappe.whitelist()
 def get_stock_entry_send_to_warehouse():
@@ -247,4 +211,4 @@ def stock_entry_receive_at_warehouse():
             },
         }
     except Exception as e:
-        return format_result(success = "False",message='Stock Entry is not created', status_code=500, exception=str(e))
+        return format_result(success="False",message='Stock Entry is not created', status_code=500)

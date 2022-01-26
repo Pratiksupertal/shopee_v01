@@ -1,5 +1,5 @@
 import frappe
-from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry, create_delivery_note
+from erpnext.stock.doctype.pick_list.pick_list import create_delivery_note
 from erpnext.selling.doctype.sales_order.sales_order import create_pick_list as create_pick_list_from_sales_order
 
 from shopee_v01.api.v1.helpers import *

@@ -96,6 +96,8 @@ def create_sales_order_all():
                     "external_so_number": order.get("external_so_number"),
                     "message": "success"
                 })
+
+
         except Exception as err:
             print("\n\n",str(err),"\n\n")
             fail_count += 1

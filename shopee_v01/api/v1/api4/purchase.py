@@ -18,28 +18,29 @@ def purchases():
             "po_date": each_data.creation,
             "supplier_id": each_data.supplier,
             "supplier_name": each_data.supplier_name,
-            "total_amount": str(each_data.grand_total),
-            "total_product": str(each_data.total_qty),
+            "total_amount": each_data.grand_total,
+            "total_product": each_data.total_qty,
             "products": [{
-                "id": str(i.idx),
+                "id": i.idx,
                 "purchase_id": i.parent,
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "barcode": fill_barcode(i.item_code),
-                "price": str(int(i.amount) if i.amount else ''),
+                "price": i.amount,
                 "warehouse":i.warehouse,
-                "quantity": str(int(i.qty) if i.qty else ''),
-                "unit_id": str(i.idx),
-                "discount": str(int(i.discount_amount) if i.discount_amount else ''),
-                "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
+                "quantity": int(i.qty) if i.qty else 0,
+                "received_qty": int(i.received_qty) if i.received_qty else 0,
+                "unit_id": i.idx,
+                "discount": i.discount_amount,
+                "subtotal_amount": i.net_amount
             } for i in each_data.items],
             "type": each_data.po_type,
             "rejected_by": each_data.modified_by if each_data.docstatus == 2 else None,
             "cancelled_by": each_data.modified_by if each_data.status == 2 else None,
             "supplier_is_taxable": None,
-            "total_amount_excluding_tax": str(each_data.base_total),
-            "tax_amount": str(each_data.total_taxes_and_charges),
+            "total_amount_excluding_tax": each_data.base_total,
+            "tax_amount": each_data.total_taxes_and_charges,
             "delivery_contact_person": None,
             "supplier_email": None,
             "supplier_work_phone": None,
@@ -56,7 +57,6 @@ def purchases():
         result.append(temp_dict)
 
     return format_result(message='Data found', result=result, status_code=200)
-
 
 
 @frappe.whitelist()
@@ -86,8 +86,26 @@ def purchaseReceive():
                     "qty": item['quantity'],
                     "purchase_order":item['purchase_id']
                 })
+                """Adding receive_qty"""
+                purchase_order_item = frappe.db.get_list('Purchase Order Item',
+                                       filters = {
+                                           'parent': item['purchase_id'],
+                                           'item_code': item['purchase_product_id'],
+                                       },
+                                       fields=['name', 'received_qty']
+                                       )
+                if len(purchase_order_item)==1:
+                    purchase_order_item=purchase_order_item[0]
+                    frappe.db.set_value('Purchase Order Item', purchase_order_item.get('name'), {
+                        'received_qty': (int(purchase_order_item.get('received_qty')) if purchase_order_item.get(
+                            'received_qty') else 0.0) + int(item['quantity'])
+                    })
+                else:
+                    print(purchase_order_item, item['purchase_id'], item['purchase_product_id'])
+
             new_doc.insert()
             new_doc.submit()
+
             return format_result(status_code=200, message='Purchase Receipt Created', result={
                 "id": str(new_doc.name),
                 "receive_number": new_doc.name,
