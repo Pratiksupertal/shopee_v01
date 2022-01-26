@@ -1772,11 +1772,15 @@ def submit_picklist_and_create_stockentry():
             picklist_details=picklist_details
         )
         
+        """Correct picked qty"""
+        
+        for item in picklist_details.get('locations'):
+            picked_qty = item['qty'] - item['picked_qty']
+            frappe.db.set_value('Pick List Item', item['name'], 'picked_qty', picked_qty)
+        
         """Submit Pick List"""
         
-        _ = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
+        frappe.db.set_value('Pick List', picklist_details['name'], 'docstatus', 1)
         
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
