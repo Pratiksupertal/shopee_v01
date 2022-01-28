@@ -13,7 +13,7 @@ def get_label():
     result = frappe.get_list('Sales Invoice', fields=fields, filters=filters)
 
     filters = {
-        'parent': data['id']
+        'parent': data.get('id')
     }
 
     fields = ["item_name", "qty"]
