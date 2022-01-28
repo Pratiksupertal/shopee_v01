@@ -66,7 +66,10 @@ def picklist_details_for_warehouse_app():
                 'parent': pick_list,
                 'parentfield': 'locations'
             },
-            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+            fields=[
+                'item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order'
+            ],
+            order_by='warehouse'
         )
         
         picklist_details.sales_order = items[0].sales_order
