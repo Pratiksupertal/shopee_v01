@@ -9,8 +9,7 @@ from shopee_v01.api.v1.helpers import *
 def login():
     try:
         data = validate_data(frappe.request.data)
-        parts = urlparse(frappe.request.url)
-        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        base = get_base_url(url=frappe.request.url)
 
         url = base + '/api/method/login'
         res = requests.post(url.replace("'", '"'), data=data)

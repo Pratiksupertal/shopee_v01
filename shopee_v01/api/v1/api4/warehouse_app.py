@@ -129,8 +129,7 @@ def submit_picklist_and_create_stockentry():
         data = validate_data(frappe.request.data)
         data_validation_for_submit_picklist_and_create_stockentry(data=data)
         
-        parts = urlparse(frappe.request.url)
-        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        base = get_base_url(url=frappe.request.url)
         url = base + '/api/resource/Pick%20List/'+ data.get('pick_list')
         
         """GET Pick List Details"""
@@ -224,8 +223,7 @@ def create_receive_at_warehouse():
         data = validate_data(frappe.request.data)
         data_validation_for_create_receive_at_warehouse(data=data)
         
-        parts = urlparse(frappe.request.url)
-        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        base = get_base_url(url=frappe.request.url)
         
         send_to_ste = base + '/api/method/erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry'
         stock_entry = requests.post(send_to_ste.replace("'", '"'), headers={

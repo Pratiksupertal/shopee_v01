@@ -94,8 +94,7 @@ def create_sales_order_from_web():
 
         data_validation_for_create_sales_order_web(order_data=order_data, payment_data=payment_data)
 
-        parts = urlparse(frappe.request.url)
-        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        base = get_base_url(url=frappe.request.url)
 
         url = base + '/api/resource/Sales%20Order'
         res_api_response = requests.post(url.replace("'", '"'), headers={

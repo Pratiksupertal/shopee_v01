@@ -307,3 +307,9 @@ def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, pi
     new_doc_stock_entry.save()
     new_doc_stock_entry.submit()
     return new_doc_stock_entry
+
+
+def get_base_url(url):
+    parts = urlparse(url)
+    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+    return base

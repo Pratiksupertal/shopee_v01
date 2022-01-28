@@ -21,8 +21,7 @@ def create_sales_order():
 
         if not order.get("external_so_number") or not order.get("source_app_name"):
             raise Exception("Sales order Number and Source app name both are required")
-        parts = urlparse(frappe.request.url)
-        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+        base = get_base_url(url=frappe.request.url)
         url = base + '/api/resource/Sales%20Order'
         res_api_response = requests.post(url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
@@ -69,6 +68,7 @@ def create_sales_order_all():
                 order["delivery_date"] = today()
             if not order.get("external_so_number") or not  order.get("source_app_name"):
                 raise Exception("Sales order Number and Source app name both are required")
+            base = get_base_url(url=frappe.request.url)
             url = base + '/api/resource/Sales%20Order'
             order["docstatus"]=1
             res_api_response = requests.post(url.replace("'", '"'), headers={
