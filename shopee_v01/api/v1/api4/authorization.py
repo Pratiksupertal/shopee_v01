@@ -7,15 +7,15 @@ from shopee_v01.api.v1.helpers import *
 
 @frappe.whitelist(allow_guest=True)
 def login():
-    data = validate_data(frappe.request.data)
-    parts = urlparse(frappe.request.url)
-    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+    try:
+        data = validate_data(frappe.request.data)
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
-    url = base + '/api/method/login'
-    res = requests.post(url.replace("'", '"'), data=data)
-    if res.status_code != 200:
-        return format_result(message='Login Failed', status_code=403, result='Entered credentials are invalid!')
-    else:
+        url = base + '/api/method/login'
+        res = requests.post(url.replace("'", '"'), data=data)
+        if res.status_code != 200:
+            raise Exception('Entered credentials are invalid!')
         user_data = frappe.get_doc('User', {'email': data['usr']})
         url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
@@ -34,3 +34,5 @@ def login():
             "api_key": str(user_data.api_key + ':' + api_secret['message']['api_secret']),
             "warehouse_id": str(warehouse_id)
         })
+    except Exception as e:
+        return format_result(status_code=403, message=f'Login Failed. {str(e)}', exception=str(e))

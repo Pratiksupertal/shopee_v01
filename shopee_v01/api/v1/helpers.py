@@ -21,9 +21,15 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def format_result(success=None,result=None, message=None, status_code=None, exception=None):
-    indicator = "green" if success ==True else "red"
-    exception_code = 0 if success == True else 1
+def format_result(success=None, result=None, message=None, status_code=None, exception=None):
+    if success == None:
+        success = True if status_code in [None, 200, 201] and not exception else False
+    if status_code == None:
+        status_code = 200 if success and not exception else 400
+    if message == None:
+        message = exception if not message and exception else "success"
+    indicator = "green" if success else "red"
+    raise_exception = 1 if exception else 0
     return {
         "success": success,
         "message": message,
@@ -33,7 +39,7 @@ def format_result(success=None,result=None, message=None, status_code=None, exce
             {
                 "message": exception,
                 "indicator": indicator,
-                "raise_exception": exception_code
+                "raise_exception": raise_exception
             }
         ]
     }

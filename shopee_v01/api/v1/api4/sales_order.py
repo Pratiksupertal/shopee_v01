@@ -8,6 +8,7 @@ from shopee_v01.api.v1.helpers import *
 
 
 @frappe.whitelist()
+@frappe.whitelist()
 def create_sales_order():
     try:
         res = {}
@@ -48,11 +49,11 @@ def create_sales_order():
                 },data=json.dumps(dn_raw))
                 res['delivery_note']= delivery_note_api_response.json().get("data").get("name")
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message=str(e))
-            return format_result(success="True",result=res)
-        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
+                raise Exception('Delivery note failed')
+            return format_result(success=True, result=res)
+        raise Exception('There was a problem creating the Sales Order')
     except Exception as e:
-        return format_result(result="Sales Order not created", message=str(e),status_code=400)
+        return format_result(result=res, message=f'{str(e)}', status_code=400, success=False, exception=str(e))
 
 
 @frappe.whitelist()
@@ -73,10 +74,10 @@ def create_sales_order_all():
             res_api_response = requests.post(url.replace("'", '"'), headers={
                 "Authorization": frappe.request.headers["Authorization"]
             },data=json.dumps(order))
+            message = None
             if res_api_response.status_code==200:
                 dn_data = res_api_response.json()
                 dn_data = dn_data["data"]
-                dn_json = {}
                 try:
                     dn_raw_data = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
                     dn_res_api_response = requests.post(dn_raw_data.replace("'", '"'), headers={
@@ -88,22 +89,21 @@ def create_sales_order_all():
                     delivery_note_api_response = requests.post(dn_url.replace("'", '"'), headers={
                         "Authorization": frappe.request.headers["Authorization"]
                     },data=json.dumps(dn_raw))
-                    # return True
                 except Exception as e:
-                    return format_result(success="False",result="Delivery Note Failed",message = e)
-            success_count += 1
-            result.append({
-                    "external_so_number": order.get("external_so_number"),
-                    "message": "success"
-                })
-
-
+                    message="Delivery Note Failed"
+                success_count += 1
+                result.append({
+                        "external_so_number": order.get("external_so_number"),
+                        "sales_order": dn_data.get("name"),
+                        "message": "success" if not message else message
+                    })
+            else:
+                raise Exception('Invalid order data. Sales order creation failed.')
         except Exception as err:
-            print("\n\n",str(err),"\n\n")
             fail_count += 1
             result.append({
                 "external_so_number": order.get("external_so_number"),
-                "message": "failed"
+                "message": f"failed: {str(err)}"
             })
     return format_result(result={
             "success_count": success_count,
