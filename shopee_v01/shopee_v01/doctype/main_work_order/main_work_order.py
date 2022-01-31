@@ -135,13 +135,12 @@ class MainWorkOrder(Document):
 
 @frappe.whitelist()
 def workorder_data(main_work_order):
-
-
-
+	print(main_work_order)
 	work_order = frappe.db.get_list('Work Order',
-									filters={
-										'reference_main_work_order': main_work_order
-									}
-									)
+		filters={
+			'reference_main_work_order': main_work_order
+		},
+	    fields=['name', 'qty']
+	)
 	print(work_order)
 	return work_order
