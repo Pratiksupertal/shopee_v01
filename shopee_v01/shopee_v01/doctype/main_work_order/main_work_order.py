@@ -131,3 +131,17 @@ class MainWorkOrder(Document):
 			item_list.append(row.item_code)
 		bom_data["item_code"] = item_list
 		return bom_data
+
+
+@frappe.whitelist()
+def workorder_data(main_work_order):
+
+
+
+	work_order = frappe.db.get_list('Work Order',
+									filters={
+										'reference_main_work_order': main_work_order
+									}
+									)
+	print(work_order)
+	return work_order
