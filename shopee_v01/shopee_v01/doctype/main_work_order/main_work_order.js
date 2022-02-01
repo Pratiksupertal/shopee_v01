@@ -4,19 +4,18 @@
 frappe.ui.form.on('Main Work Order', {
   refresh:function(frm){
 
-    console.log(frm.doc)
+    console.log(frm.doc);
 
     if(frm.doc.docstatus==1){
     var start_btn = frm.add_custom_button(__('Start'), function() {
       frm.trigger("start_work_order");
-//      erpnext.work_order.make_wo_table(frm)
+//      erpnext.work_order.make_wo_table(frm);
     });
       start_btn.addClass('btn-primary');
     };
   },
 
   start_work_order:function(frm){
-    let qty = 0;
 		let work_order_data = [];
 
     const dialog = frappe.prompt({fieldname: 'order_list', fieldtype: 'Table', label: __('Work Order'),
@@ -34,7 +33,7 @@ frappe.ui.form.on('Main Work Order', {
           label: __('Qty'),
           read_only:1,
           in_list_view:1
-          },
+        },
         {
           fieldtype:'Float',
           fieldname:'input_qty',
@@ -49,13 +48,13 @@ frappe.ui.form.on('Main Work Order', {
         return work_order_data;
       }
     }, function(data) {
-      frappe.call({
-        method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.work_order_list",
-        args: {
-          work_order: frm.doc.name,
-          order_list: data.order_list,
-        }
-      });
+      // frappe.call({
+      //   method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.work_order_list",
+      //   args: {
+      //     work_order: frm.doc.name,
+      //     order_list: data.order_list,
+      //   }
+      // });
     }, __("Select Work Orders"), __("Start"));
 
     dialog.fields_dict["order_list"].grid.wrapper.find('.grid-add-row').hide();
@@ -73,10 +72,11 @@ frappe.ui.form.on('Main Work Order', {
               console.log(data);
               console.log(data.name);
               dialog.fields_dict.order_list.df.data.push({
-                'name': 'data.name',
-                'qty': 12
+                'name': data.name,
+                'qty': data.qty
               });
           });
+          dialog.fields_dict.order_list.grid.refresh();
          }
        });
 
