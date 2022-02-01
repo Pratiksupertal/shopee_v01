@@ -21,9 +21,10 @@ frappe.ui.form.on('Main Work Order', {
     const dialog = frappe.prompt({fieldname: 'order_list', fieldtype: 'Table', label: __('Work Order'),
       fields: [
         {
-          fieldtype:'String',
+          fieldtype:'Link',
           fieldname: 'name',
           label: __('Work Order'),
+          options:'Work Order',
           read_only:1,
           in_list_view:1
         },
@@ -45,16 +46,17 @@ frappe.ui.form.on('Main Work Order', {
       data: work_order_data,
       in_place_edit: true,
       get_data: function() {
+
         return work_order_data;
       }
     }, function(data) {
-      // frappe.call({
-      //   method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.work_order_list",
-      //   args: {
-      //     work_order: frm.doc.name,
-      //     order_list: data.order_list,
-      //   }
-      // });
+    console.log(data);
+       frappe.call({
+         method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.make_stock_entry",
+         args: {
+            order_list: data.order_list
+         }
+       });
     }, __("Select Work Orders"), __("Start"));
 
     dialog.fields_dict["order_list"].grid.wrapper.find('.grid-add-row').hide();
