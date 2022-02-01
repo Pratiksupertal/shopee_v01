@@ -153,9 +153,9 @@ def make_stock_entry(work_order_id, purpose='Material Transfer for Manufacture',
 
 	stock_entry = frappe.db.sql("""select name from `tabStock Entry`
 		where work_order = %s and docstatus = 1""", work_order_id)
-	if stock_entry:
-		frappe.throw(("Cannot cancel because submitted Stock Entry {0} exists").format(
-			frappe.utils.get_link_to_form('Stock Entry', stock_entry[0][0])))
+	# if stock_entry:
+	# 	frappe.throw(("Cannot cancel because submitted Stock Entry {0} exists").format(
+	# 		frappe.utils.get_link_to_form('Stock Entry', stock_entry[0][0])))
 
 	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group") and not work_order.skip_transfer:
 		wip_warehouse = work_order.wip_warehouse
@@ -185,3 +185,17 @@ def make_stock_entry(work_order_id, purpose='Material Transfer for Manufacture',
 	stock_entry.set_stock_entry_type()
 	stock_entry.get_items()
 	return stock_entry.as_dict()
+
+
+def create_stock_entries(work_order_list):
+	for work_order in work_order_list:
+		if "__checked" in work_order.keys():
+			if work_order["__checked"]:
+				if data_validation_for_creating_stock_entries(work_order):
+					make_stock_entry(work_order["name"], work_order["input_qty"])
+
+
+def data_validation_for_creating_stock_entries(work_order):
+	if work_order["qty"] < work_order["input_qty"]:
+		return False
+	return True
