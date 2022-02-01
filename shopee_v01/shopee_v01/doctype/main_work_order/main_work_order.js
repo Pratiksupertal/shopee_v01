@@ -35,13 +35,13 @@ frappe.ui.form.on('Main Work Order', {
           read_only:1,
           in_list_view:1
         },
-        {
-          fieldtype:'Float',
-          fieldname:'input_qty',
-          label: __('Quantity to Manufacture'),
-          read_only:0,
-          in_list_view:1,
-        },
+//        {
+//          fieldtype:'Float',
+//          fieldname:'input_qty',
+//          label: __('Quantity to Manufacture'),
+//          read_only:0,
+//          in_list_view:1,
+//        },
       ],
       data: work_order_data,
       in_place_edit: true,
@@ -52,9 +52,9 @@ frappe.ui.form.on('Main Work Order', {
     }, function(data) {
     console.log(data);
        frappe.call({
-         method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.make_stock_entry",
+         method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.pick_lists",
          args: {
-            order_list: data.order_list
+            work_order_list: data.order_list
          }
        });
     }, __("Select Work Orders"), __("Start"));
@@ -158,19 +158,31 @@ frappe.ui.form.on('Work Order Item Details', {
        }
      });
 	},
-  make_se: function(frm, purpose) {
-    this.show_prompt_for_qty_input(frm, purpose)
+//  make_se: function(frm, purpose) {
+//    this.show_prompt_for_qty_input(frm, purpose)
+//			.then(data => {
+//				return frappe.xcall('erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry', {
+//					'work_order_id': frm.doc.name,
+//					'purpose': purpose,
+//					'qty': data.qty
+//				});
+//			}).then(stock_entry => {
+//				frappe.model.sync(stock_entry);
+//				frappe.set_route('Form', stock_entry.doctype, stock_entry.name);
+//			});
+//
+//	},
+    create_pick_list: function(frm, purpose='Material Transfer for Manufacture') {
+		this.show_prompt_for_qty_input(frm, purpose)
 			.then(data => {
-				return frappe.xcall('erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry', {
-					'work_order_id': frm.doc.name,
-					'purpose': purpose,
-					'qty': data.qty
+				return frappe.xcall('erpnext.manufacturing.doctype.work_order.work_order.create_pick_list', {
+					'source_name': frm.doc.name,
+					'for_qty': data.qty
 				});
-			}).then(stock_entry => {
-				frappe.model.sync(stock_entry);
-				frappe.set_route('Form', stock_entry.doctype, stock_entry.name);
+			}).then(pick_list => {
+				frappe.model.sync(pick_list);
+				frappe.set_route('Form', pick_list.doctype, pick_list.name);
 			});
-
 	},
   show_prompt_for_qty_input: function(frm, purpose) {
     let max = this.get_max_transferable_qty(frm, purpose);

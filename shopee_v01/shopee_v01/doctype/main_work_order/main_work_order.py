@@ -9,6 +9,7 @@ from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, g
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no, get_bom_items_as_dict
 from erpnext.stock.utils import get_bin, validate_warehouse_company, get_latest_stock_qty
 from frappe.model.naming import make_autoname
+from frappe.model.mapper import get_mapped_doc
 
 
 class MainWorkOrder(Document):
@@ -187,15 +188,62 @@ def make_stock_entry(work_order_id, purpose='Material Transfer for Manufacture',
 	return stock_entry.as_dict()
 
 
-def create_stock_entries(work_order_list):
+@frappe.whitelist()
+def create_pick_list(work_order_id, target_doc=None, for_qty=None):
+	# for_qty = for_qty or json.loads(target_doc).get('for_qty')
+	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order_id, 'qty')
+	for_qty = max_finished_goods_qty
+
+	# def update_item_quantity(source, target, source_parent):
+	# 	pending_to_issue = flt(source.required_qty) - flt(source.transferred_qty)
+	# 	desire_to_transfer = flt(source.required_qty) / max_finished_goods_qty * flt(for_qty)
+	#
+	# 	qty = 0
+	# 	if desire_to_transfer <= pending_to_issue:
+	# 		qty = desire_to_transfer
+	# 	elif pending_to_issue > 0:
+	# 		qty = pending_to_issue
+	#
+	# 	if qty:
+	# 		target.qty = qty
+	# 		target.stock_qty = qty
+	# 		target.uom = frappe.get_value('Item', source.item_code, 'stock_uom')
+	# 		target.stock_uom = target.uom
+	# 		target.conversion_factor = 1
+	# 	else:
+	# 		target.delete()
+
+	doc = get_mapped_doc('Work Order', work_order_id, {
+		'Work Order': {
+			'doctype': 'Pick List',
+			'validation': {
+				'docstatus': ['=', 1]
+			}
+		},
+		'Work Order Item': {
+			'doctype': 'Pick List Item',
+			# 'postprocess': update_item_quantity,
+			# 'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
+		},
+	}, target_doc)
+
+	doc.set_item_locations()
+
+	return doc
+
+
+@frappe.whitelist()
+def pick_lists(work_order_list):
 	for work_order in work_order_list:
 		if "__checked" in work_order.keys():
 			if work_order["__checked"]:
-				if data_validation_for_creating_stock_entries(work_order):
-					make_stock_entry(work_order["name"], work_order["input_qty"])
+				create_pick_list(work_order_id=work_order["name"])
 
 
-def data_validation_for_creating_stock_entries(work_order):
-	if work_order["qty"] < work_order["input_qty"]:
-		return False
-	return True
+
+
+# def data_validation_for_creating_stock_entries(work_order):
+# 	if work_order["qty"] < work_order["input_qty"]:
+# 		return False
+# 	return True
+
