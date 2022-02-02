@@ -9,6 +9,7 @@ frappe.ui.form.on('Main Work Order', {
     if(frm.doc.docstatus==1){
     var start_btn = frm.add_custom_button(__('Start'), function() {
       frm.trigger("start_work_order");
+//      erpnext.work_order.create_pick_list(frm);
 //      erpnext.work_order.make_wo_table(frm);
     });
       start_btn.addClass('btn-primary');

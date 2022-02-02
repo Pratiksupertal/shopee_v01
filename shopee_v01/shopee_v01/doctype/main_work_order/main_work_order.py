@@ -3,6 +3,9 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+
+import json
+
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, get_link_to_form
@@ -146,104 +149,68 @@ def workorder_data(main_work_order):
 	print(work_order)
 	return work_order
 
-@frappe.whitelist()
-def make_stock_entry(work_order_id, purpose='Material Transfer for Manufacture', qty=None):
-
-
-	work_order = frappe.get_doc("Work Order", work_order_id)
-
-	stock_entry = frappe.db.sql("""select name from `tabStock Entry`
-		where work_order = %s and docstatus = 1""", work_order_id)
-	# if stock_entry:
-	# 	frappe.throw(("Cannot cancel because submitted Stock Entry {0} exists").format(
-	# 		frappe.utils.get_link_to_form('Stock Entry', stock_entry[0][0])))
-
-	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group") and not work_order.skip_transfer:
-		wip_warehouse = work_order.wip_warehouse
-	else:
-		wip_warehouse = None
-
-	stock_entry = frappe.new_doc("Stock Entry")
-	stock_entry.purpose = purpose
-	stock_entry.work_order = work_order_id
-	stock_entry.company = work_order.company
-	stock_entry.from_bom = 1
-	stock_entry.bom_no = work_order.bom_no
-	stock_entry.use_multi_level_bom = work_order.use_multi_level_bom
-	stock_entry.fg_completed_qty = qty or (flt(work_order.qty) - flt(work_order.produced_qty))
-	if work_order.bom_no:
-		stock_entry.inspection_required = frappe.db.get_value('BOM',
-			work_order.bom_no, 'inspection_required')
-
-	if purpose=="Material Transfer for Manufacture":
-		stock_entry.to_warehouse = wip_warehouse
-		stock_entry.project = work_order.project
-	else:
-		stock_entry.from_warehouse = wip_warehouse
-		stock_entry.to_warehouse = work_order.fg_warehouse
-		stock_entry.project = work_order.project
-
-	stock_entry.set_stock_entry_type()
-	stock_entry.get_items()
-	return stock_entry.as_dict()
 
 
 @frappe.whitelist()
-def create_pick_list(work_order_id, target_doc=None, for_qty=None):
-	# for_qty = for_qty or json.loads(target_doc).get('for_qty')
-	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order_id, 'qty')
-	for_qty = max_finished_goods_qty
+def create_pick_list(work_order_id, qty):
 
-	# def update_item_quantity(source, target, source_parent):
-	# 	pending_to_issue = flt(source.required_qty) - flt(source.transferred_qty)
-	# 	desire_to_transfer = flt(source.required_qty) / max_finished_goods_qty * flt(for_qty)
-	#
-	# 	qty = 0
-	# 	if desire_to_transfer <= pending_to_issue:
-	# 		qty = desire_to_transfer
-	# 	elif pending_to_issue > 0:
-	# 		qty = pending_to_issue
-	#
-	# 	if qty:
-	# 		target.qty = qty
-	# 		target.stock_qty = qty
-	# 		target.uom = frappe.get_value('Item', source.item_code, 'stock_uom')
-	# 		target.stock_uom = target.uom
-	# 		target.conversion_factor = 1
-	# 	else:
-	# 		target.delete()
+	try:
+		data_validation_for_creating_pick_list(work_order_id, qty)
+		print("Inside the create pick list function")
+		# doc = frappe.new_doc("Pick List")
+		doc = get_mapped_doc('Work Order', work_order_id, {
+			'Work Order': {
+				'doctype': 'Pick List',
+				'validation': {
+					'docstatus': ['=', 1]
+				}
+			},
+			'Work Order Item': {
+				'doctype': 'Pick List Item',
+				# 'postprocess': update_item_quantity,
+				# 'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
+			},
+		}, None)
+		doc.purpose = "Material Transfer for Manufacture"
+		print("Trying to print doc")
+		print(doc)
+		# doc.set_item_locations()
+		doc.save()
+		frappe.db.commit()
+		print("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
+		print(doc)
+		return f"Work Order {work_order_id}: Pick List {doc.name} created"
 
-	doc = get_mapped_doc('Work Order', work_order_id, {
-		'Work Order': {
-			'doctype': 'Pick List',
-			'validation': {
-				'docstatus': ['=', 1]
-			}
-		},
-		'Work Order Item': {
-			'doctype': 'Pick List Item',
-			# 'postprocess': update_item_quantity,
-			# 'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
-		},
-	}, target_doc)
-
-	doc.set_item_locations()
-
-	return doc
+	except Exception as e:
+		return f"Pick List not created for Work Order - {work_order_id}. Reason - {e}"
 
 
 @frappe.whitelist()
 def pick_lists(work_order_list):
+	work_order_list = json.loads(work_order_list)
+	print("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
+	print(work_order_list)
+	result = []
 	for work_order in work_order_list:
 		if "__checked" in work_order.keys():
 			if work_order["__checked"]:
-				create_pick_list(work_order_id=work_order["name"])
+				res = create_pick_list(work_order_id=work_order["name"], qty=work_order["qty"])
+				result.append(res)
+	return "<br>".join(result)		
+
+
+def data_validation_for_creating_pick_list(work_order, qty):
+	print("This is data validation function")
+	pick_list = frappe.db.sql("select * from `tabPick List` where work_order = %s", work_order)
+
+	if pick_list:
+		raise Exception("Pick List already created for the work order")
+
+	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order, 'qty')
+	if qty != max_finished_goods_qty:
+		raise Exception("Input quantity is not equal to the total quantity")
 
 
 
 
-# def data_validation_for_creating_stock_entries(work_order):
-# 	if work_order["qty"] < work_order["input_qty"]:
-# 		return False
-# 	return True
 
