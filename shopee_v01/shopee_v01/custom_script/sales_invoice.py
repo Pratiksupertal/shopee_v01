@@ -65,3 +65,7 @@ def validate(doc,method):
 
     print(item_dict)
     print(doc.consolidated_items)
+
+@frappe.whitelist()
+def get_summary_sales_invoice(doc):
+    return frappe.db.sql("""select parent,image,item_name,item_name,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Invoice Item` where parent = %s group by parent,item_name""",(doc.name),as_dict=True)
