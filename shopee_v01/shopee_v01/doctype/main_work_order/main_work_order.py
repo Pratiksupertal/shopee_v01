@@ -3,6 +3,9 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+
+import json
+
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, get_link_to_form
@@ -187,13 +190,26 @@ def make_stock_entry(work_order_id, purpose='Material Transfer for Manufacture',
 	stock_entry.get_items()
 	return stock_entry.as_dict()
 
+def validation_for_create_pick_lists(work_order_id, qty):
+	pick_lists = frappe.db.sql("""select name from `tabPick List`
+				where work_order = %s""", work_order_id)
+	if pick_lists:
+		raise Exception('Pick list Already exists')
 
-@frappe.whitelist()
-def create_pick_list(work_order_id, target_doc=None, for_qty=None):
-	# for_qty = for_qty or json.loads(target_doc).get('for_qty')
 	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order_id, 'qty')
-	for_qty = max_finished_goods_qty
 
+	if not max_finished_goods_qty==qty:
+		raise Exception('Quantity is not same ')
+
+
+def create_pick_list(work_order_id, qty):
+	result=[]
+	
+
+	try:
+		pass
+	except Exception as err:
+		result.append(f"Work Order {work_order_id}: Pick List not created. Reason: {err}”)
 	# def update_item_quantity(source, target, source_parent):
 	# 	pending_to_issue = flt(source.required_qty) - flt(source.transferred_qty)
 	# 	desire_to_transfer = flt(source.required_qty) / max_finished_goods_qty * flt(for_qty)
@@ -212,32 +228,34 @@ def create_pick_list(work_order_id, target_doc=None, for_qty=None):
 	# 		target.conversion_factor = 1
 	# 	else:
 	# 		target.delete()
-
-	doc = get_mapped_doc('Work Order', work_order_id, {
-		'Work Order': {
-			'doctype': 'Pick List',
-			'validation': {
-				'docstatus': ['=', 1]
-			}
-		},
-		'Work Order Item': {
-			'doctype': 'Pick List Item',
-			# 'postprocess': update_item_quantity,
-			# 'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
-		},
-	}, target_doc)
-
-	doc.set_item_locations()
-
-	return doc
-
+	#
+	# doc = get_mapped_doc('Work Order', work_order_id, {
+	# 	'Work Order': {
+	# 		'doctype': 'Pick List',
+	# 		'validation': {
+	# 			'docstatus': ['=', 1]
+	# 		}
+	# 	},
+	# 	'Work Order Item': {
+	# 		'doctype': 'Pick List Item',
+	# 		# 'postprocess': update_item_quantity,
+	# 		# 'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
+	# 	},
+	# })
+	#
+	# doc.set_item_locations()
+	#
+	# return doc
 
 @frappe.whitelist()
 def pick_lists(work_order_list):
+	work_order_list=json.loads(work_order_list)
+	print(work_order_list)
+	print(type(work_order_list))
 	for work_order in work_order_list:
 		if "__checked" in work_order.keys():
 			if work_order["__checked"]:
-				create_pick_list(work_order_id=work_order["name"])
+				create_pick_list(work_order_id=work_order["name"], qty=work_order['qty'])
 
 
 
