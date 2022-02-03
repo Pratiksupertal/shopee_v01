@@ -7,36 +7,38 @@ frappe.ui.form.on('Main Work Order', {
     console.log(frm.doc);
 
     if(frm.doc.docstatus==1){
-    var start_btn = frm.add_custom_button(__('Create Pick List'), function() {
-      frm.trigger("start_work_order");
-//      erpnext.work_order.create_pick_list(frm);
-//      erpnext.work_order.make_wo_table(frm);
-    });
+      var start_btn = frm.add_custom_button(__('Create Pick List'), function() {
+        frm.trigger("start_work_order");
+      });
       start_btn.addClass('btn-primary');
-        var job_card_btn = frm.add_custom_button(__('Job Card'), function() {
-      frm.trigger("start_job_card");
-//      erpnext.work_order.create_pick_list(frm);
-//      erpnext.work_order.make_wo_table(frm);
-    });
+      var job_card_btn = frm.add_custom_button(__('Job Card'), function() {
+        frm.trigger("start_job_card");
+      });
       job_card_btn.addClass('btn-primary');
     };
 
   },
 
   start_job_card:function(frm){
-//        let qty = 0;
-		let job_card_data = [];
+		let job_card_list = [];
 
-    const dialog = frappe.prompt({fieldname: 'order_list', fieldtype: 'Table', label: __('Job Card'),
+    const dialog = frappe.prompt({fieldname: 'job_card_list', fieldtype: 'Table', label: __('Job Card'),
       fields: [
         {
           fieldtype:'Link',
-          fieldname: 'name',
+          fieldname: 'job_card',
           label: __('Job Card'),
           options:'Job Card',
           read_only:1,
           in_list_view:1
         },
+        // {
+        //   fieldtype:'Data',
+        //   fieldname: 'name',
+        //   label: __('Job Card Id'),
+        //   read_only:1,
+        //   in_list_view:1
+        // },
         {
           fieldtype:'Link',
           fieldname: 'work_order',
@@ -48,15 +50,15 @@ frappe.ui.form.on('Main Work Order', {
 
         {
           fieldtype:'Float',
-          fieldname:'for_quantity',
+          fieldname:'qty',
           label: __('Qty'),
           read_only:1,
           in_list_view:1
         },
         {
           fieldtype:'Float',
-          fieldname:'processed_qty',
-          label: __('Processed Qty'),
+          fieldname:'total_completed_qty',
+          label: __('Completed Qty'),
           read_only:1,
           in_list_view:1
         },
@@ -68,26 +70,26 @@ frappe.ui.form.on('Main Work Order', {
           in_list_view:1,
         },
       ],
-      data: job_card_data,
+      data: job_card_list,
       in_place_edit: true,
       get_data: function() {
 
-        return job_card_data;
+        return job_card_list;
       }
     }, function(data) {
     console.log(data);
        frappe.call({
-         method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.pick_lists",
-         args: {
-            work_order_list: data.order_list
-         }
+      //    method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.pick_lists",
+      //    args: {
+      //       work_order_list: data.order_list
+      //    }
        });
-    }, __("Select Work Orders"), __("Create Job Card"));
+    }, __("Select Job Card"), __("Start"));
 
-    dialog.fields_dict["order_list"].grid.wrapper.find('.grid-add-row').hide();
+    dialog.fields_dict["job_card_list"].grid.wrapper.find('.grid-add-row').hide();
 
     frappe.call({
-      method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.workorder_data",
+      method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.job_card_data",
       args: {
         main_work_order: frm.doc.name,
       },
@@ -98,23 +100,20 @@ frappe.ui.form.on('Main Work Order', {
           resp.forEach(data => {
               console.log(data);
               console.log(data.name);
-              dialog.fields_dict.order_list.df.data.push({
+              dialog.fields_dict.job_card_list.df.data.push({
+                'job_card': data.operation,
                 'name': data.name,
-                'qty': data.qty
+                'work_order': data.work_order,
+                'qty': data.for_quantity,
+                'total_completed_qty': data.total_completed_qty
               });
           });
-          dialog.fields_dict.order_list.grid.refresh();
+          dialog.fields_dict.job_card_list.grid.refresh();
          }
        });
+		dialog.fields_dict.job_card_list.grid.refresh();
+  },
 
-    // dialog.fields_dict.order_list.df.data.push({
-    //   'name': 'Workorder 1',
-    //   'qty': 12
-    // });
-
-		
-		dialog.fields_dict.order_list.grid.refresh();
-    },
  start_work_order:function(frm){
 		let work_order_data = [];
 
@@ -134,14 +133,7 @@ frappe.ui.form.on('Main Work Order', {
           label: __('Qty'),
           read_only:1,
           in_list_view:1
-        },
-//        {
-//          fieldtype:'Float',
-//          fieldname:'input_qty',
-//          label: __('Quantity to Manufacture'),
-//          read_only:0,
-//          in_list_view:1,
-//        },
+        }
       ],
       data: work_order_data,
       in_place_edit: true,

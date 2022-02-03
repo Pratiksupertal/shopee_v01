@@ -235,16 +235,17 @@ def data_validation_for_creating_pick_list(work_order, qty):
 	if qty != max_finished_goods_qty:
 		raise Exception("Input quantity is not equal to the total quantity")
 
-'''
+
 @frappe.whitelist()
 def job_card_data(main_work_order):
-	print(main_work_order)
-	work_order = frappe.db.get_list('Work Order',
+	work_order_list = [work_order['name'] for work_order in workorder_data(main_work_order=main_work_order)]
+	job_cards = frappe.db.get_list('Job Card',
 		filters={
-			'reference_main_work_order': main_work_order
+			"work_order": ["in", work_order_list]
 		},
-	    fields=['name', 'qty']
+		fields=[
+			'name', 'operation', 'work_order', 'for_quantity', "total_completed_qty"
+		],
+		order_by='operation'
 	)
-	print(work_order)
-	return work_order
-'''
+	return job_cards
