@@ -138,6 +138,7 @@ class MainWorkOrder(Document):
 		return bom_data
 
 
+
 @frappe.whitelist()
 def workorder_data(main_work_order):
 	print(main_work_order)
@@ -149,6 +150,8 @@ def workorder_data(main_work_order):
 	)
 	print(work_order)
 	return work_order
+
+'''Creating pick for Main Work Order '''
 
 
 def create_pick_list(source_name, target_doc=None, for_qty=None):
@@ -184,7 +187,7 @@ def create_pick_list(source_name, target_doc=None, for_qty=None):
 		},
 	}, target_doc)
 	doc.for_qty = for_qty
-	doc.purpose = "Material Transfer"
+	#doc.purpose = "Material Transfer"
 	doc.set_item_locations()
 	return doc
 
@@ -232,7 +235,16 @@ def data_validation_for_creating_pick_list(work_order, qty):
 	if qty != max_finished_goods_qty:
 		raise Exception("Input quantity is not equal to the total quantity")
 
-
-
-
-
+'''
+@frappe.whitelist()
+def job_card_data(main_work_order):
+	print(main_work_order)
+	work_order = frappe.db.get_list('Work Order',
+		filters={
+			'reference_main_work_order': main_work_order
+		},
+	    fields=['name', 'qty']
+	)
+	print(work_order)
+	return work_order
+'''
