@@ -21,6 +21,15 @@ from frappe.utils import now_datetime
 parts = urlparse(frappe.request.url)
 base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
+import re
+ 
+
+def cleanhtml(raw_html):
+    CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+    cleantext = re.sub(CLEANR, '', raw_html)
+    return cleantext
+
+
 def validate_data(data):
     if len(data) == 0 or data is None:
         return None
@@ -38,8 +47,16 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
         status_code = 200 if success and not exception else 400
     if message == None:
         message = exception if not message and exception else "success"
+    if not success or status_code not in [200, 201]:
+        if not exception: exception = message
+    
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
+    
+    # Remote HTML tags
+    if message: message = cleanhtml(message)
+    if exception: exception = cleanhtml(exception)
+    
     return {
         "success": success,
         "message": message,
@@ -1780,11 +1797,15 @@ def submit_picklist_and_create_stockentry():
             picklist_details=picklist_details
         )
         
+        """Correct picked qty"""
+        
+        for item in picklist_details.get('locations'):
+            picked_qty = item['qty'] - item['picked_qty']
+            frappe.db.set_value('Pick List Item', item['name'], 'picked_qty', picked_qty)
+        
         """Submit Pick List"""
         
-        _ = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
+        frappe.db.set_value('Pick List', picklist_details['name'], 'docstatus', 1)
         
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
@@ -1812,7 +1833,10 @@ def picklist_details_for_warehouse_app():
                 'parent': pick_list,
                 'parentfield': 'locations'
             },
-            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+            fields=[
+                'item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order'
+            ],
+            order_by='warehouse'
         )
         
         picklist_details.sales_order = items[0].sales_order
