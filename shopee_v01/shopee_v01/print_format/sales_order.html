@@ -131,8 +131,9 @@ jsbarcode-value="{{doc.name}}"/>
   {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
   {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+  {% set fmt_tot_disc = doc.additional_discount_percentage %}
   {% set tot_disc = disc.discount+doc.discount_amount %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+  {% set fmt_tot_disc2 = frappe.utils.fmt_money(tot_disc,currency="") %}
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
   <div class="col-xs-6">
   </div>
@@ -152,7 +153,7 @@ jsbarcode-value="{{doc.name}}"/>
     <table width="100%" style="table-layout: fixed;">
       <tr>
         <td colspan="40%"><b>Diskon</b></td>
-        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_disc or '' }}</td>
+        <td colspan="60%">{{ fmt_tot_disc }}&nbsp;{{'%'}}</td>
       </tr>
     </table>
   </div>
@@ -207,15 +208,17 @@ jsbarcode-value="{{doc.name}}"/>
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 <tr>
-<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
 <td colspan="4" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "></td>
+<td colspan="4" class="tac "></td>
 </tr>
 
 <tr>
-<td colspan="4" class="tac"><b>Approved By</b></td>
-<td colspan="4" class="tac"><b>Checked By</b></td>
 <td colspan="4" class="tac"><b>Prepared By</b></td>
+<td colspan="4" class="tac "></td>
+<td colspan="4" class="tac "></td>
 </tr>
 </table>
 </div>

@@ -215,15 +215,17 @@ jsbarcode-value="{{doc.name}}"/>
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 <tr>
-<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
 <td colspan="4" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac"></td>
+<td colspan="4" class="tac"></td>
 </tr>
 
 <tr>
-<td colspan="4" class="tac"><b>Approved By</b></td>
-<td colspan="4" class="tac"><b>Checked By</b></td>
 <td colspan="4" class="tac"><b>Prepared By</b></td>
+<td colspan="4" class="tac"></td>
+<td colspan="4" class="tac"></td>
 </tr>
 </table>
 </div>
