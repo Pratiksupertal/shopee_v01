@@ -23,9 +23,9 @@ def get_purchase_order(name):
 @frappe.whitelist()
 def get_item_CMT(name,material_type):
     if material_type[0:1]=='B':
-       return frappe.db.sql("""select bi.item_code,bi.item_name,woid.qty*bi.qty qty,bi.description,bi.uom,bi.stock_uom,bi.rate, woid.qty*bi.amount amount,bi.conversion_factor,bi.parent from `tabWork Order Item Details` woid left join `tabBOM Item` bi on bi.parent = woid.bom inner join `tabItem` It on bi.item_name = It.item_name where woid.parent = %s and It.item_group like %s """,(name,'%Raw Material%'),as_dict=True)
+       return frappe.db.sql("""select bi.item_code,bi.item_name,sum(woid.qty*bi.qty) qty,bi.description,bi.uom,bi.stock_uom,bi.rate, sum(woid.qty*bi.amount) amount,bi.conversion_factor,bi.parent from `tabWork Order Item Details` woid left join `tabBOM Item` bi on bi.parent = woid.bom inner join `tabItem` It on bi.item_name = It.item_name where woid.parent = %s and It.item_group like %s group by bi.item_code,bi.item_name""",(name,'%Raw Material%'),as_dict=True)
     if material_type[0:1]=='A' or (not bool(material_type)):
-       return frappe.db.sql("""select bi.item_code,bi.item_name,woid.qty*bi.qty qty,bi.description,bi.uom,bi.stock_uom,bi.rate, woid.qty*bi.amount amount,bi.conversion_factor,bi.parent from `tabWork Order Item Details` woid left join `tabBOM Item` bi on bi.parent = woid.bom inner join `tabItem` It on bi.item_name = It.item_name where woid.parent = %s and It.item_group like %s """,(name,'%Accessories%'),as_dict=True)
+       return frappe.db.sql("""select bi.item_code,bi.item_name,sum(woid.qty*bi.qty) qty,bi.description,bi.uom,bi.stock_uom,bi.rate, sum(woid.qty*bi.amount) amount,bi.conversion_factor,bi.parent from `tabWork Order Item Details` woid left join `tabBOM Item` bi on bi.parent = woid.bom inner join `tabItem` It on bi.item_name = It.item_name where woid.parent = %s and It.item_group like %s group by bi.item_code,bi.item_name""",(name,'%Accessories%'),as_dict=True)
     if material_type[0:4]=='WASH':
        return frappe.db.sql("""select bom.item item_code,woid.art_no item_name,woid.qty qty,woid.art_no description,'PCS' uom,'PCS' stock_uom,0 rate, 0 amount,1 conversion_factor,'' parent from `tabWork Order Item Details` woid left join `tabBOM` bom on woid.bom = bom.name where woid.parent = %s """,(name),as_dict=True)
 

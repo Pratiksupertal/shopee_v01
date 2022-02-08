@@ -11,6 +11,7 @@
   <h2>Delivery Note &nbsp; {{ material_type }}<br><small>{{ doc.name }}</small>
   </h2>
 </div>
+<div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
       <tr>
@@ -29,21 +30,37 @@
   </div>
 </div>
 <div class="row section-break f_font">
-  <div class="col-xs-6">
+  <!--<div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%">{% if doc.po_contact_person is not none %} Kepada Yth : {% endif %}</td>
         <td width="60%"><b>{% if doc.po_contact_person is not none %} {{ doc.po_contact_person or '' }} {% endif %}</b></td>
       </tr>
     </table>
-  </div>
+  </div>-->
   <div class="col-xs-6">
-	<table width="100%" style="table-layout: fixed;">
+	  <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%">{% if doc.mwo_name is not none %} SPK {% endif %}</td>
         <td width="60%">{% if doc.mwo_name is not none %} {{ doc.mwo_name or '' }} {% endif %}</td>
       </tr>
     </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+		   <tr>
+		    <td width="40%">Art No :</td>
+      {% set check = namespace(value="1") %}
+			{% set woid = frappe.get_all('Work Order Item Details', filters={'parent': doc.mwo_name}, fields=['art_no']) %}
+				{% for woid in woid %}
+          {% set vcount = namespace(value=1) %}
+             {% if (woid.art_no is not none) and (check.value=="1") %} 
+					        <td width="60%">{{ woid.art_no }}</td>
+                  {% set check.value = "2" %}
+            {% endif %}
+				{% endfor %}
+		   </tr>
+		</table>
   </div>
 </div>
 <div class="row section-break f_font">
