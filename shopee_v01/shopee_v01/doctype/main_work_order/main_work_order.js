@@ -90,11 +90,12 @@ frappe.ui.form.on('Main Work Order', {
     }, function(data) {
     console.log(data);
        frappe.call({
-      //    method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.pick_lists",
-      //    args: {
-      //       work_order_list: data.order_list
-      //    }
+          method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.start_job_cards",
+          args: {
+             job_card_list: job_card_list
+          },
        });
+
     }, __("Select Job Card"), __("Start"));
 
     dialog.fields_dict["job_card_list"].grid.wrapper.find('.grid-add-row').hide();

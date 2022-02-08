@@ -8,11 +8,12 @@ import json
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, get_link_to_form
+from frappe.utils import flt, get_datetime, getdate, date_diff, cint, now, nowdate, get_link_to_form
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no, get_bom_items_as_dict
 from erpnext.stock.utils import get_bin, validate_warehouse_company, get_latest_stock_qty
 from frappe.model.naming import make_autoname
 from frappe.model.mapper import get_mapped_doc
+
 from urllib.parse import urlparse
 
 
@@ -267,3 +268,35 @@ def in_progress_job_card_data(main_work_order):
 	)
 
 	return job_cards
+
+
+@frappe.whitelist()
+def start_job_cards(job_card_list):
+	from datetime import datetime
+	new_jobs = []
+	job_card_list = json.loads(job_card_list)
+	print(job_card_list)
+	print(type(job_card_list))
+	for new_job in job_card_list:
+		if '__checked' in new_job:
+			new_jobs.append(new_job)
+	job_card_name_list = [job_card['name'] for job_card in new_jobs]
+	print(job_card_name_list)
+	job_cards = frappe.db.get_list('Job Card', filters={'name': ['in', job_card_name_list], 'status': 'Open'})
+	print(job_cards)
+	for job_card in job_cards:
+		job_doc = frappe.get_doc('Job Card', job_card.name)
+		row = job_doc.append('time_logs', {})
+		row.from_time = now()
+		row.completed_qty = 0
+		job_doc.job_started = 1
+		job_doc.started_time = row.from_time
+		job_doc.status = "Work In Progress"
+		if not frappe.flags.resume_job:
+			job_doc.current_time = 0
+
+		job_doc.save()
+
+
+
+
