@@ -241,11 +241,29 @@ def job_card_data(main_work_order):
 	work_order_list = [work_order['name'] for work_order in workorder_data(main_work_order=main_work_order)]
 	job_cards = frappe.db.get_list('Job Card',
 		filters={
-			"work_order": ["in", work_order_list]
+			"work_order": ["in", work_order_list],
+			"status": ["in", ["Open", "Completed"]]
 		},
 		fields=[
-			'name', 'operation', 'work_order', 'for_quantity', "total_completed_qty"
+			'name', 'operation', 'work_order', 'for_quantity', "total_completed_qty", "status"
 		],
 		order_by='operation'
 	)
+	return job_cards
+
+
+@frappe.whitelist()
+def in_progress_job_card_data(main_work_order):
+	work_order_list = [work_order['name'] for work_order in workorder_data(main_work_order=main_work_order)]
+	job_cards = frappe.db.get_list('Job Card',
+		filters={
+			"work_order": ["in", work_order_list],
+			"status": "Work In Progress"
+		},
+		fields=[
+			'name', 'operation', 'work_order', 'for_quantity', "total_completed_qty", "status"
+		],
+		order_by='operation'
+	)
+
 	return job_cards
