@@ -56,28 +56,27 @@
 {% set counter = 0 %}
 {% set sales_invoice = None %}
 {% set sales_invoice = get_summary_sales_invoice(doc) %}
-{% for row in sales_invoice %}
+{% for row in doc.items %}
 <tr>
 
-        {% set counter = counter + 1 %}
-        <td class="tac" width="3%">{{ counter or '' }}</td>
-        <td width="18%">{{ row.item_name or '' }}</td>
-        <td width="20%">{{ row.description or '' }}</td>
-        <td class="tac" width="14%">{{ frappe.utils.fmt_money(row.quantity,currency="") or 0}}&nbsp;{{row.uom}}</td>
+        <td class="tac" width="3%">{{ row.idx or '' }}</td>
+        <td width="18%">{{ row.item_code or '' }}</td>
+        <td width="20%">{{ row.description or '' }}</td>-->
+        <td class="tac" width="20%">{{ frappe.utils.fmt_money(row.qty,currency="") or 0}}&nbsp;{{row.uom}}</td>
 
     <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
         <td class="tac" width="14%"> {% if doc.currency == "IDR" %}
 
-          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %} {% if doc.currency == "USD" %}
-          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}
+          {{doc.currency}}&nbsp;{{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %} {% if doc.currency == "USD" %}
+          {{doc.currency}}&nbsp;{{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}
         </td>
         <td class="tac" width="14%"> {% if doc.currency == "IDR" %}
           {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %} {% if doc.currency == "USD" %}
-          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %}
+          {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %}
         </td>
         <td class="tac" width="17%"> {% if doc.currency == "IDR" %}
-          {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %} {% if doc.currency == "USD" %}
-          {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %}
+          {{doc.currency}}&nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}}{% endif %} {% if doc.currency == "USD" %}
+          {{doc.currency}}&nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %}
         </td>
 
     </tr>
@@ -91,6 +90,7 @@
 </table><br>
 </div>
 </div>
+
   {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
   {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
   {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
@@ -99,6 +99,7 @@
   {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
   {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
 
 {% set fmt_tot_tax = frappe.utils.fmt_money(tot_ppn,currency="") %}
