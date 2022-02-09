@@ -8,7 +8,7 @@ import json
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, get_datetime, getdate, date_diff, cint, now, nowdate, get_link_to_form
+from frappe.utils import flt, get_datetime, getdate, time_diff_in_hours, date_diff, cint, now, nowdate, get_link_to_form, time_diff
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no, get_bom_items_as_dict
 from erpnext.stock.utils import get_bin, validate_warehouse_company, get_latest_stock_qty
 from frappe.model.naming import make_autoname
@@ -243,7 +243,7 @@ def job_card_data(main_work_order):
 	job_cards = frappe.db.get_list('Job Card',
 		filters={
 			"work_order": ["in", work_order_list],
-			"status": ["in", ["Open", "Completed"]]
+			"job_started": ["=", 0]
 		},
 		fields=[
 			'name', 'operation', 'work_order', 'for_quantity', "total_completed_qty", "status"
@@ -259,7 +259,7 @@ def in_progress_job_card_data(main_work_order):
 	job_cards = frappe.db.get_list('Job Card',
 		filters={
 			"work_order": ["in", work_order_list],
-			"status": "Work In Progress"
+			"job_started": ["=", 1]
 		},
 		fields=[
 			'name', 'operation', 'work_order', 'for_quantity', "total_completed_qty", "status"
@@ -272,7 +272,6 @@ def in_progress_job_card_data(main_work_order):
 
 @frappe.whitelist()
 def start_job_cards(job_card_list):
-	from datetime import datetime
 	new_jobs = []
 	job_card_list = json.loads(job_card_list)
 	print(job_card_list)
@@ -282,12 +281,12 @@ def start_job_cards(job_card_list):
 			new_jobs.append(new_job)
 	job_card_name_list = [job_card['name'] for job_card in new_jobs]
 	print(job_card_name_list)
-	job_cards = frappe.db.get_list('Job Card', filters={'name': ['in', job_card_name_list], 'status': 'Open'})
+	job_cards = frappe.db.get_list('Job Card', filters={'name': ['in', job_card_name_list], 'status': ['in', ['Open', 'Work In Progress']]})
 	print(job_cards)
 	for job_card in job_cards:
 		job_doc = frappe.get_doc('Job Card', job_card.name)
 		row = job_doc.append('time_logs', {})
-		row.from_time = now()
+		row.from_time = get_datetime()
 		row.completed_qty = 0
 		job_doc.job_started = 1
 		job_doc.started_time = row.from_time
@@ -296,6 +295,59 @@ def start_job_cards(job_card_list):
 			job_doc.current_time = 0
 
 		job_doc.save()
+
+
+@frappe.whitelist()
+def stop_job_cards(in_progress_job_card_list):
+	new_jobs = []
+	in_progress_job_card_list = json.loads(in_progress_job_card_list)
+	for new_job in in_progress_job_card_list:
+		if '__checked' in new_job and new_job['status'] == "Work In Progress":
+			new_jobs.append(new_job)
+	for job_card in new_jobs:
+		job_doc = frappe.get_doc('Job Card', job_card['name'])
+		rows = job_doc.get('time_logs')
+		print('\n', rows)
+		row = rows[-1] #This is the last row of time logs.
+		print('\n', row)
+		row.to_time = get_datetime()
+		print("======= I am at row.to_time========")
+		print(row.to_time)
+		print("======= I am at job_doc.started_time========")
+		print(job_doc.started_time)
+		row.time_in_mins = time_diff_in_hours(row.to_time, job_doc.started_time) * 60
+		print(row.time_in_mins)
+		job_doc.total_time_in_mins += row.time_in_mins
+		if job_card['total_completed_qty'] == 0 and job_card['input_qty'] <= job_card['qty']:
+			print("======= I am inside if block ========")
+			row.completed_qty = job_card['input_qty']
+			job_card['total_completed_qty'] = job_card['input_qty']
+			job_doc.job_started = 0
+			job_doc.started_time = ''
+			if job_card['input_qty'] < job_card['qty']:
+				print("======= I am inside another if block ========")
+				print(row.from_time)
+				print(row.to_time)
+				print("======== I am trying to save the doc ========")
+				job_doc.save()
+			else:
+				job_doc.status = "Complete"
+				job_doc.submit()
+
+		elif job_card['total_completed_qty'] != 0 and (job_card['total_completed_qty'] + job_card['input_qty']) <= job_card['qty']:
+			print("======= I am inside elif block ========")
+			row.completed_qty = job_card['input_qty']
+			job_card['total_completed_qty'] += job_card['input_qty']
+			job_doc.job_started = 0
+			job_doc.started_time = ''
+			if (job_card['total_completed_qty'] + job_card['input_qty']) < job_card['qty']:
+				job_doc.save()
+			else:
+				job_doc.status = "Complete"
+				job_doc.submit()
+
+
+
 
 
 

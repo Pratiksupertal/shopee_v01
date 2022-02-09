@@ -136,7 +136,8 @@ frappe.ui.form.on('Main Work Order', {
       fields: [
         {
           fieldtype:'Link',
-          fieldname: 'job_card',
+//          fieldname: 'job_card',
+          fieldname: 'name',
           label: __('Job Card'),
           options:'Job Card',
           read_only:1,
@@ -151,6 +152,14 @@ frappe.ui.form.on('Main Work Order', {
           read_only:1,
           in_list_view:1
         },
+
+//        {
+//          fieldtype:'Data',
+//          fieldname:'status',
+//          label: __('Status'),
+//          read_only:1,
+//          in_list_view:1
+//        },
 
         {
           fieldtype:'Float',
@@ -185,10 +194,10 @@ frappe.ui.form.on('Main Work Order', {
     }, function(data) {
     console.log(data);
        frappe.call({
-      //    method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.pick_lists",
-      //    args: {
-      //       work_order_list: data.order_list
-      //    }
+          method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.stop_job_cards",
+          args: {
+             in_progress_job_card_list: in_progress_job_card_list
+          },
        });
     }, __("Select Job Card"), __("Stop"));
 
@@ -417,110 +426,4 @@ frappe.ui.form.on('Work Order Item Details', {
 	}
 
 });
-
-
-//  var show_job_card_dialog = function(frm){
-//
-//
-//
-//    new frappe.ui.form.MultiSelectDialog({
-//            doctype: "Job Card",
-//            target: cur_frm,
-//            setters: [
-//
-//          {
-//          fieldtype:'Link',
-//          fieldname: 'work_order',
-//          label: __('Work Order'),
-//          options:'Work Order',
-//          read_only:1,
-//          in_list_view:1
-//        },
-//        {
-//          fieldtype:'Float',
-//          fieldname:'for_quantity',
-//          label: __('Qty'),
-//          read_only:1,
-//          in_list_view:1
-//        },
-//         {
-//            fieldname: 'status',
-//            fieldtype: 'Data',
-//            label: __('Status'),
-//            read_only:1,
-//            in_list_view:1
-//          }
-//		      ],
-//
-//            get_query() {
-//             return {
-//                filters: { status: ['Like', 'Completed' || 'Open'] }
-//            }
-//        },
-//            action(main_work_order) {
-//                        console.log("Get items button click.")
-//                        frappe.call({
-//                            method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.job_card_data",
-//                            args: {
-//                                main_work_order: main_work_order
-//                            },
-//                            callback: function(res){
-//                                //console.log("test Res 4");
-//                                //console.log(res);
-//                                //console.log(res.message.length);
-//
-//                                    for (var i = 0; i<res.length; i=i+1) {
-//
-//                                        //console.log("check here");
-////                                        tot_qty = tot_qty + res.message[i].qty;
-////									                      tot_amount = tot_amount + res.message[i].amount;
-//                                        var row = frm.add_child("items");
-//                                        //console.log("Go in here");
-//                                        //console.log(res.message[i].item_code);
-//                                        //console.log(frm.doc.items);
-//                                        frappe.model.set_value(row.doctype, row.name, 'Job Card', res[i].job_card)
-//                                        frappe.model.set_value(row.doctype, row.name, 'Work Order', res[i].work_order);
-//                                        frappe.model.set_value(row.doctype, row.name, 'Qty', res[i].for_quantity);
-//                                        frappe.model.set_value(row.doctype, row.name, 'Completed Qty', res[i].total_completed_qty);
-//                                        frappe.model.set_value(row.doctype, row.name, 'Input Qty', res[i].input_qty);
-//                                        frappe.model.set_value(row.doctype, row.name, 'Status', res[i].status);
-//                                        frm.refresh_field('items');
-//                                    }
-//                                }
-//
-//                        })
-//
-//
-////                    for (var ia = 0; ia < main_work_order.length; ia=ia+1) {
-////                    console.log(main_work_order);
-////                    frappe.call({
-////                        method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.job_card_data",
-////                        args: {
-////                            main_work_order: main_work_order
-////                        },
-////                        callback: function(res2){
-////                            console.log("test Res 3");
-////                            console.log(res2);
-//////                            console.log(res2.message.length);
-////                            if (res2){
-////                                for (var i = 0; i<res2.length; i=i+1) {
-////
-////                                    frm.set_value({job_card: res2[i].job_card, work_order: res2[i].work_order,
-////                                    for_quantity: res2[i].for_quantity,total_completed_qty: res2[i].total_completed_qty,
-////                                    input_qty: res2[i].input_qty,status: res2[i].status});
-////                                    frm.refresh();
-////                                    }
-////                                }
-////                            }
-////                        })
-////                    }
-//
-//                    cur_dialog.hide();
-//                }
-//
-//
-//        });
-////        frm.trigger("start_job_card");
-//      }
-
 
