@@ -1891,12 +1891,13 @@ def stock_entry_details_for_warehouse_app():
         if pick_list_items: sales_order = pick_list_items[0].sales_order
         stock_entry_details.sales_order = sales_order
         
-        so_date_data = frappe.db.get_value('Sales Order', sales_order, [ 'customer', 'customer_name', 'transaction_date', 'delivery_date'])
+        so_date_data = frappe.db.get_value('Sales Order', sales_order, [ 'customer', 'customer_name', 'customer_address', 'transaction_date', 'delivery_date'])
         if so_date_data:
             stock_entry_details.customer = so_date_data[0]
             stock_entry_details.customer_name = so_date_data[1]
-            stock_entry_details.transaction_date = so_date_data[2]
-            stock_entry_details.delivery_date = so_date_data[3]
+            stock_entry_details.customer_address = so_date_data[2]
+            stock_entry_details.transaction_date = so_date_data[3]
+            stock_entry_details.delivery_date = so_date_data[4]
             
         """GET ITEMS"""
         
