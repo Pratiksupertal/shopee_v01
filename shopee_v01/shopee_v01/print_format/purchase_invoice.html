@@ -11,6 +11,7 @@
 
 <div class="print-heading">
     <h2>Purchase Invoice<br><small>{{doc.name}}</small></h2>
+    <small>{{doc.items[0].purchase_order}}</small>
 </div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
@@ -55,7 +56,6 @@
 <th class="tac" width="9%" style="font-size:10px"><b>Rate</b></th>
 <th class="tac" width="11%" style="font-size:10px"><b>Amount</b></th>
 <th class="tac" width="10%" style="font-size:10px"><b>Accepted Warehouse</b></th>
-<th class="tac" width="14%" style="font-size:10px"><b>Purchase Order</b></th>
 </tr>
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
@@ -79,18 +79,23 @@
 
 <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
 <!--<td class="tac" width="12%" >{{ fmtreceived_qty or ''}}&nbsp;{{ row.uom or ''}}</td>-->
-<td class="tac" width="6%" style="font-size:10px">{{ row.received_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="6%" style="font-size:10px">{{ fmtreceived_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
 <!--<td class="tac" width="12%" >{{ fmtaccepted_qty or ''}}&nbsp;{{ row.uom or ''}}</td>-->
-<td class="tac" width="7%" style="font-size:10px">{{ row.qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="7%" style="font-size:10px">{{ fmtaccepted_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
 <!--<td class="tac" width="12%" >{{ fmtrejected_qty or ''}}&nbsp;{{ row.uom or ''}}</td>-->
-<td class="tac" width="6%" style="font-size:10px">{{ row.rejected_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="6%" style="font-size:10px">{{ fmtrejected_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
 <td class="tac" width="10%" style="font-size:10px">{{ fmtdiscount_amount or ''}}</td>
 <td class="tac" width="9%" style="font-size:10px">{{ fmtrate or ''}}</td>
 <td class="tac" width="11%" style="font-size:10px">{{ fmtamount or ''}}</td>
 <td class="tac" width="10%" style="font-size:10px">{{ row.warehouse or ''}}</td>
-<td class="tac" width="14%" style="font-size:10px">{{ row.purchase_order or ''}}</td>
 </tr>
 {% endfor %}
+{% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+<tr>
+  <td class="tac" colspan="4">Total Quantity</td>
+  <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
+  <td></td><td></td><td></td><td></td><td></td><td></td>
+</tr>
 </table>
 </div>
 </div>
@@ -98,7 +103,6 @@
 <div class="row section-break f_font">
   {% set tot_disc = disc.discount+doc.discount_amount %}
   {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
   {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
   {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
   {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
@@ -107,14 +111,6 @@
   {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
-      <tr>
-        <td width="40%"><b>Total</b></td>
-        <td class="tac" width="35%"></td>
-        <!--<td width="60%"><b>{{ fmt_total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>-->
-        <td width="25%"><b>{{ doc.total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>
-      </tr>
-    </table>
   </div>
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
@@ -195,8 +191,8 @@
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
       <tr>
-        <td colspan="40%"><b>Terbilang</b></td>
-        <td colspan="60%">{{ doc.in_words or '' }}</td>
+        <td colspan="40%"><b></b></td>
+        <td colspan="60%"></td>
       </tr>
     </table>
   </div>
@@ -227,8 +223,8 @@
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 <tr>
-<td colspan="3" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_pi or ""}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="3" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_pi or ""}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_pi or ''}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_pi or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
 <td colspan="3" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
 <td colspan="3" class="tac " style=""> <u></u> </td>
 </tr>

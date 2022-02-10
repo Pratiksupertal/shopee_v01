@@ -1,4 +1,5 @@
 import datetime
+from distutils.log import error
 import json
 import time
 import frappe
@@ -20,6 +21,15 @@ from frappe.utils import now_datetime
 parts = urlparse(frappe.request.url)
 base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
+import re
+ 
+
+def cleanhtml(raw_html):
+    CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+    cleantext = re.sub(CLEANR, '', raw_html)
+    return cleantext
+
+
 def validate_data(data):
     if len(data) == 0 or data is None:
         return None
@@ -30,9 +40,23 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def format_result(success=None,result=None, message=None, status_code=None, exception=None):
-    indicator = "green" if success ==True else "red"
-    exception_code = 0 if success == True else 1
+def format_result(success=None, result=None, message=None, status_code=None, exception=None):
+    if success == None:
+        success = True if status_code in [None, 200, 201] and not exception else False
+    if status_code == None:
+        status_code = 200 if success and not exception else 400
+    if message == None:
+        message = exception if not message and exception else "success"
+    if not success or status_code not in [200, 201]:
+        if not exception: exception = message
+    
+    indicator = "green" if success else "red"
+    raise_exception = 1 if exception else 0
+    
+    # Remote HTML tags
+    if message: message = cleanhtml(message)
+    if exception: exception = cleanhtml(exception)
+    
     return {
         "success": success,
         "message": message,
@@ -42,7 +66,7 @@ def format_result(success=None,result=None, message=None, status_code=None, exce
             {
                 "message": exception,
                 "indicator": indicator,
-                "raise_exception": exception_code
+                "raise_exception": raise_exception
             }
         ]
     }
@@ -150,15 +174,15 @@ def get_label():
 
 @frappe.whitelist(allow_guest=True)
 def login():
-    data = validate_data(frappe.request.data)
-    parts = urlparse(frappe.request.url)
-    base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
+    try:
+        data = validate_data(frappe.request.data)
+        parts = urlparse(frappe.request.url)
+        base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
-    url = base + '/api/method/login'
-    res = requests.post(url.replace("'", '"'), data=data)
-    if res.status_code != 200:
-        return format_result(message='Login Failed', status_code=403, result='Entered credentials are invalid!')
-    else:
+        url = base + '/api/method/login'
+        res = requests.post(url.replace("'", '"'), data=data)
+        if res.status_code != 200:
+            raise Exception('Entered credentials are invalid!')
         user_data = frappe.get_doc('User', {'email': data['usr']})
         url = base + '/api/method/frappe.core.doctype.user.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
@@ -177,6 +201,8 @@ def login():
             "api_key": str(user_data.api_key + ':' + api_secret['message']['api_secret']),
             "warehouse_id": str(warehouse_id)
         })
+    except Exception as e:
+        return format_result(status_code=403, message=f'Login Failed. {str(e)}', exception=str(e))
 
 
 def fill_barcode(item_code):
@@ -198,29 +224,29 @@ def purchases():
             "po_date": each_data.creation,
             "supplier_id": each_data.supplier,
             "supplier_name": each_data.supplier_name,
-            "total_amount": each_data.grand_total,
-            "total_product": each_data.total_qty,
+            "total_amount": str(each_data.grand_total),
+            "total_product": str(each_data.total_qty),
             "products": [{
-                "id": i.idx,
+                "id": str(i.idx),
                 "purchase_id": i.parent,
                 "product_id": i.item_code,
                 "product_name": i.item_name,
                 "product_code": i.item_code,
                 "barcode": fill_barcode(i.item_code),
-                "price": i.amount,
+                "price": str(int(i.amount) if i.amount else ''),
                 "warehouse":i.warehouse,
                 "quantity": int(i.qty) if i.qty else 0,
                 "received_qty": int(i.received_qty) if i.received_qty else 0,
-                "unit_id": i.idx,
-                "discount": i.discount_amount,
-                "subtotal_amount": i.net_amount
+                "unit_id": str(i.idx),
+                "discount": str(int(i.discount_amount) if i.discount_amount else ''),
+                "subtotal_amount": str(int(i.net_amount) if i.net_amount else '')
             } for i in each_data.items],
             "type": each_data.po_type,
             "rejected_by": each_data.modified_by if each_data.docstatus == 2 else None,
             "cancelled_by": each_data.modified_by if each_data.status == 2 else None,
             "supplier_is_taxable": None,
-            "total_amount_excluding_tax": each_data.base_total,
-            "tax_amount": each_data.total_taxes_and_charges,
+            "total_amount_excluding_tax": str(each_data.base_total),
+            "tax_amount": str(each_data.total_taxes_and_charges),
             "delivery_contact_person": None,
             "supplier_email": None,
             "supplier_work_phone": None,
@@ -1016,11 +1042,11 @@ def create_sales_order():
                 },data=json.dumps(dn_raw))
                 res['delivery_note']= delivery_note_api_response.json().get("data").get("name")
             except Exception as e:
-                return format_result(success="False",result="Delivery Note Failed",message=str(e))
-            return format_result(success="True",result=res)
-        return format_result(result="There was a problem creating the Sales Order", message="Error", status_code=res_api_response.status_code)
+                raise Exception('Delivery note failed')
+            return format_result(success=True, result=res)
+        raise Exception('There was a problem creating the Sales Order')
     except Exception as e:
-        return format_result(result="Sales Order not created", message=str(e),status_code=400)
+        return format_result(result=res, message=f'{str(e)}', status_code=400, success=False, exception=str(e))
 
 
 @frappe.whitelist()
@@ -1041,10 +1067,10 @@ def create_sales_order_all():
             res_api_response = requests.post(url.replace("'", '"'), headers={
                 "Authorization": frappe.request.headers["Authorization"]
             },data=json.dumps(order))
+            message = None
             if res_api_response.status_code==200:
                 dn_data = res_api_response.json()
                 dn_data = dn_data["data"]
-                dn_json = {}
                 try:
                     dn_raw_data = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
                     dn_res_api_response = requests.post(dn_raw_data.replace("'", '"'), headers={
@@ -1056,22 +1082,21 @@ def create_sales_order_all():
                     delivery_note_api_response = requests.post(dn_url.replace("'", '"'), headers={
                         "Authorization": frappe.request.headers["Authorization"]
                     },data=json.dumps(dn_raw))
-                    # return True
                 except Exception as e:
-                    return format_result(success="False",result="Delivery Note Failed",message = e)
-            success_count += 1
-            result.append({
-                    "external_so_number": order.get("external_so_number"),
-                    "message": "success"
-                })
-
-
+                    message="Delivery Note Failed"
+                success_count += 1
+                result.append({
+                        "external_so_number": order.get("external_so_number"),
+                        "sales_order": dn_data.get("name"),
+                        "message": "success" if not message else message
+                    })
+            else:
+                raise Exception('Invalid order data. Sales order creation failed.')
         except Exception as err:
-            print("\n\n",str(err),"\n\n")
             fail_count += 1
             result.append({
                 "external_so_number": order.get("external_so_number"),
-                "message": "failed"
+                "message": f"failed: {str(err)}"
             })
     return format_result(result={
             "success_count": success_count,
@@ -1459,10 +1484,15 @@ def filter_picklist():
             
             if len(items) < 1: continue
             
+            sales_order = items[0].get('sales_order')
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            
             result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
-                "sales_order": items[0].get('sales_order'),
+                "sales_order": sales_order,
+                "transaction_date": so_date_data[0],
+                "delivery_date": so_date_data[1],
                 "total_product": len(items),
                 "total_qty": sum_qty,
                 "total_qty_received": sum_qty-sum_picked_qty
@@ -1512,9 +1542,14 @@ def filter_stock_entry_for_warehouse_app():
                     },
                     fields=['sales_order', 'qty']
                 )
-            print(se, items_pl)
             if len(items_pl) < 1: continue
-            se['sales_order'] = items_pl[0].get('sales_order')
+            sales_order = items_pl[0].get('sales_order')
+            se['sales_order'] = sales_order
+            
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            if so_date_data:
+                se['transaction_date'] = so_date_data[0]
+                se['delivery_date'] = so_date_data[1]
             
             items_se = frappe.db.get_list('Stock Entry Detail',
                     filters={
@@ -1772,11 +1807,15 @@ def submit_picklist_and_create_stockentry():
             picklist_details=picklist_details
         )
         
+        """Correct picked qty"""
+        
+        for item in picklist_details.get('locations'):
+            picked_qty = item['qty'] - item['picked_qty']
+            frappe.db.set_value('Pick List Item', item['name'], 'picked_qty', picked_qty)
+        
         """Submit Pick List"""
         
-        _ = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
+        frappe.db.set_value('Pick List', picklist_details['name'], 'docstatus', 1)
         
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
@@ -1804,7 +1843,10 @@ def picklist_details_for_warehouse_app():
                 'parent': pick_list,
                 'parentfield': 'locations'
             },
-            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+            fields=[
+                'item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order'
+            ],
+            order_by='warehouse'
         )
         
         picklist_details.sales_order = items[0].sales_order
@@ -1824,5 +1866,56 @@ def picklist_details_for_warehouse_app():
         return format_result(result={
             'pick_list': picklist_details
         }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
+    
+@frappe.whitelist()
+def stock_entry_details_for_warehouse_app():
+    try:
+        stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_warehouse_app')
+        
+        """GET Stock Entry Details"""
+        
+        stock_entry_details = frappe.db.get_value('Stock Entry', stock_entry, [
+            'name', 'docstatus', 'purpose', 'creation', 'modified', 'pick_list'
+        ], as_dict=1)
+        
+        if not stock_entry_details:
+            raise Exception('Invalid stock entry name')
+        
+        """GET Sales Order, Transaction Date, Delivery Date"""
+        
+        pick_list_items = frappe.db.get_list('Pick List Item',
+            filters={
+                'parent': stock_entry_details.get('pick_list'),
+                'parentfield': 'locations'
+            },
+            fields=['sales_order']
+        )
+        if pick_list_items: sales_order = pick_list_items[0].sales_order
+        stock_entry_details.sales_order = sales_order
+        
+        so_date_data = frappe.db.get_value('Sales Order', sales_order, [ 'customer', 'customer_name', 'customer_address', 'transaction_date', 'delivery_date'])
+        if so_date_data:
+            stock_entry_details.customer = so_date_data[0]
+            stock_entry_details.customer_name = so_date_data[1]
+            stock_entry_details.customer_address = so_date_data[2]
+            stock_entry_details.transaction_date = so_date_data[3]
+            stock_entry_details.delivery_date = so_date_data[4]
+            
+        """GET ITEMS"""
+        
+        items = frappe.db.get_list('Stock Entry Detail',
+            filters={
+                'parent': stock_entry
+            },
+            fields=[
+                'item_code', 'item_name', 'qty', 'transfer_qty', 'uom', 's_warehouse', 't_warehouse'
+            ]
+        )   
+        stock_entry_details.items = items        
+        
+        return format_result(result=stock_entry_details, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))

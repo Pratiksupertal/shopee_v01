@@ -1,5 +1,14 @@
+{% if doc.material_type[:1] == "A" %}
+    {% set material_type = "Accessories" %}
+{% endif %}
+{% if doc.material_type[:1] == "B" %}
+    {% set material_type = "Raw Material" %}
+{% endif %}
+{% if doc.material_type[:4] == "WASH" %}
+    {% set material_type = "WASH" %}
+{% endif %}
 <div class="print-heading">
-  <h2>Delivery Note Shopee<br><small>{{ doc.name }}</small>
+  <h2>Delivery Note &nbsp; {{ material_type }}<br><small>{{ doc.name }}</small>
   </h2>
 </div>
   <div class="col-xs-6">

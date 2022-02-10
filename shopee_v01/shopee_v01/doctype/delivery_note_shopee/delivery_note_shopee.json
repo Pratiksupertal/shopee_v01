@@ -9,7 +9,7 @@
   "delivery_to_section",
   "column_break0",
   "title",
-  "accecories_type",
+  "material_type",
   "naming_series",
   "customer",
   "customer_name",
@@ -188,7 +188,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "MAT-DN-.accecories_type.-.YYYY.-.MM.-",
+   "options": "MAT-DN-.material_type.-.YYYY.-.MM.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -196,6 +196,7 @@
   {
    "fieldname": "customer",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_global_search": 1,
    "in_standard_filter": 1,
    "label": "Customer",
@@ -1259,12 +1260,6 @@
    "width": "150px"
   },
   {
-   "fieldname": "accecories_type",
-   "fieldtype": "Select",
-   "label": "Accecories Type",
-   "options": "AE\nAMD\nBE\nBMD"
-  },
-  {
    "fieldname": "supplier",
    "fieldtype": "Data",
    "label": "Supplier"
@@ -1338,11 +1333,17 @@
    "fieldname": "mwo_total_qty",
    "fieldtype": "Data",
    "label": "Total Quantity"
+  },
+  {
+   "fieldname": "material_type",
+   "fieldtype": "Select",
+   "label": "Material Type",
+   "options": "AE\nAMD\nBE\nBMD\nWASH"
   }
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2022-01-13 04:46:04.604443",
+ "modified": "2022-01-30 18:11:04.171074",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Delivery Note Shopee",
