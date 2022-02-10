@@ -38,9 +38,9 @@ frappe.ui.form.on('Main Work Order', {
     const dialog = frappe.prompt({fieldname: 'job_card_list', fieldtype: 'Table', label: __('Job Card'),
       fields: [
         {
-          fieldtype:'Link',
-//          fieldname: 'job_card',
-          fieldname:'name',
+          fieldtype:'Data',
+          fieldname: 'job_card',
+//          fieldname:'name',
           label: __('Job Card'),
           options:'Job Card',
           read_only:1,
@@ -135,9 +135,9 @@ frappe.ui.form.on('Main Work Order', {
     const dialog = frappe.prompt({fieldname: 'in_progress_job_card_list', fieldtype: 'Table', label: __('Job Card'),
       fields: [
         {
-          fieldtype:'Link',
-//          fieldname: 'job_card',
-          fieldname: 'name',
+          fieldtype:'Data',
+          fieldname: 'job_card',
+//          fieldname: 'name',
           label: __('Job Card'),
           options:'Job Card',
           read_only:1,
