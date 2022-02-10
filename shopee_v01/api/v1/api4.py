@@ -1484,10 +1484,15 @@ def filter_picklist():
             
             if len(items) < 1: continue
             
+            sales_order = items[0].get('sales_order')
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            
             result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
-                "sales_order": items[0].get('sales_order'),
+                "sales_order": sales_order,
+                "transaction_date": so_date_data[0],
+                "delivery_date": so_date_data[1],
                 "total_product": len(items),
                 "total_qty": sum_qty,
                 "total_qty_received": sum_qty-sum_picked_qty
