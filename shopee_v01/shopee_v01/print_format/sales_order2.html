@@ -8,8 +8,21 @@
 .bbh{border-bottom: hidden; }
 .f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
 </style>
+<div class="print-heading">
 
-<div class="row section-break f_font">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js">
+</script>
+
+<svg class="barcode"
+jsbarcode-fontsize="10"
+jsbarcode-height="30"
+jsbarcode-value="{{doc.name}}"/>
+
+<h2 style="font-size:16px;font-weight:bold;">Sales Order<br><small style="font-weight:bold;">{{ doc.name }}</small></h2></div>
+
+<script>JsBarcode(".barcode").init();</script>
+
+<!--<div class="row section-break f_font">
     <div class="col-xs-6">
     </div>
     <div class="col-xs-6">
@@ -24,7 +37,7 @@
       </tr>
     </table>
     </div>
-</div>
+</div>-->
 <div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
@@ -95,30 +108,20 @@
 {% set disc.discount=disc.discount+ discount %}
 
 <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-<td class="tac" width="15%" style="font-size:10px">{{ row.qty or ''}}{{ row.uom or ''}}</td>
+<td class="tac" width="15%" style="font-size:10px">{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
 <td class="tac" width="12%" style="font-size:10px">{{doc.currency}}{{ fmtdiscount_amount or ''}}</td>
 <td class="tac" width="15%" style="font-size:10px">{{doc.currency}}{{ fmtrate or ''}}</td>
 <td class="tac" width="18%" style="font-size:10px">{{doc.currency}}{{ fmtamount or ''}}</td>
 </tr>
 {% endfor %}
+{% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+  <tr>
+    <td class="tac" colspan="3">Total Quantity</td>
+    <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
+    <td></td><td></td><td></td>
+  </tr>
 </table>
 </div>
-</div>
-{% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
-<div class="row section-break f_font">
-	<div class="col-xs-12" style="overflow-x:auto;">
-		<table width="100%" style="table-layout: fixed;">
-			<tr>
-				<td class="tac" width="3%"></td>
-				<td width="25%" style="text-align:left">Total</td>
-				<td width="25%"></td>
-				<td class="tac" width="15%" >{{ doc.total_qty or '' }}{{uom.uom_name}}</td>
-				<td class="tac" width="12%" ></td>
-				<td class="tac" width="15%" ></td>
-				<td class="tac" width="18%" ></td>
-			</tr>
-		</table>
-	</div>
 </div>
 <div class="row section-break f_font">
   {% set tot_disc = disc.discount+doc.discount_amount %}
@@ -200,18 +203,6 @@
   </div>
 </div>
 <div class="row section-break f_font">
-  <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
-      <tr>
-        <td colspan="40%"><b>Terbilang</b></td>
-        <td colspan="60%">{{ doc.in_words or '' }}</td>
-      </tr>
-    </table>
-  </div>
-</div>
-<div class="row section-break f_font">
 <div class="col-xs-12">
 <table width="100%" style="table-layout: fixed;">
 <tr><td colspan="12"></td></tr>
@@ -224,8 +215,8 @@
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 <tr>
-<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_pi or ""}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_pi or ""}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
 <td colspan="4" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
 </tr>
 

@@ -9,14 +9,26 @@
 .bbh{border-bottom: hidden; }
 .f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
 </style>
+<div class="print-heading">
 
-  <div class="row section-break f_font">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js">
+</script>
+
+<svg class="barcode"
+jsbarcode-fontsize="10"
+jsbarcode-height="40"
+jsbarcode-value="{{doc.name}}"/>
+
+<h2 style="font-size:16px;font-weight:bold;">Purchase Order<br><small style="font-weight:bold;">{{ doc.name }}</small></h2></div>
+
+<script>JsBarcode(".barcode").init();</script>
+<!--<div class="row section-break f_font">
     <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
       <tr>
         <td colspan="12" class="fsize tac blh brs bbh"><b>Purchase Order</b></td>
       </tr>
     </table>
-</div>
+</div>-->
 <div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
@@ -56,7 +68,8 @@
 <table width="100%" style="table-layout: fixed;" border="1px" bordercolor="#d1d8dd">
 <tr>
 <th class="tac" width="10%"><b>No.</b></th>
-<th class="tac" width="50%"><b>Kode Barang dan Deskripsi</b></th>
+<th class="tac" width="32%"><b>Kode Barang dan Deskripsi</b></th>
+<th class="tac" width="18%"><b>Image</b></th>
 <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
 <th class="tac" width="15%"><b>Quantity</b></th>
 <th class="tac" width="15%"><b>Harga</b></th>
@@ -68,12 +81,13 @@
 {% for row in doc.items %}
 <tr>
 <td class="tac" width="10%">{{ row.idx or '' }}</td>
-<td width="50%">{{ row.item_code or '' }} <br> {{ row.item_name}} <br>{{ row.description or '' }}</td>
+<td width="32%">{{ row.item_code or '' }} <br> {{ row.item_name}} <br>{{ row.description or '' }}</td>
 {% set uom.uom_name= row.uom%}
 {% set fmt_price_list_rate = frappe.utils.fmt_money(row.price_list_rate,currency="") %}
 {% set fmt_qty = frappe.utils.fmt_money(row.qty,currency="") %}
 <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-<td class="tac" width="15%" >{{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="18%"><img src='{{ row.image }}'></td>
+<td class="tac" width="15%">{{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
 <td class="tac" width="15%"> {% if doc.currency == "IDR" %}
   {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %}
   {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %}
@@ -89,7 +103,7 @@
 <tr>
   {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
   {% set fmt_amt_price_amount = frappe.utils.fmt_money(amt.price_amount,currency="") %}
-  <td class="tac" colspan="2">Total </td><td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td><td></td>
+  <td class="tac" colspan="3">Total </td><td class="tac">{{fmt_total_qty}}</td><td></td>
   <td class="tac" style="text-align: right;">{{doc.currency}} {{fmt_amt_price_amount}}</td>
 </tr>
 </table>
@@ -167,8 +181,8 @@
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 <tr>
-<td colspan="3" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_po or ""}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="3" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_po or ""}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_po or ''}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_po or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
 <td colspan="3" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
 <td colspan="3" class="tac "> <u></u> </td>
 </tr>

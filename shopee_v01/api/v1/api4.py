@@ -21,6 +21,15 @@ from frappe.utils import now_datetime
 parts = urlparse(frappe.request.url)
 base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
 
+import re
+ 
+
+def cleanhtml(raw_html):
+    CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+    cleantext = re.sub(CLEANR, '', raw_html)
+    return cleantext
+
+
 def validate_data(data):
     if len(data) == 0 or data is None:
         return None
@@ -38,8 +47,16 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
         status_code = 200 if success and not exception else 400
     if message == None:
         message = exception if not message and exception else "success"
+    if not success or status_code not in [200, 201]:
+        if not exception: exception = message
+    
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
+    
+    # Remote HTML tags
+    if message: message = cleanhtml(message)
+    if exception: exception = cleanhtml(exception)
+    
     return {
         "success": success,
         "message": message,
@@ -1467,10 +1484,15 @@ def filter_picklist():
             
             if len(items) < 1: continue
             
+            sales_order = items[0].get('sales_order')
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            
             result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
-                "sales_order": items[0].get('sales_order'),
+                "sales_order": sales_order,
+                "transaction_date": so_date_data[0],
+                "delivery_date": so_date_data[1],
                 "total_product": len(items),
                 "total_qty": sum_qty,
                 "total_qty_received": sum_qty-sum_picked_qty
@@ -1520,9 +1542,14 @@ def filter_stock_entry_for_warehouse_app():
                     },
                     fields=['sales_order', 'qty']
                 )
-            print(se, items_pl)
             if len(items_pl) < 1: continue
-            se['sales_order'] = items_pl[0].get('sales_order')
+            sales_order = items_pl[0].get('sales_order')
+            se['sales_order'] = sales_order
+            
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            if so_date_data:
+                se['transaction_date'] = so_date_data[0]
+                se['delivery_date'] = so_date_data[1]
             
             items_se = frappe.db.get_list('Stock Entry Detail',
                     filters={
@@ -1780,11 +1807,15 @@ def submit_picklist_and_create_stockentry():
             picklist_details=picklist_details
         )
         
+        """Correct picked qty"""
+        
+        for item in picklist_details.get('locations'):
+            picked_qty = item['qty'] - item['picked_qty']
+            frappe.db.set_value('Pick List Item', item['name'], 'picked_qty', picked_qty)
+        
         """Submit Pick List"""
         
-        _ = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data={ "run_method": "submit" })
+        frappe.db.set_value('Pick List', picklist_details['name'], 'docstatus', 1)
         
         return format_result(result={'stock entry': new_doc_stock_entry.name,
                                  'items': new_doc_stock_entry.items
@@ -1812,7 +1843,10 @@ def picklist_details_for_warehouse_app():
                 'parent': pick_list,
                 'parentfield': 'locations'
             },
-            fields=['item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order']
+            fields=[
+                'item_code', 'item_name', 'warehouse', 'qty', 'picked_qty', 'uom', 'sales_order'
+            ],
+            order_by='warehouse'
         )
         
         picklist_details.sales_order = items[0].sales_order
@@ -1832,5 +1866,56 @@ def picklist_details_for_warehouse_app():
         return format_result(result={
             'pick_list': picklist_details
         }, success=True, message='Data Created', status_code=200)
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+    
+    
+@frappe.whitelist()
+def stock_entry_details_for_warehouse_app():
+    try:
+        stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_warehouse_app')
+        
+        """GET Stock Entry Details"""
+        
+        stock_entry_details = frappe.db.get_value('Stock Entry', stock_entry, [
+            'name', 'docstatus', 'purpose', 'creation', 'modified', 'pick_list'
+        ], as_dict=1)
+        
+        if not stock_entry_details:
+            raise Exception('Invalid stock entry name')
+        
+        """GET Sales Order, Transaction Date, Delivery Date"""
+        
+        pick_list_items = frappe.db.get_list('Pick List Item',
+            filters={
+                'parent': stock_entry_details.get('pick_list'),
+                'parentfield': 'locations'
+            },
+            fields=['sales_order']
+        )
+        if pick_list_items: sales_order = pick_list_items[0].sales_order
+        stock_entry_details.sales_order = sales_order
+        
+        so_date_data = frappe.db.get_value('Sales Order', sales_order, [ 'customer', 'customer_name', 'customer_address', 'transaction_date', 'delivery_date'])
+        if so_date_data:
+            stock_entry_details.customer = so_date_data[0]
+            stock_entry_details.customer_name = so_date_data[1]
+            stock_entry_details.customer_address = so_date_data[2]
+            stock_entry_details.transaction_date = so_date_data[3]
+            stock_entry_details.delivery_date = so_date_data[4]
+            
+        """GET ITEMS"""
+        
+        items = frappe.db.get_list('Stock Entry Detail',
+            filters={
+                'parent': stock_entry
+            },
+            fields=[
+                'item_code', 'item_name', 'qty', 'transfer_qty', 'uom', 's_warehouse', 't_warehouse'
+            ]
+        )   
+        stock_entry_details.items = items        
+        
+        return format_result(result=stock_entry_details, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
