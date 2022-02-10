@@ -205,9 +205,14 @@ def filter_stock_entry_for_warehouse_app():
                     },
                     fields=['sales_order', 'qty']
                 )
-            print(se, items_pl)
             if len(items_pl) < 1: continue
-            se['sales_order'] = items_pl[0].get('sales_order')
+            sales_order = items_pl[0].get('sales_order')
+            se['sales_order'] = sales_order
+            
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            if so_date_data:
+                se['transaction_date'] = so_date_data[0]
+                se['delivery_date'] = so_date_data[1]
             
             items_se = frappe.db.get_list('Stock Entry Detail',
                     filters={
