@@ -11,6 +11,15 @@ from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locatio
 from frappe import _
 
 
+import re
+
+
+def cleanhtml(raw_html):
+    CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+    cleantext = re.sub(CLEANR, '', raw_html)
+    return cleantext
+
+
 def validate_data(data):
     if len(data) == 0 or data is None:
         return None
@@ -28,8 +37,16 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
         status_code = 200 if success and not exception else 400
     if message == None:
         message = exception if not message and exception else "success"
+    if not success or status_code not in [200, 201]:
+        if not exception: exception = message
+    
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
+    
+    # Remote HTML tags
+    if message: message = cleanhtml(message)
+    if exception: exception = cleanhtml(exception)
+    
     return {
         "success": success,
         "message": message,
