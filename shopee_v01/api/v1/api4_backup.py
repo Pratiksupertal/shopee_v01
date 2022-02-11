@@ -1869,6 +1869,92 @@ def picklist_details_for_warehouse_app():
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
     
+
+def check_delivery_note_is_exist(pick_list):
+    delivery_note = frappe.db.get_list('Delivery Note',
+                        filters={
+                            'pick_list': pick_list
+                        },
+                        fields=['docstatus']
+                    )
+    if not delivery_note: return False
+    for dn in delivery_note:
+        if dn.get('docstatus') in [0, 1, "0", "1"]:
+            return True
+    return False
+
+
+@frappe.whitelist()
+def filter_receive_at_warehouse_for_packing_area():
+    try:
+        url = frappe.request.url
+        stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')
+        order_purpose = parse_qs(urlparse(url).query).get('order_purpose')
+        docstatus = parse_qs(urlparse(url).query).get('docstatus')
+        has_delivery_note = parse_qs(urlparse(url).query).get('has_delivery_note')
+        if stock_entry_type is not None: stock_entry_type = stock_entry_type[0]
+        if order_purpose is not None: order_purpose = order_purpose[0]
+        if docstatus is not None: docstatus = docstatus[0]
+        if has_delivery_note is not None: has_delivery_note = has_delivery_note[0]
+        
+
+        """filter by
+        1. stock entry type = as per request (Receive at Warehouse)
+        2. SO purpose = as per request (Delivery)
+        3. Received at Warehouse type must be submitted
+        4. if Stock Entry has Picklist and the Picklist has Delivery Note then we need to remove from the list
+        """
+        filtered_se = frappe.db.get_list('Stock Entry',
+                filters={
+                    'stock_entry_type': stock_entry_type,
+                    'docstatus': docstatus,
+                    'pick_list': ('not in', (None, ''))
+                },
+                fields=['name', 'pick_list']
+        )
+        
+        final_filtered_se = []
+
+        """final filter, find and add other necessary fields"""
+        for se in filtered_se:
+            if order_purpose != frappe.db.get_value('Pick List', se.get('pick_list'), 'purpose'):
+                continue
+            if has_delivery_note in ["no"]:
+                if check_delivery_note_is_exist(se.get('pick_list')):
+                    continue
+            
+            se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
+            items_pl = frappe.db.get_list('Pick List Item',
+                    filters={
+                        'parent': se.get("pick_list"),
+                        'parentfield': 'locations'
+                    },
+                    fields=['sales_order', 'qty']
+                )
+            if len(items_pl) < 1: continue
+            sales_order = items_pl[0].get('sales_order')
+            se['sales_order'] = sales_order
+
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            if so_date_data:
+                se['transaction_date'] = so_date_data[0]
+                se['delivery_date'] = so_date_data[1]
+            
+            items_se = frappe.db.get_list('Stock Entry Detail',
+                    filters={
+                        'parent': se.get("name")
+                    },
+                    fields=['qty']
+                )
+            
+            se['total_product'] = len(items_se)
+            se['total qty'] = sum([ise.get('qty') for ise in items_se])
+            final_filtered_se.append(se)
+
+        return format_result(result=final_filtered_se, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
+
     
 @frappe.whitelist()
 def stock_entry_details_for_warehouse_app():
