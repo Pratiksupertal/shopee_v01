@@ -1,0 +1,182 @@
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+
+<div class="print-heading">
+   <h2>{% if doc.stock_entry_type == "Send to Warehouse" or doc.stock_entry_type == "Receive at Warehouse" %}Internal Transfer {% endif %}{% if doc.stock_entry_type != "Send to Warehouse" and doc.stock_entry_type != "Receive at Warehouse" %}Stock Entry {% endif %}<br><small>{{ doc.name }}</small></h2>
+</div>
+
+<div class="row">
+    <div class="col-xs-7">
+  		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+  		  <tr>
+  			<td width="40%">Stock Entry Type</td>
+  			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ doc.title or '' }}</td>
+  		  </tr>
+  		</table>
+    </div>
+	<div class="col-xs-5">
+		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+		  <tr>
+			<td width="40%">Posting Date</td>
+			<td width="60%" style="text-align:right">{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</td>
+		  </tr>
+		</table>
+  </div>
+</div>
+<div class="row">
+	<div class="col-xs-7">
+		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+		  <tr>
+			<td width="40%">Stock Entry (Outward GIT)</td>
+			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ doc.outgoing_stock_entry or '' }}</td>
+		  </tr>
+		</table>
+  </div>
+	<div class="col-xs-5">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">Pick List</td>
+        <td width="60%">{{ doc.pick_list or '' }}</td>
+      </tr>
+    </table>
+	</div>
+</div>
+<!--<div class="row">
+  <div class="col-xs-7">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">Pick List</td>
+        <td width="60%">{{ doc.pick_list or '' }}</td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-5">
+  </div>
+</div>-->
+
+{% if  doc.stock_entry_type == "Send to Warehouse" or doc.stock_entry_type == "Receive at Warehouse" %}
+<div class="row">
+  <div class="col-xs-7">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.pick_list is not none %} Sales Order{% endif %}</td>
+           {% set check = namespace(value="1") %}
+           {% set pick_list = frappe.get_all('Pick List Item', filters={'parent': doc.pick_list}, fields=['sales_order']) %}
+           {% for pick_list in pick_list %}
+              {% if (pick_list.sales_order is not none) and (check.value=="1") %}
+                <td width="60%" style="text-align:left;font-size:10px;">{% if pick_list.sales_order is not none %} {{ pick_list.sales_order }} {% endif %}</td>
+                {% set check.value = "2" %}
+              {% endif %}
+           {% endfor %}
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-5">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%">{% if doc.pick_list is not none %} Customer : {% endif %}</td>
+        {% set pick_list2 = frappe.get_all('Pick List Item', filters={'parent': doc.pick_list}, fields=['sales_order']) %}
+        {% set vcount = namespace(value=1) %}
+        {% for pick_list2 in pick_list2 %}
+          {% set so = frappe.get_all('Sales Order', filters={'name': pick_list2.sales_order}, fields=['customer_name']) %}
+          {% for so in so %}
+             {% if vcount.value == 1 %}
+                <td width="60%">{% if doc.pick_list is not none != '' %} {{ so.customer_name }}  {% endif %}</td>
+             {% endif %}
+             {% set vcount.value = vcount.value + 1  %}
+          {% endfor %}
+        {% endfor %}
+      </tr>
+    </table>
+  </div>
+</div>
+{% endif %}
+<div class="row section-break f_font">
+<div class="col-xs-12" style="overflow-x:auto;">
+<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+<tr>
+<th class="tac" width="3%"><b>Sr</b></th>
+<th class="tac" width="13%"><b>Source Warehouse</b></th>
+<th class="tac" width="13%"> <b>Target Warehouse</b></th>
+<th class="tac" width="19%"><b>Item Code</b></th>
+<th class="tac" width="10%"><b>Item Group</b></th>
+<th class="tac" width="22%"><b>Description</b></th>
+<th class="tac" width="9%"><b>Qty</b></th>
+<th class="tac" width="11%"><b>UOM</b></th>
+</tr>
+{% set uom=namespace(uom_name="") %}
+{% set total=namespace(value=0) %}
+{% set disc=namespace(discount=0) %}
+{% for row in doc.items %}
+<tr>
+<td class="tac" width="3%">{{ row.idx or '' }}</td>
+<!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+<td class="tac" width="13%" >{{ row.s_warehouse or ''}}</td>
+<td class="tac" width="13%" >{{ row.t_warehouse or '' }}</td>
+<td class="tac" width="19%" >{{ row.item_code or '' }}</td>
+<td class="tac" width="10%" >{{ row.item_group or '' }}</td>
+<td class="tac" width="22%" >{{ row.description or '' }}</td>
+<td class="tac" width="9%" >{{ row.qty or '' }}</td>
+<td class="tac" width="11%" >{{ row.uom or '' }}</td>
+{% set total.value = total.value + row.qty %}
+</tr>
+{% endfor %}
+  <tr>
+    <td class="tac" colspan="6">Total Quantity</td>
+    <td class="tac">{{total.value}}</td>
+    <td></td>
+  </tr>
+</table>
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;align:center;">
+<tr><td colspan="12"></td></tr>
+
+<tr><td colspan="12" height="70px"></td></tr>
+{% set username = ""%}
+{% if frappe.session.user != "Administrator" %}
+{% set user = frappe.get_doc('User', frappe.session.user)%}
+{% set username= user.full_name %} {% endif%}
+{% if frappe.session.user == "Administrator"%}
+{% set username= frappe.session.user %} {% endif%}
+<tr>
+<!-- <td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_po or ""}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_po or ""}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td> -->
+{% if doc.stock_entry_type == "Receive at Warehouse" %}
+   {% set stock_entry2 = frappe.get_all('Stock Entry', filters={'name': doc.outgoing_stock_entry}, fields=['owner']) %}
+       {% for stock_entry2 in stock_entry2 %}
+          <td colspan="6" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ stock_entry2.owner }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+       {% endfor %}
+    <td colspan="6" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.owner }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+{% elif doc.stock_entry_type == "Send to Warehouse" %}
+    <td colspan="6" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.owner }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+    {% set stock_entry3 = frappe.get_all('Stock Entry', filters={'outgoing_stock_entry': doc.name}, fields=['owner']) %}
+      {% for stock_entry3 in stock_entry3 %}
+        <td colspan="6" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ stock_entry3.owner }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+      {% endfor %}
+{% else %}
+    <td colspan="6" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.owner }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+{% endif %}
+</tr>
+
+<tr>
+<!-- <td colspan="4" class="tac"><b>Approved By</b></td>
+<td colspan="4" class="tac"><b>Checked By</b></td> -->
+{% if doc.stock_entry_type == "Send to Warehouse" or doc.stock_entry_type == "Receive at Warehouse" %}
+  <td colspan="6" class="tac"><b>Sent By</b></td>
+  <td colspan="6" class="tac"><b>Received By</b></td>
+{% else %}
+  <td colspan="6" class="tac"><b>Prepared By</b></td>
+{% endif %}
+</tr>
+</table>
+</div>
+</div>
