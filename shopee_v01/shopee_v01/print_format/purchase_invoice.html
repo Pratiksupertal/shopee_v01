@@ -18,26 +18,21 @@
     <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%"><b>Supplier Name</b></td>
-        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+        <td width="60%">{{ doc.supplier or '' }}</td>
       </tr>
-    </table>
-	<br>
-	<table width="100%" style="table-layout: fixed;">
       <tr>
-        <td width="40%">Due Date</td>
-        <td width="60%">{{ doc.due_date or '' }}</td>
-      </tr>
-    </table>
-	<br>
-	<table width="100%" style="table-layout: fixed;">
-      <tr>
-        <td width="40%">Address
-		</td>
-        <td width="60%"><b>{{ doc.address_display or '' }}</b></td>
+        <td width="40%"><b>Address</b></td>
+        <td width="60%">{{ doc.address_display or '' }}</td>
       </tr>
     </table>
   </div>
   <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Due Date</b></td>
+        <td width="60%">{{ doc.due_date or '' }}</td>
+      </tr>
+    </table>
   </div>
 </div>
 
@@ -71,7 +66,7 @@
 {% set fmtrejected_qty =  frappe.utils.fmt_money(row.rejected_qty,currency="") %}
 {% set fmtreceived_qty =  frappe.utils.fmt_money(row.received_qty,currency="") %}
 {% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="Rp") %}
-{% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+{% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="Rp") %}
 {% set fmtweight_per_unit =  frappe.utils.fmt_money(row.weight_per_unit,currency="") %}
 {% set fmttotal_weight =  frappe.utils.fmt_money(row.total_weight,currency="") %}
 {% set discount = row.discount_amount %}
@@ -94,7 +89,7 @@
 <tr>
   <td class="tac" colspan="4">Total Quantity</td>
   <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
-  <td></td><td></td><td></td><td></td><td></td><td></td>
+  <td></td><td></td><td></td><td></td><td></td>
 </tr>
 </table>
 </div>
@@ -102,14 +97,35 @@
 
 <div class="row section-break f_font">
   {% set tot_disc = disc.discount+doc.discount_amount %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
   {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
   {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
   {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
-  {% set tot_disc = disc.discount+doc.discount_amount %}
+  {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
+  {% set tot_disc =  doc.total * doc.additional_discount_percentage %}
   {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+  <div class="col-xs-6">
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+
+    </table>
+  </div>
+</div>
+<div class="row section-break f_font">
+  {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
+  {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
+  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+  {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+  {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
+  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+  {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+</div>
+<br>
+<div class="row section-break f_font">
   <div class="col-xs-6">
   </div>
   <div class="col-xs-6">
@@ -118,66 +134,18 @@
         <td colspan="40%"><b>Total</b></td>
         <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
       </tr>
-    </table>
-  </div>
-</div>
-<div class="row section-break f_font">
-  {% set tot_disc = disc.discount+doc.discount_amount %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
-  {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
-  {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
-  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
-  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
-  {% set tot_disc = disc.discount+doc.discount_amount %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-  {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
-</div>
-<br>
-<div class="row section-break f_font">
-  <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
       <tr>
         <td colspan="40%"><b>Diskon</b></td>
-        <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_disc or '' }}</td>
+        <td colspan="60%">{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}</td>
       </tr>
-    </table>
-  </div>
-</div>
-<br>
-<div class="row section-break f_font">
-  <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
       <tr>
         <td colspan="40%"><b>Total Setelah Diskon</b></td>
         <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_net_total or '' }}</td>
       </tr>
-    </table>
-  </div>
-</div>
-<br>
-<div class="row section-break f_font">
-  <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
       <tr>
         <td colspan="40%"><b>PPN</b></td>
         <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_tax or '' }}</td>
       </tr>
-    </table>
-  </div>
-</div>
-<br>
-<div class="row section-break f_font">
-  <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
       <tr>
         <td colspan="40%"><b>Grand Total</b></td>
         <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_rounded_total or '' }}</td>
@@ -185,19 +153,8 @@
     </table>
   </div>
 </div>
-<div class="row section-break f_font">
-  <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
-      <tr>
-        <td colspan="40%"><b></b></td>
-        <td colspan="60%"></td>
-      </tr>
-    </table>
-  </div>
-</div>
 <br>
+
 <div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
