@@ -25,17 +25,18 @@ import re
  
 
 def cleanhtml(raw_html):
+    if not raw_html: return raw_html
+    if not type(raw_html) == str: return raw_html
     CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
     cleantext = re.sub(CLEANR, '', raw_html)
     return cleantext
 
 
 def validate_data(data):
-    if len(data) == 0 or data is None:
-        return None
+    if not data: return data
+    if not len(data): return data
     try:
-        data = json.loads(data)
-        return data
+        return json.loads(data)
     except ValueError:
         return "Invalid JSON submitted"
 
@@ -53,18 +54,14 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
     
-    # Remote HTML tags
-    if message: message = cleanhtml(message)
-    if exception: exception = cleanhtml(exception)
-    
     return {
         "success": success,
-        "message": message,
+        "message": cleanhtml(message),
         "status_code": str(status_code),
         "data": result,
         "_server_messages": [
             {
-                "message": exception,
+                "message": cleanhtml(exception),
                 "indicator": indicator,
                 "raise_exception": raise_exception
             }
