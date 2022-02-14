@@ -157,7 +157,6 @@ def workorder_data(main_work_order):
 
 def make_pick_list(work_order_id, qty):
 	try:
-		import requests
 		data_validation_for_creating_pick_list(work_order_id, qty)
 		all_items = []
 		raw_materials_items = []
@@ -167,47 +166,44 @@ def make_pick_list(work_order_id, qty):
 		for row in rows:
 			all_items.append(row.item_name)
 		for item in all_items:
-			raw_materials_items.append(frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['=', 'Raw Material']}))
-			accessories_items = frappe.db.get_list('Item', filters={'name': ['=', item], 'item_group': ['=', '002 - Accessories']})
-			not_raw_materials_items.append(frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['!=', 'Raw Material']}))
-		for item in raw_materials_items:
-			if item is None:
-				raw_materials_items = []
-				break
-		for item in not_raw_materials_items:
-			if item is None:
-				not_raw_materials_items = []
-				break
+			raw_mat_item = frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['=', 'Raw Material']})
+			if raw_mat_item:
+				raw_materials_items.append(raw_mat_item)
+				continue
+
+			# accessories_items = frappe.db.get_list('Item', filters={'name': ['=', item], 'item_group': ['=', '002 - Accessories']})
+			acc_mat_item = frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['!=', 'Raw Material']})
+			if acc_mat_item: not_raw_materials_items.append(acc_mat_item)
 
 		print("===========These are raw material items===============")
 		print(raw_materials_items)
-		print("===========These are nnot raw material items===============")
+		print("===========These are not raw material items===============")
 		print(not_raw_materials_items)
 
-		get_data(raw_materials_items, work_order_doc)
-		get_data(not_raw_materials_items, work_order_doc)
+		generate_new_pick_list(raw_materials_items, work_order_doc)
+		generate_new_pick_list(not_raw_materials_items, work_order_doc)
 
 		return f"Work Order {work_order_id}: Pick List created"
 	except Exception as e:
-		return f"Pick List not created for Work Order - {work_order_id}. Reason - {e}"
+		return f"Pick List not created for Work Order - {work_order_id}. Reason - {str(e)}"
 
 
-def get_data(item_list, work_order_doc):
-	if item_list:
-		pick_list1 = frappe.new_doc('Pick List')
-		pick_list1.company = work_order_doc.company
-		pick_list1.purpose = "Material Transfer for Manufacture"
-		pick_list1.work_order = work_order_doc.name
-		pick_list1.for_qty = work_order_doc.qty
-		for item in item_list:
-			row = pick_list1.append('locations', {})
-			row.item_code = item
-			row.warehouse = "Stores - ISS"
-			row.qty = work_order_doc.qty
-			row.stock_qty = work_order_doc.qty
-			row.picked_qty = work_order_doc.qty
-		pick_list1.save()
-		# return pick_list1.get('name')
+def generate_new_pick_list(item_list, work_order_doc):
+	if not item_list: return
+	pick_list = frappe.new_doc('Pick List')
+	pick_list.company = work_order_doc.company
+	pick_list.purpose = "Material Transfer for Manufacture"
+	pick_list.work_order = work_order_doc.name
+	pick_list.for_qty = work_order_doc.qty
+	for item in item_list:
+		row = pick_list.append('locations', {})
+		row.item_code = item
+		row.warehouse = "Stores - ISS"
+		row.qty = work_order_doc.qty
+		row.stock_qty = work_order_doc.qty
+		row.picked_qty = work_order_doc.qty
+	pick_list.save()
+	return pick_list.get('name')
 
 
 @frappe.whitelist()
