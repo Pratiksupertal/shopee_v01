@@ -298,5 +298,53 @@
   "parenttype": null,
   "style": "",
   "workflow_state_name": "Rejected by Accounts Manager"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2022-02-08 18:23:25.626733",
+  "name": "Checking PO by Accounting Supervisor",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Checking PO by Accounting Supervisor"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2022-02-08 18:24:43.838379",
+  "name": "Pending by CEO",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Pending by CEO"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2022-02-08 18:24:56.121908",
+  "name": "Rejected by CEO",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Rejected by CEO"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2022-02-08 18:25:22.714186",
+  "name": "Approved by CEO",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "Approved by CEO"
  }
 ]
