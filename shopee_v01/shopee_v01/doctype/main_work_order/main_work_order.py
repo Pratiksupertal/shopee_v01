@@ -155,60 +155,59 @@ def workorder_data(main_work_order):
 '''Creating pick for Main Work Order '''
 
 
-def create_pick_list(source_name, target_doc=None, for_qty=None):
-	for_qty = for_qty or json.loads(target_doc).get('for_qty')
-	max_finished_goods_qty = frappe.db.get_value('Work Order', source_name, 'qty')
-	def update_item_quantity(source, target, source_parent):
-		pending_to_issue = flt(source.required_qty) - flt(source.transferred_qty)
-		desire_to_transfer = flt(source.required_qty) / max_finished_goods_qty * flt(for_qty)
-		qty = 0
-		if desire_to_transfer <= pending_to_issue:
-			qty = desire_to_transfer
-		elif pending_to_issue > 0:
-			qty = pending_to_issue
-		if qty:
-			target.qty = qty
-			target.stock_qty = qty
-			target.uom = frappe.get_value('Item', source.item_code, 'stock_uom')
-			target.stock_uom = target.uom
-			target.conversion_factor = 1
-		else:
-			target.delete()
-	doc = get_mapped_doc('Work Order', source_name, {
-		'Work Order': {
-			'doctype': 'Pick List',
-			'validation': {
-				'docstatus': ['=', 1]
-			}
-		},
-		'Work Order Item': {
-			'doctype': 'Pick List Item',
-			'postprocess': update_item_quantity,
-			'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
-		},
-	}, target_doc)
-	doc.for_qty = for_qty
-	#doc.purpose = "Material Transfer"
-	doc.set_item_locations()
-	return doc
-
-
 def make_pick_list(work_order_id, qty):
 	try:
 		import requests
 		data_validation_for_creating_pick_list(work_order_id, qty)
-		data = create_pick_list(
-			source_name=work_order_id,
-			for_qty=qty
-		)
+		all_items = []
+		raw_materials_items = []
+		not_raw_materials_items = []
+		work_order_doc = frappe.get_doc('Work Order', work_order_id)
+		rows = work_order_doc.required_items
+		for row in rows:
+			all_items.append(row.item_name)
+		for item in all_items:
+			raw_materials_items.append(frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['=', 'Raw Material']}))
+			accessories_items = frappe.db.get_list('Item', filters={'name': ['=', item], 'item_group': ['=', '002 - Accessories']})
+			not_raw_materials_items.append(frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['!=', 'Raw Material']}))
+		for item in raw_materials_items:
+			if item is None:
+				raw_materials_items = []
+				break
+		for item in not_raw_materials_items:
+			if item is None:
+				not_raw_materials_items = []
+				break
 
-		pick_list = frappe.new_doc('Pick List')
-		pick_list = data
-		pick_list.save()
-		pick_list_id = pick_list.get('name')
-		return f"Work Order {work_order_id}: Pick List {pick_list_id} created"
+		print("===========These are raw material items===============")
+		print(raw_materials_items)
+		print("===========These are nnot raw material items===============")
+		print(not_raw_materials_items)
+
+		get_data(raw_materials_items, work_order_doc)
+		get_data(not_raw_materials_items, work_order_doc)
+
+		return f"Work Order {work_order_id}: Pick List created"
 	except Exception as e:
 		return f"Pick List not created for Work Order - {work_order_id}. Reason - {e}"
+
+
+def get_data(item_list, work_order_doc):
+	if item_list:
+		pick_list1 = frappe.new_doc('Pick List')
+		pick_list1.company = work_order_doc.company
+		pick_list1.purpose = "Material Transfer for Manufacture"
+		pick_list1.work_order = work_order_doc.name
+		pick_list1.for_qty = work_order_doc.qty
+		for item in item_list:
+			row = pick_list1.append('locations', {})
+			row.item_code = item
+			row.warehouse = "Stores - ISS"
+			row.qty = work_order_doc.qty
+			row.stock_qty = work_order_doc.qty
+			row.picked_qty = work_order_doc.qty
+		pick_list1.save()
+		# return pick_list1.get('name')
 
 
 @frappe.whitelist()
@@ -228,9 +227,9 @@ def pick_lists(work_order_list):
 
 def data_validation_for_creating_pick_list(work_order, qty):
 	print("This is data validation function")
-	pick_list = frappe.db.sql("select * from `tabPick List` where work_order = %s", work_order)
-	if pick_list:
-		raise Exception("Pick List already created for the work order")
+	# pick_list = frappe.db.sql("select * from `tabPick List` where work_order = %s", work_order)
+	# if pick_list:
+	# 	raise Exception("Pick List already created for the work order")
 
 	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order, 'qty')
 	if qty != max_finished_goods_qty:
