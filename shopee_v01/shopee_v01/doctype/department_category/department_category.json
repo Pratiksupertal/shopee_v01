@@ -1,0 +1,45 @@
+{
+ "creation": "2022-01-14 20:28:12.113111",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "department_number",
+  "department_description"
+ ],
+ "fields": [
+  {
+   "fieldname": "department_number",
+   "fieldtype": "Data",
+   "label": "Department Number"
+  },
+  {
+   "fieldname": "department_description",
+   "fieldtype": "Text",
+   "label": "Department Description"
+  }
+ ],
+ "modified": "2022-01-14 20:28:12.113111",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Department Category",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
