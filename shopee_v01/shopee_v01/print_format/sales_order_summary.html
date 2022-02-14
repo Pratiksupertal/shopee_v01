@@ -84,25 +84,31 @@ jsbarcode-value="{{doc.name}}"/>
 </tr>
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
-{% for row in doc.items %}
+{% set counter = namespace(value=0) %}
+{% set sales_invoice = None %}
+{% set sales_order = get_summary_sales_order(doc) %}
+
+
+{% for row in sales_order %}
 <tr>
-<td class="tac" width="3%">{{ row.idx or '' }}</td>
-<td width="25%">{{ row.item_code or '' }}</td>
+{% set counter.value = counter.value + 1 %}
+<td class="tac" width="3%">{{ counter.value or '' }}</td>
+<td width="25%">{{ row.item_name or '' }}</td>
 <td width="25%">{{ row.description or '' }}</td>
 {% set uom.uom_name= row.uom%}
 {% set fmtrate =  frappe.utils.fmt_money(row.rate,currency="") %}
 {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
-{% set fmt_qty =  frappe.utils.fmt_money(row.qty,currency="") %}
+{% set fmt_qty =  frappe.utils.fmt_money(row.quantity,currency="") %}
 {% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="") %}
 {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
-{% set discount = row.discount_amount * row.qty%}
+{% set discount = row.discount_amount * row.quantity %}
 {% set disc.discount=disc.discount+ discount %}
 
 <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-<td class="tac" width="15%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
-<td class="tac" width="12%" >{{doc.currency}}{{ fmtdiscount_amount or ''}}</td>
-<td class="tac" width="15%" >{{doc.currency}}{{ fmtrate or ''}}</td>
-<td class="tac" width="18%" >{{doc.currency}}{{ fmtamount or ''}}</td>
+<td class="tac" width="15%" >{{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}</td>
+<td class="tac" width="12%" >{{doc.currency}}&nbsp;{{ fmtdiscount_amount or ''}}</td>
+<td class="tac" width="15%" >{{doc.currency}}&nbsp;{{ fmtrate or ''}}</td>
+<td class="tac" width="18%" >{{doc.currency}}&nbsp;{{ fmtamount or ''}}</td>
 </tr>
 {% endfor %}
   {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
@@ -116,7 +122,6 @@ jsbarcode-value="{{doc.name}}"/>
 </div>
 <!--<div class="row section-break f_font">-->
 <div class="row">
-  {% set tot_disc = disc.discount+doc.discount_amount %}
   {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
   {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
   {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}

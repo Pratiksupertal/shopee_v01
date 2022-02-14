@@ -34,7 +34,7 @@ jsbarcode-value="{{doc.name}}"/>
     <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%"><b>Nama Supplier</b></td>
-        <td width="60%"><b>{{ doc.supplier or '' }}</b></td>
+        <td width="60%">{{ doc.supplier or '' }}</td>
       </tr>
       <tr>
         <td width="40%"><b>Alamat</b></td>
@@ -51,11 +51,6 @@ jsbarcode-value="{{doc.name}}"/>
       <tr>
         <td colspan="6"><b>Tanggal</b></td>
         <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('schedule_date'), "dd-mm-yyyy") }}</td>
-      </tr>
-      <tr>
-        <td colspan="6"><b></b></td>
-        <td colspan="6">
-      </td>
       </tr>
     </table>
   </div>
@@ -103,20 +98,26 @@ jsbarcode-value="{{doc.name}}"/>
 <tr>
   {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
   {% set fmt_amt_price_amount = frappe.utils.fmt_money(amt.price_amount,currency="") %}
-  <td class="tac" colspan="3">Total </td><td class="tac">{{fmt_total_qty}}</td><td></td>
+  <td class="tac" colspan="3">Total Quantity</td><td class="tac">{{fmt_total_qty}}</td><td></td>
   <td class="tac" style="text-align: right;">{{doc.currency}} {{fmt_amt_price_amount}}</td>
 </tr>
 </table>
 <div class="">
-  <div class="col-xs-8">
+  <div class="col-xs-6">
     </div>
-  <div class="col-xs-4">
+  <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
+      {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+      <tr>
+        <td colspan="6"><b>Total</b></td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
+      </tr>
       <tr>
         <td colspan="6"><b>Diskon</b></td>
-        {% set tot_disc = disc.discount+doc.discount_amount %}
+        {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
+        {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
         {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ fmt_tot_disc or '0'}}</td>
+        <td colspan="6" style="text-align: right;">{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}</td>
       </tr>
       <tr>
         <td colspan="6"><b>Total setelah Diskon</b></td>
