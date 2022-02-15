@@ -23,7 +23,7 @@ frappe.ui.form.on('Main Work Order', {
       var job_card_btn = frm.add_custom_button(__('In Progress Job Card'),
            function() {
                         frm.trigger("in_progress_job_card");
-//
+
   					});
 
       job_card_btn.addClass('btn-primary');
@@ -40,7 +40,6 @@ frappe.ui.form.on('Main Work Order', {
         {
           fieldtype:'Data',
           fieldname: 'job_card',
-//          fieldname:'name',
           label: __('Job Card'),
           options:'Job Card',
           read_only:1,
@@ -137,7 +136,6 @@ frappe.ui.form.on('Main Work Order', {
         {
           fieldtype:'Data',
           fieldname: 'job_card',
-//          fieldname: 'name',
           label: __('Job Card'),
           options:'Job Card',
           read_only:1,
@@ -152,14 +150,6 @@ frappe.ui.form.on('Main Work Order', {
           read_only:1,
           in_list_view:1
         },
-
-//        {
-//          fieldtype:'Data',
-//          fieldname:'status',
-//          label: __('Status'),
-//          read_only:1,
-//          in_list_view:1
-//        },
 
         {
           fieldtype:'Float',
@@ -342,8 +332,9 @@ frappe.ui.form.on('Main Work Order', {
        });
   }
 });
+
 // Child table Work Order Item Details trigger
-// frappe.ui.form.on('Work Order Item Details', {
+
 frappe.ui.form.on('Work Order Item Details', {
 	bom: function(frm, cdt, cdn){
 	var row = locals[cdt][cdn];

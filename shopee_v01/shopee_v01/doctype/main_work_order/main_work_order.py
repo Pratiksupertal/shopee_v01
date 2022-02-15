@@ -127,7 +127,6 @@ class MainWorkOrder(Document):
 			# self.save()
 			# self.docstatus=1
 
-
 	def fetch_required_item(self,bom):
 		bom = frappe.get_doc("BOM",bom)
 		bom_data = {}
@@ -139,18 +138,19 @@ class MainWorkOrder(Document):
 		return bom_data
 
 
+'''Fetching Data from Main Work Order'''
+
 
 @frappe.whitelist()
 def workorder_data(main_work_order):
-	print(main_work_order)
 	work_order = frappe.db.get_list('Work Order',
 		filters={
 			'reference_main_work_order': main_work_order
 		},
 	    fields=['name', 'qty']
 	)
-	print(work_order)
 	return work_order
+
 
 '''Creating pick for Main Work Order '''
 
@@ -170,15 +170,8 @@ def make_pick_list(work_order_id, qty):
 			if raw_mat_item:
 				raw_materials_items.append(raw_mat_item)
 				continue
-
-			# accessories_items = frappe.db.get_list('Item', filters={'name': ['=', item], 'item_group': ['=', '002 - Accessories']})
 			acc_mat_item = frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['!=', 'Raw Material']})
 			if acc_mat_item: not_raw_materials_items.append(acc_mat_item)
-
-		print("===========These are raw material items===============")
-		print(raw_materials_items)
-		print("===========These are not raw material items===============")
-		print(not_raw_materials_items)
 
 		generate_new_pick_list(raw_materials_items, work_order_doc)
 		generate_new_pick_list(not_raw_materials_items, work_order_doc)
@@ -206,10 +199,12 @@ def generate_new_pick_list(item_list, work_order_doc):
 	return pick_list.get('name')
 
 
+'''For Mark check box selecting pick lists'''
+
+
 @frappe.whitelist()
 def pick_lists(work_order_list):
 	work_order_list = json.loads(work_order_list)
-	print(work_order_list)
 	result = []
 	for work_order in work_order_list:
 		if "__checked" in work_order.keys():
@@ -217,19 +212,17 @@ def pick_lists(work_order_list):
 				res = make_pick_list(work_order_id=work_order["name"], qty=work_order["qty"])
 				result.append(res)
 	response_msg = "<br>".join(result)
-	print(response_msg)
 	return response_msg		
 
 
 def data_validation_for_creating_pick_list(work_order, qty):
-	print("This is data validation function")
-	# pick_list = frappe.db.sql("select * from `tabPick List` where work_order = %s", work_order)
-	# if pick_list:
-	# 	raise Exception("Pick List already created for the work order")
 
 	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order, 'qty')
 	if qty != max_finished_goods_qty:
 		raise Exception("Input quantity is not equal to the total quantity")
+
+
+'''Fetching Job card Data'''
 
 
 @frappe.whitelist()
@@ -269,15 +262,11 @@ def in_progress_job_card_data(main_work_order):
 def start_job_cards(job_card_list):
 	new_jobs = []
 	job_card_list = json.loads(job_card_list)
-	print(job_card_list)
-	print(type(job_card_list))
 	for new_job in job_card_list:
 		if '__checked' in new_job:
 			new_jobs.append(new_job)
 	job_card_name_list = [job_card['name'] for job_card in new_jobs]
-	print(job_card_name_list)
 	job_cards = frappe.db.get_list('Job Card', filters={'name': ['in', job_card_name_list], 'status': ['in', ['Open', 'Work In Progress']]})
-	print(job_cards)
 	for job_card in job_cards:
 		job_doc = frappe.get_doc('Job Card', job_card.name)
 		row = job_doc.append('time_logs', {})
@@ -303,34 +292,26 @@ def stop_job_cards(in_progress_job_card_list):
 		job_doc = frappe.get_doc('Job Card', job_card['name'])
 		rows = job_doc.get('time_logs')
 		print('\n', rows)
-		row = rows[-1] #This is the last row of time logs.
+
+		''' This is the last row of time logs.'''
+
+		row = rows[-1]
 		print('\n', row)
 		row.to_time = get_datetime()
-		print("======= I am at row.to_time========")
-		print(row.to_time)
-		print("======= I am at job_doc.started_time========")
-		print(job_doc.started_time)
 		row.time_in_mins = time_diff_in_hours(row.to_time, job_doc.started_time) * 60
-		print(row.time_in_mins)
 		job_doc.total_time_in_mins += row.time_in_mins
 		if job_card['total_completed_qty'] == 0 and job_card['input_qty'] <= job_card['qty']:
-			print("======= I am inside if block ========")
 			row.completed_qty = job_card['input_qty']
 			job_card['total_completed_qty'] = job_card['input_qty']
 			job_doc.job_started = 0
 			job_doc.started_time = ''
 			if job_card['input_qty'] < job_card['qty']:
-				print("======= I am inside another if block ========")
-				print(row.from_time)
-				print(row.to_time)
-				print("======== I am trying to save the doc ========")
 				job_doc.save()
 			else:
 				job_doc.status = "Complete"
 				job_doc.submit()
 
 		elif job_card['total_completed_qty'] != 0 and (job_card['total_completed_qty'] + job_card['input_qty']) <= job_card['qty']:
-			print("======= I am inside elif block ========")
 			row.completed_qty = job_card['input_qty']
 			job_card['total_completed_qty'] += job_card['input_qty']
 			job_doc.job_started = 0
