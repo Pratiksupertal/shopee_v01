@@ -327,3 +327,15 @@ def get_base_url(url):
     parts = urlparse(url)
     base = parts.scheme + '://' + parts.hostname + (':' + str(parts.port)) if parts.port != '' else ''
     return base
+
+
+def check_delivery_note_status(pick_list):
+    delivery_note = frappe.db.get_list('Delivery Note',
+                        filters={
+                            'pick_list': pick_list
+                        },
+                        fields=['docstatus']
+                    )
+    # if delivery note not exist, return 9
+    if not delivery_note: return 9
+    return delivery_note[0].get('docstatus')
