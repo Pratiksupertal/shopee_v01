@@ -289,6 +289,7 @@ def stock_entry_details_for_warehouse_app():
             fields=['sales_order']
         )
         if pick_list_items: sales_order = pick_list_items[0].sales_order
+        if not sales_order: raise Exception('No sales order found associated with this stock entry')
         stock_entry_details.sales_order = sales_order
         
         so_date_data = frappe.db.get_value('Sales Order', sales_order, [ 'customer', 'customer_name', 'customer_address', 'transaction_date', 'delivery_date'])
@@ -316,20 +317,6 @@ def stock_entry_details_for_warehouse_app():
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
 
 
-def check_delivery_note_is_exist(pick_list):
-    delivery_note = frappe.db.get_list('Delivery Note',
-                        filters={
-                            'pick_list': pick_list
-                        },
-                        fields=['docstatus']
-                    )
-    if not delivery_note: return False
-    for dn in delivery_note:
-        if dn.get('docstatus') in [0, 1, "0", "1"]:
-            return True
-    return False
-
-
 @frappe.whitelist()
 def filter_receive_at_warehouse_for_packing_area():
     try:
@@ -338,17 +325,35 @@ def filter_receive_at_warehouse_for_packing_area():
         order_purpose = parse_qs(urlparse(url).query).get('order_purpose')
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         has_delivery_note = parse_qs(urlparse(url).query).get('has_delivery_note')
-        if stock_entry_type is not None: stock_entry_type = stock_entry_type[0]
-        if order_purpose is not None: order_purpose = order_purpose[0]
-        if docstatus is not None: docstatus = docstatus[0]
-        if has_delivery_note is not None: has_delivery_note = has_delivery_note[0]
-
+        delivery_note_status = parse_qs(urlparse(url).query).get('delivery_note_status')
+        
+        if stock_entry_type is None:
+            raise Exception('Stock entry type is required')
+        if order_purpose is None: 
+            raise Exception('Order purpose is required')
+        if docstatus is None: 
+            raise Exception('Docstatus is required')
+        if has_delivery_note:
+            if has_delivery_note[0] in ["yes", "Yes", "YES"] and delivery_note_status is None:
+                raise Exception('Delivery note status is required')
+        
+        stock_entry_type = stock_entry_type[0]
+        order_purpose = order_purpose[0]
+        docstatus = docstatus[0]
+        if has_delivery_note is not None:
+            has_delivery_note = has_delivery_note[0]
+        if delivery_note_status is not None:
+            delivery_note_status = delivery_note_status[0]
 
         """filter by
         1. stock entry type = as per request (Receive at Warehouse)
         2. SO purpose = as per request (Delivery)
         3. Received at Warehouse type must be submitted
-        4. if Stock Entry has Picklist and the Picklist has Delivery Note then we need to remove from the list
+        4. Stock Entry has Picklist
+        
+        4. delivery note action
+        if has_delivery_note is no, picklist has no delivery note
+        if has_delivery_note is yes, picklist delivery note docstatus == delivery_note_status
         """
         filtered_se = frappe.db.get_list('Stock Entry',
                 filters={
@@ -365,8 +370,13 @@ def filter_receive_at_warehouse_for_packing_area():
         for se in filtered_se:
             if order_purpose != frappe.db.get_value('Pick List', se.get('pick_list'), 'purpose'):
                 continue
-            if has_delivery_note in ["no"]:
-                if check_delivery_note_is_exist(se.get('pick_list')):
+            dn_status = check_delivery_note_status(se.get('pick_list'))
+            
+            if has_delivery_note in ["no", "No", "NO"]:
+                if dn_status in [0, 1]: # delivery note not exist, or not in draft or submitted
+                    continue
+            if has_delivery_note in ["yes", "Yes", "YES"]:
+                if dn_status != int(delivery_note_status):
                     continue
 
             se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
