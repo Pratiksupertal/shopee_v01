@@ -1,0 +1,46 @@
+{
+ "autoname": "ST.###",
+ "creation": "2022-01-14 18:21:16.182180",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "store_name",
+  "store_description"
+ ],
+ "fields": [
+  {
+   "fieldname": "store_name",
+   "fieldtype": "Data",
+   "label": "Store Name"
+  },
+  {
+   "fieldname": "store_description",
+   "fieldtype": "Data",
+   "label": "Store Description"
+  }
+ ],
+ "modified": "2022-01-14 19:56:38.516727",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Store",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -26,3 +26,7 @@ def make_stock_entry(source_name, target_doc=None):
     }, target_doc)
 
     return doclist
+
+@frappe.whitelist()
+def get_summary_sales_order(doc):
+    return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Order Item` where parent = %s group by parent,item_name""",(doc.name),as_dict=True)
