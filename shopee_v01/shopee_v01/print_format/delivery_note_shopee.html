@@ -11,6 +11,7 @@
   <h2>Delivery Note &nbsp; {{ material_type }}<br><small>{{ doc.name }}</small>
   </h2>
 </div>
+<div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
       <tr>
@@ -29,21 +30,37 @@
   </div>
 </div>
 <div class="row section-break f_font">
-  <div class="col-xs-6">
+  <!--<div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%">{% if doc.po_contact_person is not none %} Kepada Yth : {% endif %}</td>
         <td width="60%"><b>{% if doc.po_contact_person is not none %} {{ doc.po_contact_person or '' }} {% endif %}</b></td>
       </tr>
     </table>
-  </div>
+  </div>-->
   <div class="col-xs-6">
-	<table width="100%" style="table-layout: fixed;">
+	  <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%">{% if doc.mwo_name is not none %} SPK {% endif %}</td>
         <td width="60%">{% if doc.mwo_name is not none %} {{ doc.mwo_name or '' }} {% endif %}</td>
       </tr>
     </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+		   <tr>
+		    <td width="40%">Art No :</td>
+      {% set check = namespace(value="1") %}
+			{% set woid = frappe.get_all('Work Order Item Details', filters={'parent': doc.mwo_name}, fields=['art_no']) %}
+				{% for woid in woid %}
+          {% set vcount = namespace(value=1) %}
+             {% if (woid.art_no is not none) and (check.value=="1") %}
+					        <td width="60%">{{ woid.art_no }}</td>
+                  {% set check.value = "2" %}
+            {% endif %}
+				{% endfor %}
+		   </tr>
+		</table>
   </div>
 </div>
 <div class="row section-break f_font">
@@ -107,53 +124,60 @@
 <br><table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
     <tr>
         <th class="tac" width="5%"><b>No.</b></th>
-        <th class="tac" width="25%"><b>Kode Barang</b></th>
-        <th class="tac" width="25%"><b>Nama Barang</b></th>
+        <th class="tac" width="30%"><b>Kode Barang</b></th>
+        <th class="tac" width="50%"><b>Deskripsi</b></th>
         <th class="tac" width="15%"><b>Quantity</b></th>
-        <th class="tac" width="30%"><b>Deskripsi</b></th>
+        <!--<th class="tac" width="%"><b>Deskripsi</b></th>-->
 
     </tr>
 {% for row in doc.items %}
 <tr>
         <td class="tac" width="5%">{{ row.idx or '' }}</td>
-        <td width="25%">{{ row.item_code or '' }}</td>
-        <td width="25%">{{ row.item_name or '' }}</td>
+        <td width="30%">{{ row.item_code or '' }}</td>
+        <td width="50%">{{ row.description or '' }}</td>
         <td class="tac" width="15%"> {{row.qty}}&nbsp; {{ row.uom or 0}}</td>
-		<td width="30%">{{ row.description or '' }}</td>
+		<!--<td width="30%">{{ row.description or '' }}</td>-->
 
     </tr>
 {% endfor %}
-</table><br>
+  <tr>
+    <td class="tac" colspan="3">Total Quantity</td>
+    <td class="tac">{{ doc.total_qty or '' }}&nbsp;{{uom.uom_name}}</td>
+  </tr>
+</table>
+<br>
+<br>
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;">
+
+<tr>
+<td colspan="3" class="tac">Tanda Terima</td>
+<td colspan="3" class="tac"></td>
+<td colspan="3" class="tac"></td>
+<td colspan="3" class="tac">Hormat Kami</td>
+</tr>
+</table>
+</div>
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 <div class="row section-break f_font">
-  {% set tot_disc = disc.discount+doc.discount_amount %}
-  {% set tot_ppn = doc.grand_total - (doc.total - tot_disc) %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
-  {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
-  {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
-  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
-  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
-  {% set tot_disc = disc.discount+doc.discount_amount %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-  {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
-  <div class="col-xs-8">
-    <table width="100%" style="table-layout: fixed;">
-      <tr>
-        <td width="40%"><b>Total Quantity</b></td>
-        <td width="30%"><b></b></td>
-          <td width="20%"><b></b></td>
-        <!--<td width="60%"><b>{{ fmt_total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>-->
-        <td width="10%"><b>{{ doc.total_qty or '' }}&nbsp;{{uom.uom_name}}</b></td>
-      </tr>
-    </table>
-  </div>
-  <div class="col-xs-4">
-    <table width="100%" style="table-layout: fixed;">
-      <tr>
-        <td colspan="40%"><b></b></td>
-        <td colspan="60%"></td>
-      </tr>
-    </table>
-  </div>
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;">
+<tr>
+<td colspan="3" class="tac ">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</td>
+<td colspan="3" class="tac " style=""></td>
+<td colspan="3" class="tac " style=""></td>
+<td colspan="3" class="tac ">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</td>
+</tr>
+</table>
+</div>
 </div>
