@@ -296,7 +296,10 @@ def stock_entry_details_for_warehouse_app():
         if so_date_data:
             stock_entry_details.customer = so_date_data[0]
             stock_entry_details.customer_name = so_date_data[1]
-            stock_entry_details.customer_address = so_date_data[2]
+            stock_entry_details.customer_address = frappe.db.get_value('Address', so_date_data[2], [
+                'name', 'address_type', 'address_line1', 'address_line2', 'city', 'state', 'country', 'pincode', 'email_id', 'phone', 'fax'],
+                as_dict=1
+            )
             stock_entry_details.transaction_date = so_date_data[3]
             stock_entry_details.delivery_date = so_date_data[4]
             
