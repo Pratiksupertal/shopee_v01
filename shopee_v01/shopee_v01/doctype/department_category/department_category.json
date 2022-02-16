@@ -15,11 +15,11 @@
   },
   {
    "fieldname": "department_description",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Long Text",
    "label": "Department Description"
   }
  ],
- "modified": "2022-02-16 00:37:50.800589",
+ "modified": "2022-02-16 12:18:58.472804",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Department Category",
