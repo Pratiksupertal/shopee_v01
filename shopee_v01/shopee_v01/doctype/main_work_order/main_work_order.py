@@ -139,8 +139,6 @@ class MainWorkOrder(Document):
 
 
 '''Fetching Data from Main Work Order'''
-
-
 @frappe.whitelist()
 def workorder_data(main_work_order):
 	work_order = frappe.db.get_list('Work Order',
@@ -153,8 +151,6 @@ def workorder_data(main_work_order):
 
 
 '''Creating pick for Main Work Order '''
-
-
 def make_pick_list(work_order_id, qty):
 	try:
 		data_validation_for_creating_pick_list(work_order_id, qty)
@@ -200,8 +196,6 @@ def generate_new_pick_list(item_list, work_order_doc):
 
 
 '''For Mark check box selecting pick lists'''
-
-
 @frappe.whitelist()
 def pick_lists(work_order_list):
 	work_order_list = json.loads(work_order_list)
@@ -216,15 +210,12 @@ def pick_lists(work_order_list):
 
 
 def data_validation_for_creating_pick_list(work_order, qty):
-
 	max_finished_goods_qty = frappe.db.get_value('Work Order', work_order, 'qty')
 	if qty != max_finished_goods_qty:
 		raise Exception("Input quantity is not equal to the total quantity")
 
 
 '''Fetching Job card Data'''
-
-
 @frappe.whitelist()
 def job_card_data(main_work_order):
 	work_order_list = [work_order['name'] for work_order in workorder_data(main_work_order=main_work_order)]
@@ -254,17 +245,13 @@ def in_progress_job_card_data(main_work_order):
 		],
 		order_by='operation'
 	)
-
 	return job_cards
 
 
 @frappe.whitelist()
 def start_job_cards(job_card_list):
-	new_jobs = []
 	job_card_list = json.loads(job_card_list)
-	for new_job in job_card_list:
-		if '__checked' in new_job:
-			new_jobs.append(new_job)
+	new_jobs = [new_job for new_job in job_card_list if '__checked' in new_job]
 	job_card_name_list = [job_card['name'] for job_card in new_jobs]
 	job_cards = frappe.db.get_list('Job Card', filters={'name': ['in', job_card_name_list], 'status': ['in', ['Open', 'Work In Progress']]})
 	for job_card in job_cards:
@@ -277,7 +264,6 @@ def start_job_cards(job_card_list):
 		job_doc.status = "Work In Progress"
 		if not frappe.flags.resume_job:
 			job_doc.current_time = 0
-
 		job_doc.save()
 
 
@@ -293,10 +279,10 @@ def stop_job_cards(in_progress_job_card_list):
 		rows = job_doc.get('time_logs')
 		print('\n', rows)
 
-		''' This is the last row of time logs.'''
-
+		# This is the last row of time logs
 		row = rows[-1]
 		print('\n', row)
+  
 		row.to_time = get_datetime()
 		row.time_in_mins = time_diff_in_hours(row.to_time, job_doc.started_time) * 60
 		job_doc.total_time_in_mins += row.time_in_mins
