@@ -282,31 +282,32 @@ def stop_job_cards(in_progress_job_card_list):
 		# This is the last row of time logs
 		row = rows[-1]
 		print('\n', row)
-  
+
 		row.to_time = get_datetime()
 		row.time_in_mins = time_diff_in_hours(row.to_time, job_doc.started_time) * 60
 		job_doc.total_time_in_mins += row.time_in_mins
-		if job_card['total_completed_qty'] == 0 and job_card['input_qty'] <= job_card['qty']:
-			row.completed_qty = job_card['input_qty']
-			job_card['total_completed_qty'] = job_card['input_qty']
-			job_doc.job_started = 0
-			job_doc.started_time = ''
-			if job_card['input_qty'] < job_card['qty']:
-				job_doc.save()
-			else:
-				job_doc.status = "Complete"
-				job_doc.submit()
+		if job_card['input_qty'] > 0:
+			if job_card['total_completed_qty'] == 0 and job_card['input_qty'] <= job_card['qty']:
+				row.completed_qty = job_card['input_qty']
+				job_card['total_completed_qty'] = job_card['input_qty']
+				job_doc.job_started = 0
+				job_doc.started_time = ''
+				if job_card['input_qty'] < job_card['qty']:
+					job_doc.save()
+				else:
+					job_doc.status = "Complete"
+					job_doc.submit()
 
-		elif job_card['total_completed_qty'] != 0 and (job_card['total_completed_qty'] + job_card['input_qty']) <= job_card['qty']:
-			row.completed_qty = job_card['input_qty']
-			job_card['total_completed_qty'] += job_card['input_qty']
-			job_doc.job_started = 0
-			job_doc.started_time = ''
-			if (job_card['total_completed_qty'] + job_card['input_qty']) < job_card['qty']:
-				job_doc.save()
-			else:
-				job_doc.status = "Complete"
-				job_doc.submit()
+			elif job_card['total_completed_qty'] != 0 and (job_card['total_completed_qty'] + job_card['input_qty']) <= job_card['qty']:
+				row.completed_qty = job_card['input_qty']
+				job_card['total_completed_qty'] += job_card['input_qty']
+				job_doc.job_started = 0
+				job_doc.started_time = ''
+				if (job_card['total_completed_qty'] + job_card['input_qty']) < job_card['qty']:
+					job_doc.save()
+				else:
+					job_doc.status = "Complete"
+					job_doc.submit()
 
 
 
