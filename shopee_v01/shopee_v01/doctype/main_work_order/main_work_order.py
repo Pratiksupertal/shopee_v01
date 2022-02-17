@@ -303,7 +303,7 @@ def stop_job_cards(in_progress_job_card_list):
 				job_card['total_completed_qty'] += job_card['input_qty']
 				job_doc.job_started = 0
 				job_doc.started_time = ''
-				if (job_card['total_completed_qty'] + job_card['input_qty']) < job_card['qty']:
+				if job_card['total_completed_qty'] < job_card['qty']:
 					job_doc.save()
 				else:
 					job_doc.status = "Complete"
