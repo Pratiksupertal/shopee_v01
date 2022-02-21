@@ -154,7 +154,7 @@ def get_entries(filters):
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
-        where iva.attribute = 'Size' {1} order by b.warehouse,b.item_name,b.size_group,iav.abbr""".format(conditions2,conditions), as_dict=1)
+        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions), as_dict=1)
 
     return entries
 
