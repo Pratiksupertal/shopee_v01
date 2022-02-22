@@ -47,7 +47,7 @@ def execute(filters=None):
             size_group = d.size_group
             total += d.stock_akhir
             warehouse = d.warehouse
-            vcompare = d.item_name
+            vcompare = d.compare_name
 
     data.append([item_name, size_group, stock_size, total, warehouse])
     return columns, data
