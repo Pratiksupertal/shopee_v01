@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import json
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, get_datetime, getdate, time_diff_in_hours, date_diff, cint, now, nowdate, get_link_to_form, time_diff
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no, get_bom_items_as_dict
@@ -169,14 +170,16 @@ def make_pick_list(work_order_id, qty):
 			acc_mat_item = frappe.db.get_value('Item', filters={'name': ['=', item], 'item_group': ['!=', 'Raw Material']})
 			if acc_mat_item: not_raw_materials_items.append(acc_mat_item)
 
-		generate_new_pick_list(raw_materials_items, work_order_doc)
-		generate_new_pick_list(not_raw_materials_items, work_order_doc)
-		if len(raw_materials_items) == 0 or len(not_raw_materials_items) == 0:
-			return f"Work Order {work_order_id}: 1 Pick List created"
-		else:
-			return f"Work Order {work_order_id}: 2 Pick List created"
+		picklist1 = generate_new_pick_list(raw_materials_items, work_order_doc)
+		picklist2 = generate_new_pick_list(not_raw_materials_items, work_order_doc)
+		response = _("For Work Order <strong>{0}</strong>").format(get_link_to_form("Work Order", work_order_doc.name))
+		if picklist1:
+			response += _("<br>Pick List <strong>{0}</strong> is created for Raw Materials Items").format(get_link_to_form("Pick List", picklist1))
+		if picklist2:
+			response += _("<br>Pick List <strong>{0}</strong> is created for Accessories Items").format(get_link_to_form("Pick List", picklist2))
+		return response + _("<br>")
 	except Exception as e:
-		return f"Pick List not created for Work Order - {work_order_id}. Reason - {str(e)}"
+		return _("Pick List not created for Work Order - <strong>{0}</strong>. Reason - {1}").format(get_link_to_form("Pick List", picklist1), str(e))
 
 
 def generate_new_pick_list(item_list, work_order_doc):
@@ -253,6 +256,7 @@ def in_progress_job_card_data(main_work_order):
 
 @frappe.whitelist()
 def start_job_cards(job_card_list):
+	response = []
 	job_card_list = json.loads(job_card_list)
 	new_jobs = [new_job for new_job in job_card_list if '__checked' in new_job]
 	job_card_name_list = [job_card['name'] for job_card in new_jobs]
@@ -268,6 +272,8 @@ def start_job_cards(job_card_list):
 		if not frappe.flags.resume_job:
 			job_doc.current_time = 0
 		job_doc.save()
+		response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> started").format(get_link_to_form("Job Card", job_card.name), job_doc.operation))
+	frappe.msgprint("<br>".join(response))
 
 
 @frappe.whitelist()
