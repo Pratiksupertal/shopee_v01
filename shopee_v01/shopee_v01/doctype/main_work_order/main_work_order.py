@@ -171,8 +171,10 @@ def make_pick_list(work_order_id, qty):
 
 		generate_new_pick_list(raw_materials_items, work_order_doc)
 		generate_new_pick_list(not_raw_materials_items, work_order_doc)
-
-		return f"Work Order {work_order_id}: Pick List created"
+		if len(raw_materials_items) == 0 or len(not_raw_materials_items) == 0:
+			return f"Work Order {work_order_id}: 1 Pick List created"
+		else:
+			return f"Work Order {work_order_id}: 2 Pick List created"
 	except Exception as e:
 		return f"Pick List not created for Work Order - {work_order_id}. Reason - {str(e)}"
 
@@ -206,7 +208,8 @@ def pick_lists(work_order_list):
 				res = make_pick_list(work_order_id=work_order["name"], qty=work_order["qty"])
 				result.append(res)
 	response_msg = "<br>".join(result)
-	return response_msg		
+	frappe.msgprint(response_msg)
+	return response_msg
 
 
 def data_validation_for_creating_pick_list(work_order, qty):
