@@ -1,0 +1,21 @@
+{
+ "add_total_row": 1,
+ "creation": "2022-02-15 16:26:00.912217",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Purchase Order Letter Head",
+ "modified": "2022-02-21 12:58:44.810152",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Stock Sales Finish Good With Attribute Size",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Sales Order",
+ "report_name": "Stock Sales Finish Good With Attribute Size",
+ "report_type": "Script Report",
+ "roles": []
+}
