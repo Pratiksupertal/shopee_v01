@@ -211,7 +211,10 @@ def pick_lists(work_order_list):
 				res = make_pick_list(work_order_id=work_order["name"], qty=work_order["qty"])
 				result.append(res)
 	response_msg = "<br>".join(result)
-	frappe.msgprint(response_msg)
+	if len(response_msg) == 0:
+		pass
+	else:
+		frappe.msgprint(response_msg)
 	return response_msg
 
 
@@ -273,12 +276,16 @@ def start_job_cards(job_card_list):
 			job_doc.current_time = 0
 		job_doc.save()
 		response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> started").format(get_link_to_form("Job Card", job_card.name), job_doc.operation))
-	frappe.msgprint("<br>".join(response))
+	if len(response) == 0:
+		pass
+	else:
+		frappe.msgprint("<br>".join(response))
 
 
 @frappe.whitelist()
 def stop_job_cards(in_progress_job_card_list):
 	new_jobs = []
+	response = []
 	in_progress_job_card_list = json.loads(in_progress_job_card_list)
 	for new_job in in_progress_job_card_list:
 		if '__checked' in new_job and new_job['status'] == "Work In Progress":
@@ -295,6 +302,11 @@ def stop_job_cards(in_progress_job_card_list):
 		row.to_time = get_datetime()
 		row.time_in_mins = time_diff_in_hours(row.to_time, job_doc.started_time) * 60
 		job_doc.total_time_in_mins += row.time_in_mins
+		if 'input_qty' not in job_card:
+			response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. No input quantity entered.<br>").format(
+					get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+			continue
+
 		if job_card['input_qty'] > 0:
 			if job_card['total_completed_qty'] == 0 and job_card['input_qty'] <= job_card['qty']:
 				row.completed_qty = job_card['input_qty']
@@ -303,9 +315,13 @@ def stop_job_cards(in_progress_job_card_list):
 				job_doc.started_time = ''
 				if job_card['input_qty'] < job_card['qty']:
 					job_doc.save()
+					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> stopped.<br>").format(
+						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
 				else:
 					job_doc.status = "Complete"
 					job_doc.submit()
+					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> completed.<br>").format(
+						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
 
 			elif job_card['total_completed_qty'] != 0 and (job_card['total_completed_qty'] + job_card['input_qty']) <= job_card['qty']:
 				row.completed_qty = job_card['input_qty']
@@ -314,13 +330,23 @@ def stop_job_cards(in_progress_job_card_list):
 				job_doc.started_time = ''
 				if job_card['total_completed_qty'] < job_card['qty']:
 					job_doc.save()
+					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> stopped.<br>").format(
+						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
 				else:
 					job_doc.status = "Complete"
 					job_doc.submit()
-
-
-
-
+					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> completed.<br>").format(
+						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+			else:
+				response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. Enter a quantity less than or equal to the remaining quantity.<br>").format(
+					get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+		else:
+			response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. Enter a quantity greater than 0.<br>").format(
+				get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+	if len(response) == 0:
+		pass
+	else:
+		frappe.msgprint("<br>".join(response))
 
 
 
