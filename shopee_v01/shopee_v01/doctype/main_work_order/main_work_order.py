@@ -212,10 +212,9 @@ def pick_lists(work_order_list):
 				result.append(res)
 	response_msg = "<br>".join(result)
 	if len(response_msg) == 0:
-		pass
+		frappe.msgprint("Operation failed. No Work Order is selected.")
 	else:
 		frappe.msgprint(response_msg)
-	return response_msg
 
 
 def data_validation_for_creating_pick_list(work_order, qty):
@@ -262,10 +261,12 @@ def start_job_cards(job_card_list):
 	response = []
 	job_card_list = json.loads(job_card_list)
 	new_jobs = [new_job for new_job in job_card_list if '__checked' in new_job]
-	job_card_name_list = [job_card['name'] for job_card in new_jobs]
-	job_cards = frappe.db.get_list('Job Card', filters={'name': ['in', job_card_name_list], 'status': ['in', ['Open', 'Work In Progress']]})
-	for job_card in job_cards:
-		job_doc = frappe.get_doc('Job Card', job_card.name)
+	for job_card in new_jobs:
+		if job_card['status'] == 'Completed':
+			response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> already completed.").format(
+				get_link_to_form("Job Card", job_card['name']), job_card['job_card']))
+			continue
+		job_doc = frappe.get_doc('Job Card', job_card['name'])
 		row = job_doc.append('time_logs', {})
 		row.from_time = get_datetime()
 		row.completed_qty = 0
@@ -275,9 +276,9 @@ def start_job_cards(job_card_list):
 		if not frappe.flags.resume_job:
 			job_doc.current_time = 0
 		job_doc.save()
-		response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> started").format(get_link_to_form("Job Card", job_card.name), job_doc.operation))
+		response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> started").format(get_link_to_form("Job Card", job_card['name']), job_doc.operation))
 	if len(response) == 0:
-		pass
+		frappe.msgprint("Operation failed. No Job Card is selected.")
 	else:
 		frappe.msgprint("<br>".join(response))
 
@@ -344,7 +345,7 @@ def stop_job_cards(in_progress_job_card_list):
 			response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. Enter a quantity greater than 0.<br>").format(
 				get_link_to_form("Job Card", job_card['name']), job_doc.operation))
 	if len(response) == 0:
-		pass
+		frappe.msgprint("Operation failed. No Job Card is selected.")
 	else:
 		frappe.msgprint("<br>".join(response))
 
