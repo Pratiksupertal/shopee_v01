@@ -84,7 +84,7 @@
 {% endfor %}
     {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
     <tr>
-      <td class="tac" colspan="2">Total Quantity</td>
+      <td class="tac" colspan="3">Total Quantity</td>
       <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
       <td></td><td></td><td></td>
     </tr>
