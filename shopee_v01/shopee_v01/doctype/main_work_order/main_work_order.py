@@ -172,15 +172,16 @@ def make_pick_list(work_order_id, qty):
 
 		picklist1 = generate_new_pick_list(raw_materials_items, work_order_doc)
 		picklist2 = generate_new_pick_list(not_raw_materials_items, work_order_doc)
-		response = _("For Work Order <strong>{0}</strong>").format(get_link_to_form("Work Order", work_order_doc.name))
+		response = f"For Work Order <strong><a href='{work_order_doc.get_url()}'>{work_order_doc.name}</a></strong>"
 		if picklist1:
-			response += _("<br>Pick List <strong>{0}</strong> is created for Raw Materials Items").format(get_link_to_form("Pick List", picklist1))
+			response += f"<br>Pick List <strong><a href='{picklist1.get_url()}'>{picklist1.get('name')}</a></strong> is created for Raw Materials Items"
 		if picklist2:
-			response += _("<br>Pick List <strong>{0}</strong> is created for Accessories Items").format(get_link_to_form("Pick List", picklist2))
+			response += f"<br>Pick List <strong><a href='{picklist2.get_url()}'>{picklist2.get('name')}</a></strong> is created for Accessories Items"
 		return response + _("<br>")
 	except Exception as e:
-		return _("Pick List not created for Work Order - <strong>{0}</strong>. Reason - {1}").format(get_link_to_form("Pick List", picklist1), str(e))
-
+		work_order_doc = frappe.get_doc('Work Order', work_order_id)
+		# return _("Pick List not created for Work Order - <strong>{0}</strong>. Reason - {1}").format(get_link_to_form("Pick List", picklist1), str(e))
+		return f"Pick List not created for Work Order - <strong><a href='{work_order_doc.get_url()}'>{work_order_doc.name}</a></strong>. Reason - {str(e)}"
 
 def generate_new_pick_list(item_list, work_order_doc):
 	if not item_list: return
@@ -197,7 +198,7 @@ def generate_new_pick_list(item_list, work_order_doc):
 		row.stock_qty = work_order_doc.qty
 		row.picked_qty = work_order_doc.qty
 	pick_list.save()
-	return pick_list.get('name')
+	return pick_list
 
 
 '''For Mark check box selecting pick lists'''
@@ -263,8 +264,8 @@ def start_job_cards(job_card_list):
 	new_jobs = [new_job for new_job in job_card_list if '__checked' in new_job]
 	for job_card in new_jobs:
 		if job_card['status'] == 'Completed':
-			response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> already completed.").format(
-				get_link_to_form("Job Card", job_card['name']), job_card['job_card']))
+			job_doc = frappe.get_doc('Job Card', job_card['name'])
+			response.append(f"Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong> already completed.<br>")
 			continue
 		job_doc = frappe.get_doc('Job Card', job_card['name'])
 		row = job_doc.append('time_logs', {})
@@ -276,7 +277,7 @@ def start_job_cards(job_card_list):
 		if not frappe.flags.resume_job:
 			job_doc.current_time = 0
 		job_doc.save()
-		response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> started").format(get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+		response.append(f"Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong> started.<br>")
 	if len(response) == 0:
 		frappe.msgprint("Operation failed. No Job Card is selected.")
 	else:
@@ -304,8 +305,7 @@ def stop_job_cards(in_progress_job_card_list):
 		row.time_in_mins = time_diff_in_hours(row.to_time, job_doc.started_time) * 60
 		job_doc.total_time_in_mins += row.time_in_mins
 		if 'input_qty' not in job_card:
-			response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. No input quantity entered.<br>").format(
-					get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+			response.append(f"Operation failed for Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong>. No input quantity entered.<br>")
 			continue
 
 		if job_card['input_qty'] > 0:
@@ -316,13 +316,11 @@ def stop_job_cards(in_progress_job_card_list):
 				job_doc.started_time = ''
 				if job_card['input_qty'] < job_card['qty']:
 					job_doc.save()
-					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> stopped.<br>").format(
-						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+					response.append(f"Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong> stopped.<br>")
 				else:
 					job_doc.status = "Complete"
 					job_doc.submit()
-					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> completed.<br>").format(
-						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+					response.append(f"Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong> Completed.<br>")
 
 			elif job_card['total_completed_qty'] != 0 and (job_card['total_completed_qty'] + job_card['input_qty']) <= job_card['qty']:
 				row.completed_qty = job_card['input_qty']
@@ -331,19 +329,15 @@ def stop_job_cards(in_progress_job_card_list):
 				job_doc.started_time = ''
 				if job_card['total_completed_qty'] < job_card['qty']:
 					job_doc.save()
-					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> stopped.<br>").format(
-						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+					response.append(f"Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong> stopped.<br>")
 				else:
 					job_doc.status = "Complete"
 					job_doc.submit()
-					response.append(_("Job card <strong>{0}</strong> - <strong>{1}</strong> completed.<br>").format(
-						get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+					response.append(f"Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong> completed.<br>")
 			else:
-				response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. Enter a quantity less than or equal to the remaining quantity.<br>").format(
-					get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+				response.append(f"Operation failed for Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong>. Enter a quantity less than or equal to the remaining quantity.<br>")
 		else:
-			response.append(_("Operation failed for Job card <strong>{0}</strong> - <strong>{1}</strong>. Enter a quantity greater than 0.<br>").format(
-				get_link_to_form("Job Card", job_card['name']), job_doc.operation))
+			response.append(f"Operation failed for Job card <strong><a href='{job_doc.get_url()}'>{job_card['name']}</a> - [{job_card['job_card']}]</strong>. Enter a quantity greater than 0.<br>")
 	if len(response) == 0:
 		frappe.msgprint("Operation failed. No Job Card is selected.")
 	else:
