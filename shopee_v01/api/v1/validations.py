@@ -72,3 +72,10 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Target Warehouse is required")
 
 
+def data_validation_for_assign_picker(data):
+    if not data.get("pick_list"):
+        raise Exception("Required data missing : Pick List name is required")
+    if not data.get("picker"):
+        raise Exception("Required data missing : Picker is required")
+    if not data.get("start_time"):
+        raise Exception("Required data missing : Start Time is required")

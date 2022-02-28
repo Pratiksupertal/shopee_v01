@@ -99,6 +99,23 @@ def picklist_details_for_warehouse_app():
 
 
 @frappe.whitelist()
+def assign_picker():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_assign_picker(data=data)
+        
+        """Update picklist picker and start time"""
+        frappe.db.set_value('Pick List', data.get('pick_list'), {
+            'picker': data.get('picker'),
+            'start_time': data.get('start_time')
+        })
+        
+        return format_result(result='picker assigned', success=True, message='success', status_code=200)
+    except Exception as e:
+        return format_result(success=False, status_code=400, message=str(e), exception=str(e))
+
+
+@frappe.whitelist()
 def save_picklist_and_create_stockentry():
     try:
         data = validate_data(frappe.request.data)
