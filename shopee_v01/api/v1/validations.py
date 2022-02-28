@@ -79,3 +79,9 @@ def data_validation_for_assign_picker(data):
         raise Exception("Required data missing : Picker is required")
     if not data.get("start_time"):
         raise Exception("Required data missing : Start Time is required")
+    if not frappe.db.get_value('Pick List', data.get("pick_list"), 'name'):
+        raise Exception("Incorrect Pick List")
+    if not frappe.db.get_value('User', data.get("picker"), 'name'):
+        raise Exception("Incorrect Picker")
+    if frappe.db.get_value('Pick List', data.get("pick_list"), 'picker'):
+        raise Exception("This picklist is already assigned to someone")
