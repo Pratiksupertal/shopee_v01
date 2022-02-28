@@ -18,7 +18,7 @@ def filter_picklist():
                     'docstatus': docstatus,
                     'purpose': purpose
                 },
-                fields=['name', 'customer']
+                fields=['name', 'customer', 'picker', 'start_time']
         )
         result = []
         for pl in filtered_picklist:
@@ -35,17 +35,20 @@ def filter_picklist():
             if len(items) < 1: continue
             
             sales_order = items[0].get('sales_order')
-            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner'])
             
             result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
                 "sales_order": sales_order,
-                "transaction_date": so_date_data[0],
-                "delivery_date": so_date_data[1],
+                "transaction_date": so_data[0],
+                "delivery_date": so_data[1],
                 "total_product": len(items),
                 "total_qty": sum_qty,
-                "total_qty_received": sum_qty-sum_picked_qty
+                "total_qty_received": sum_qty-sum_picked_qty,
+                "so_created_by": frappe.db.get_value('User', so_data[2], 'full_name'),
+                "picker_name": frappe.db.get_value('User', pl.get('picker'), 'full_name'),
+                "pick_start_time": pl.get('start_time')
             })
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
