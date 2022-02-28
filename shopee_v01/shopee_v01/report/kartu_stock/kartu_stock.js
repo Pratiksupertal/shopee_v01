@@ -4,6 +4,12 @@
 
 frappe.query_reports["Kartu Stock"] = {
 	"filters": [
-
+	{
+			fieldname: "warehouse_name",
+			label: __("Warehouse"),
+			fieldtype: "Link",
+			options: "Warehouse",
+			default: "All Warehouses - ISS"
+		},
 	]
 };
