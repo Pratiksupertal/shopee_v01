@@ -142,7 +142,7 @@ def get_entries(filters):
     entries = frappe.db.sql("""
         select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
         a.item_code,a.size_group,a.item_group,a.division_group,a.retail_group,a.price_list,
-        sum(a.actual_qty)+sum(a.planned_qty)-sum(a.reserved_qty)-sum(a.reserved_qty) as stock_akhir,replace(a.warehouse,' - ISS','') as warehouse
+        sum(a.actual_qty)+sum(a.planned_qty)-sum(a.reserved_qty) as stock_akhir,replace(a.warehouse,' - ISS','') as warehouse
         from ( SELECT a.item_name ,a.item_code , a.size_group, a.item_group , a.division_group ,a.retail_group ,a.brand ,format(max(d.price_list_rate),0) as price_list,
         b.actual_qty ,c.delivered_qty ,b.reserved_qty as "reserved_qty",b.projected_qty ,(b.planned_qty+b.ordered_qty+b.indented_qty) as planned_qty,
         b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c
