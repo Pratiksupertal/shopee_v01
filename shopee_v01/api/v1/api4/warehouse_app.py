@@ -47,6 +47,7 @@ def filter_picklist():
                 "total_qty": sum_qty,
                 "total_qty_received": sum_qty-sum_picked_qty,
                 "so_created_by": frappe.db.get_value('User', so_data[2], 'full_name'),
+                "picker": pl.get('picker'),
                 "picker_name": frappe.db.get_value('User', pl.get('picker'), 'full_name'),
                 "pick_start_time": pl.get('start_time')
             })
@@ -63,7 +64,7 @@ def picklist_details_for_warehouse_app():
         print(pick_list, '\n\n\n')
         
         picklist_details = frappe.db.get_value('Pick List', pick_list, [
-            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified'
+            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified', 'picker', 'start_time'
         ], as_dict=1)
         
         if not picklist_details:
@@ -83,11 +84,14 @@ def picklist_details_for_warehouse_app():
         picklist_details.sales_order = items[0].sales_order
         
         so_details = frappe.db.get_value('Sales Order', picklist_details.sales_order, [
-            'creation', 'delivery_date'
+            'creation', 'delivery_date', 'owner'
         ], as_dict=1)
         
         picklist_details.so_date = so_details.creation
         picklist_details.delivery_date = so_details.delivery_date
+        picklist_details.so_created_by = frappe.db.get_value('User', so_details.owner, 'full_name')
+        
+        picklist_details.picker_name = frappe.db.get_value('User', picklist_details.picker, 'full_name')
         
         for it in items:
             it.picked_qty = it.qty - it.picked_qty
