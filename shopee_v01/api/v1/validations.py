@@ -101,7 +101,5 @@ def data_validation_for_stock_entry_receive_at_warehouse(data):
                 raise Exception("Required data missing (Item code is required)")
             if not item.get("t_warehouse"):
                 raise Exception("Required data missing (Target Warehouse is required)")
-            if not item.get("s_warehouse"):
-                raise Exception("Required data missing (Source Warehouse is required)")
             if not item.get("qty"):
                 raise Exception("Required data missing (Qty is required)")
