@@ -4,6 +4,7 @@ from erpnext.stock.doctype.pick_list.pick_list import create_stock_entry
 from erpnext.stock.doctype.material_request.material_request import create_pick_list
 
 from shopee_v01.api.v1.helpers import *
+from shopee_v01.api.v1.validations import *
 
 
 @frappe.whitelist()
@@ -186,6 +187,7 @@ def get_stock_entry_send_to_warehouse():
 def stock_entry_receive_at_warehouse():
     try:
         data = validate_data(frappe.request.data)
+        data_validation_for_stock_entry_receive_at_warehouse(data=data)
         new_doc = frappe.new_doc('Stock Entry')
         new_doc.purpose = 'Receive at Warehouse'
         new_doc.company = data['company']
@@ -211,4 +213,4 @@ def stock_entry_receive_at_warehouse():
             },
         }
     except Exception as e:
-        return format_result(success="False",message='Stock Entry is not created', status_code=500)
+        return format_result(success="False",message=f'Stock Entry is not created. Reason: {str(e)}', status_code=400, exception=str(e))
