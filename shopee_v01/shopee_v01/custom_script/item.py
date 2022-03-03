@@ -10,7 +10,7 @@ def validate(doc,method):
             if doc.get("__islocal"):
                 sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
                 pre_barcode = frappe.db.sql(sql,as_dict=True)
-                barcode = int(pre_barcode[0].barcode)+1
+                barcode = int(pre_barcode[0].barcode)+1 if len(pre_barcode)>0 else 1000001
                 if len(pre_barcode)>0:
                     barcode = barcode_design(barcode)
                     doc.append("barcodes",{
