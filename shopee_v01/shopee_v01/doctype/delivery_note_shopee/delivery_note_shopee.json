@@ -1246,20 +1246,6 @@
    "print_hide": 1
   },
   {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "ignore_user_permissions": 1,
-   "label": "Amended From",
-   "no_copy": 1,
-   "oldfieldname": "amended_from",
-   "oldfieldtype": "Data",
-   "options": "Delivery Note Shopee",
-   "print_hide": 1,
-   "print_width": "150px",
-   "read_only": 1,
-   "width": "150px"
-  },
-  {
    "fieldname": "supplier",
    "fieldtype": "Data",
    "label": "Supplier"
