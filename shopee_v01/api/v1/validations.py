@@ -72,3 +72,34 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Target Warehouse is required")
 
 
+def data_validation_for_assign_picker(data):
+    if not data.get("pick_list"):
+        raise Exception("Required data missing : Pick List name is required")
+    if not data.get("picker"):
+        raise Exception("Required data missing : Picker is required")
+    if not data.get("start_time"):
+        raise Exception("Required data missing : Start Time is required")
+    if not frappe.db.get_value('Pick List', data.get("pick_list"), 'name'):
+        raise Exception("Incorrect Pick List")
+    if not frappe.db.get_value('User', data.get("picker"), 'name'):
+        raise Exception("Incorrect Picker")
+    if frappe.db.get_value('Pick List', data.get("pick_list"), 'picker'):
+        raise Exception("This picklist is already assigned to someone")
+
+
+def data_validation_for_stock_entry_receive_at_warehouse(data):
+    if not data.get("company"):
+        raise Exception("Required data missing (Company is required)")
+    if not data.get("send_to_warehouse_id"):
+        raise Exception("Required data missing (Send to Warehouse id is required)")
+    if not data.get("notes"):
+        raise Exception("Required data missing (Notes are required)")
+    if not data.get("items"):
+        raise Exception("Required data missing (Items are required)")
+    for item in data['items']:
+            if not item.get("item_code"):
+                raise Exception("Required data missing (Item code is required)")
+            if not item.get("t_warehouse"):
+                raise Exception("Required data missing (Target Warehouse is required)")
+            if not item.get("qty"):
+                raise Exception("Required data missing (Qty is required)")

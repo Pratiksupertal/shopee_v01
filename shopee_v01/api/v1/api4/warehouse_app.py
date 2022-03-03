@@ -18,7 +18,7 @@ def filter_picklist():
                     'docstatus': docstatus,
                     'purpose': purpose
                 },
-                fields=['name', 'customer']
+                fields=['name', 'customer', 'picker', 'start_time']
         )
         result = []
         for pl in filtered_picklist:
@@ -35,17 +35,21 @@ def filter_picklist():
             if len(items) < 1: continue
             
             sales_order = items[0].get('sales_order')
-            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner'])
             
             result.append({
                 "name": pl.get("name"),
                 "customer": pl.get("customer"),
                 "sales_order": sales_order,
-                "transaction_date": so_date_data[0],
-                "delivery_date": so_date_data[1],
+                "transaction_date": so_data[0],
+                "delivery_date": so_data[1],
                 "total_product": len(items),
                 "total_qty": sum_qty,
-                "total_qty_received": sum_qty-sum_picked_qty
+                "total_qty_received": sum_qty-sum_picked_qty,
+                "so_created_by": frappe.db.get_value('User', so_data[2], 'full_name'),
+                "picker": pl.get('picker'),
+                "picker_name": frappe.db.get_value('User', pl.get('picker'), 'full_name'),
+                "pick_start_time": pl.get('start_time')
             })
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
@@ -60,7 +64,7 @@ def picklist_details_for_warehouse_app():
         print(pick_list, '\n\n\n')
         
         picklist_details = frappe.db.get_value('Pick List', pick_list, [
-            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified'
+            'name', 'docstatus', 'purpose', 'customer', 'creation', 'modified', 'picker', 'start_time'
         ], as_dict=1)
         
         if not picklist_details:
@@ -80,11 +84,14 @@ def picklist_details_for_warehouse_app():
         picklist_details.sales_order = items[0].sales_order
         
         so_details = frappe.db.get_value('Sales Order', picklist_details.sales_order, [
-            'creation', 'delivery_date'
+            'creation', 'delivery_date', 'owner'
         ], as_dict=1)
         
         picklist_details.so_date = so_details.creation
         picklist_details.delivery_date = so_details.delivery_date
+        picklist_details.so_created_by = frappe.db.get_value('User', so_details.owner, 'full_name')
+        
+        picklist_details.picker_name = frappe.db.get_value('User', picklist_details.picker, 'full_name')
         
         for it in items:
             it.picked_qty = it.qty - it.picked_qty
@@ -96,6 +103,23 @@ def picklist_details_for_warehouse_app():
         }, success=True, message='Data Created', status_code=200)
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e), exception=str(e))
+
+
+@frappe.whitelist()
+def assign_picker():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_assign_picker(data=data)
+        
+        """Update picklist picker and start time"""
+        frappe.db.set_value('Pick List', data.get('pick_list'), {
+            'picker': data.get('picker'),
+            'start_time': data.get('start_time')
+        })
+        
+        return format_result(result='picker assigned', success=True, message='success', status_code=200)
+    except Exception as e:
+        return format_result(success=False, status_code=400, message=str(e), exception=str(e))
 
 
 @frappe.whitelist()

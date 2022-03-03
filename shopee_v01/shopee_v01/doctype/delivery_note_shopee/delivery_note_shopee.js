@@ -127,9 +127,9 @@ frappe.ui.form.on('Delivery Note Shopee', {
                                 material_type:frm.doc.material_type
                             },
                             callback: function(res){
-                                //console.log("test Res 4");
-                                //console.log(res);
-                                //console.log(res.message.length);
+                                console.log("test Res 4");
+                                console.log(res);
+                                console.log(res.message.length);
                                 if (res && res.message){
                                     for (var i = 0; i<res.message.length; i=i+1) {
                                         var tflag=0;
