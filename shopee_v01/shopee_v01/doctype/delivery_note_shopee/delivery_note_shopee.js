@@ -119,12 +119,12 @@ frappe.ui.form.on('Delivery Note Shopee', {
 				            var tot_amount = 0;
                     for (var ia = 0; ia < selections.length; ia=ia+1) {
                       console.log(selections);
-                      console.log(frm.doc.material_type);
+                      console.log(frm.doc.accessories_type);
                         frappe.call({
                             method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_CMT",
                             args: {
                                 name: selections[ia],
-                                material_type:frm.doc.material_type
+                                accessories_type:frm.doc.accessories_type
                             },
                             callback: function(res){
                                 console.log("test Res 4");
