@@ -11,8 +11,12 @@ def filter_picklist():
         url = frappe.request.url
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         purpose = parse_qs(urlparse(url).query).get('purpose')
+        source_app_name = parse_qs(urlparse(url).query).get('source_app_name')
+        
         if docstatus: docstatus = docstatus[0]
         if purpose: purpose = purpose[0]
+        if source_app_name: source_app_name = source_app_name[0]
+        
         filtered_picklist = frappe.db.get_list('Pick List',
                 filters={
                     'docstatus': docstatus,
@@ -35,7 +39,11 @@ def filter_picklist():
             if len(items) < 1: continue
             
             sales_order = items[0].get('sales_order')
-            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner'])
+            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner', 'source_app_name'])
+            
+            if source_app_name:
+                if so_data[3] != source_app_name:
+                    continue
             
             result.append({
                 "name": pl.get("name"),
