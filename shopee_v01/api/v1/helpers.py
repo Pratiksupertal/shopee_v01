@@ -334,8 +334,9 @@ def check_delivery_note_status(pick_list):
                         filters={
                             'pick_list': pick_list
                         },
-                        fields=['docstatus']
+                        fields=['docstatus', 'owner']
                     )
     # if delivery note not exist, return 9
-    if not delivery_note: return 9
-    return delivery_note[0].get('docstatus')
+    if not delivery_note: return 9, None
+    creator_name = frappe.db.get_value('User', delivery_note[0].get('owner'), 'full_name')
+    return delivery_note[0].get('docstatus'), creator_name
