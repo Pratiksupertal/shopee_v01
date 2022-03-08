@@ -226,7 +226,11 @@ def filter_stock_entry_for_warehouse_app():
 
         """find and add other necessary fields"""
         for se in filtered_se:
-            se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
+            pl_data = frappe.db.get_value('Pick List', se.get('pick_list'), ['customer', 'picker'])
+            se['customer_name'] = pl_data[0]
+            se['picker'] = pl_data[1]
+            se['picker_name'] = frappe.db.get_value('User', pl_data[1], 'full_name')
+            
             items_pl = frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': se.get("pick_list"),
@@ -238,10 +242,11 @@ def filter_stock_entry_for_warehouse_app():
             sales_order = items_pl[0].get('sales_order')
             se['sales_order'] = sales_order
             
-            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
-            if so_date_data:
-                se['transaction_date'] = so_date_data[0]
-                se['delivery_date'] = so_date_data[1]
+            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner'])
+            if so_data:
+                se['transaction_date'] = so_data[0]
+                se['delivery_date'] = so_data[1]
+                se['so_created_by'] = frappe.db.get_value('User', so_data[2], 'full_name')
             
             items_se = frappe.db.get_list('Stock Entry Detail',
                     filters={
