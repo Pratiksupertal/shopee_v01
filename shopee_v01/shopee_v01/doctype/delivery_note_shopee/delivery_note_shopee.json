@@ -9,7 +9,7 @@
   "delivery_to_section",
   "column_break0",
   "title",
-  "material_type",
+  "accessories_type",
   "naming_series",
   "customer",
   "customer_name",
@@ -188,7 +188,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "MAT-DN-.material_type.-.YYYY.-.MM.-",
+   "options": "MAT-DN-.accessories_type.-.YYYY.-.MM.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1321,7 +1321,7 @@
    "label": "Total Quantity"
   },
   {
-   "fieldname": "material_type",
+   "fieldname": "accessories_type",
    "fieldtype": "Select",
    "label": "Material Type",
    "options": "AE\nAF\nAMA\nAMB\nBE\nBF\nBMA\nBMB\nWASH"
@@ -1329,7 +1329,7 @@
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2022-02-10 10:24:40.928620",
+ "modified": "2022-03-04 20:10:59.594762",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Delivery Note Shopee",
