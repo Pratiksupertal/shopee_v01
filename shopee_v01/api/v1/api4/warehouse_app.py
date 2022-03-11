@@ -103,6 +103,9 @@ def picklist_details_for_warehouse_app():
         
         for it in items:
             it.picked_qty = it.qty - it.picked_qty
+            bar_code = get_item_bar_code(it.item_code)
+            it["item_bar_code_value"] = None if not bar_code else cleanhtml(bar_code)
+            it["item_bar_code"] = None if not bar_code else bar_code
             
         picklist_details.items = items        
         
@@ -495,3 +498,13 @@ def create_delivery_note_from_pick_list():
         return format_result(result=delivery_note, success=True, message='Delivery Note successfully created', status_code=200)
     except Exception as e:
         return format_result(success=False, status_code=400, message=str(e), exception=str(e))
+
+
+@frappe.whitelist()
+def source_app_name_list():
+    try:
+        apps = frappe.db.sql("""SELECT name FROM `tabSource App Name`""")
+        result = list(map(lambda app: app[0], apps))
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
