@@ -59,6 +59,11 @@ def data_validation_for_save_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Target Warehouse is required")
     if not data.get("stock_entry_type"):
         raise Exception("Required data missing : Stock entry type is required")
+    
+    picker = frappe.db.get_value('Pick List', data.get("pick_list"), 'picker')
+    print('\n\n\n', frappe.session.user, '\n\n\n', picker, '\n\n\n')
+    if not frappe.session.user or not picker or frappe.session.user != picker:
+        raise Exception("You are not authorized to do this.")
 
 
 def data_validation_for_submit_picklist_and_create_stockentry(data):
@@ -70,6 +75,11 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Source Warehouse is required")
     if not data.get("t_warehouse"):
         raise Exception("Required data missing : Target Warehouse is required")
+    
+    picker = frappe.db.get_value('Pick List', data.get("pick_list"), 'picker')
+    print('\n\n\n', frappe.session.user, '\n\n\n', picker, '\n\n\n')
+    if not frappe.session.user or not picker or frappe.session.user != picker:
+        raise Exception("You are not authorized to do this.")
 
 
 def data_validation_for_assign_picker(data):
