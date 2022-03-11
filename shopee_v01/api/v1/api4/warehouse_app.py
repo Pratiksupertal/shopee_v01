@@ -401,7 +401,7 @@ def filter_receive_at_warehouse_for_packing_area():
                     'docstatus': docstatus,
                     'pick_list': ('not in', (None, ''))
                 },
-                fields=['name', 'pick_list']
+                fields=['name', 'pick_list', 'outgoing_stock_entry']
         )
 
         final_filtered_se = []
@@ -410,7 +410,7 @@ def filter_receive_at_warehouse_for_packing_area():
         for se in filtered_se:
             if order_purpose != frappe.db.get_value('Pick List', se.get('pick_list'), 'purpose'):
                 continue
-            dn_status = check_delivery_note_status(se.get('pick_list'))
+            dn_status, packer_name = check_delivery_note_status(se.get('pick_list'))
             
             if has_delivery_note in ["no", "No", "NO"]:
                 if dn_status in [0, 1]: # delivery note not exist, or not in draft or submitted
@@ -419,7 +419,13 @@ def filter_receive_at_warehouse_for_packing_area():
                 if dn_status != int(delivery_note_status):
                     continue
 
-            se['customer_name'] = frappe.db.get_value('Pick List', se.get('pick_list'), 'customer')
+            picklist_data = frappe.db.get_value('Pick List', se.get('pick_list'), ['customer', 'picker'])
+            se['customer_name'] = picklist_data[0]
+            se['picker'] = picklist_data[1]
+            se['picker_name'] = frappe.db.get_value('User', picklist_data[1], 'full_name')
+            received_by = frappe.db.get_value('Stock Entry', se['outgoing_stock_entry'], 'owner')
+            if received_by: se['received_by'] = frappe.db.get_value('User', received_by, 'full_name')
+            
             items_pl = frappe.db.get_list('Pick List Item',
                     filters={
                         'parent': se.get("pick_list"),
@@ -431,10 +437,11 @@ def filter_receive_at_warehouse_for_packing_area():
             sales_order = items_pl[0].get('sales_order')
             se['sales_order'] = sales_order
 
-            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date'])
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner'])
             if so_date_data:
                 se['transaction_date'] = so_date_data[0]
                 se['delivery_date'] = so_date_data[1]
+                se['so_created_by'] = frappe.db.get_value('User', so_date_data[2], 'full_name')
 
             items_se = frappe.db.get_list('Stock Entry Detail',
                     filters={
@@ -445,6 +452,7 @@ def filter_receive_at_warehouse_for_packing_area():
 
             se['total_product'] = len(items_se)
             se['total qty'] = sum([ise.get('qty') for ise in items_se])
+            if has_delivery_note in ["yes", "Yes", "YES"]: se['packer_name'] = packer_name
             final_filtered_se.append(se)
 
         return format_result(result=final_filtered_se, success=True, status_code=200, message='Data Found')
