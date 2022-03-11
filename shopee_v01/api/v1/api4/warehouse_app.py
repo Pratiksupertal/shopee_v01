@@ -103,6 +103,9 @@ def picklist_details_for_warehouse_app():
         
         for it in items:
             it.picked_qty = it.qty - it.picked_qty
+            bar_code = get_item_bar_code(it.item_code)
+            it["item_bar_code_value"] = None if not bar_code else cleanhtml(bar_code)
+            it["item_bar_code"] = None if not bar_code else bar_code
             
         picklist_details.items = items        
         
