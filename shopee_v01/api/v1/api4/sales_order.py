@@ -8,49 +8,50 @@ from shopee_v01.api.v1.helpers import *
 
 
 @frappe.whitelist()
-@frappe.whitelist()
 def create_sales_order():
+    res = {}
     try:
-        res = {}
-        order=validate_data(frappe.request.data)
-        if not order.get("delivery_date"):
-            order["delivery_date"] = today()
-
-        if not order.get("delivery_date"):
-            order["delivery_date"] = today()
-
-        if not order.get("external_so_number") or not order.get("source_app_name"):
+        data = validate_data(frappe.request.data)
+        order_data = data.get("order_data")
+        accounting_dimensions = data.get("accounting_dimensions", {})
+        
+        if not order_data.get("delivery_date"):
+            order_data["delivery_date"] = today()
+        if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
             raise Exception("Sales order Number and Source app name both are required")
+        
         base = get_base_url(url=frappe.request.url)
-        url = base + '/api/resource/Sales%20Order'
-        res_api_response = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        },data=json.dumps(order))
-        if res_api_response.status_code==200:
-            dn_data = res_api_response.json()
-            dn_data = dn_data["data"]
-            url = base + '/api/resource/Sales%20Order/'+dn_data['name']
-            res_api_response = requests.post(url.replace("'", '"'), headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },data={ "run_method": "submit" })
-            res['sales_order']=dn_data
-            dn_json = {}
-            try:
-                dn_raw_data = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
-                dn_res_api_response = requests.post(dn_raw_data.replace("'", '"'), headers={
-                    "Authorization": frappe.request.headers["Authorization"]
-                },data={"source_name": dn_data.get("name")})
-                dn_raw = dn_res_api_response.json().get("message")
-                dn_raw['docstatus']=1
-                dn_url = base + '/api/resource/Delivery%20Note'
-                delivery_note_api_response = requests.post(dn_url.replace("'", '"'), headers={
-                    "Authorization": frappe.request.headers["Authorization"]
-                },data=json.dumps(dn_raw))
-                res['delivery_note']= delivery_note_api_response.json().get("data").get("name")
-            except Exception as e:
-                raise Exception('Delivery note failed')
+        
+        sales_order = create_and_submit_sales_order(
+            base=base,
+            order_data=order_data,
+            submit=True
+        )
+        
+        if sales_order.status_code==200:
+            sales_order = sales_order.json().get('data')
+            so_name = sales_order.get("name")
+            print(so_name)
+            
+            res['sales_order'] = so_name
+            
+            sales_invoice = create_and_submit_sales_invoice_from_sales_order(
+                base=base,
+                source_name=so_name,
+                accounting_dimensions=accounting_dimensions,
+                submit=True
+            )
+            res['sales_invoice'] = sales_invoice.get('name')
+            
+            delivery_note = create_and_submit_delivery_note_from_sales_order(
+                base=base,
+                source_name=so_name,
+                submit=True
+            )
+            res['delivery_note'] = delivery_note.get('name')
+            
             return format_result(success=True, result=res)
-        raise Exception('There was a problem creating the Sales Order')
+        else: raise Exception()
     except Exception as e:
         return format_result(result=res, message=f'{str(e)}', status_code=400, success=False, exception=str(e))
 
