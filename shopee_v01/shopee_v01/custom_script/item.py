@@ -6,7 +6,7 @@ from frappe.utils import cstr, flt
 
 def validate(doc,method):
     try:
-        if not doc.upload:
+        if not doc.upload and not doc.has_variants:
             if doc.get("__islocal"):
                 sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
                 pre_barcode = frappe.db.sql(sql,as_dict=True)
@@ -206,3 +206,24 @@ def categories(doctype,value,field):
 @frappe.whitelist()
 def barcode(code):
     return str(code)
+
+
+@frappe.whitelist()
+def add_warehouse(f_path=None):
+    import sys
+    import os
+    doc = frappe.get_single("Finished901ItemQtySummary")
+    import csv
+    path = os.path.join(os.path.dirname(__file__), f_path)
+    file = open(path,"r")
+    csvreader = csv.reader(file)
+    header = []
+    rows = []
+    header = next(csvreader)
+    for row in csvreader:
+        rows.append(row)
+        doc.append("child_warehouse",{"warehouse":row[0]})
+    file.close()
+    doc.save()
+
+    # -----------------------------------
