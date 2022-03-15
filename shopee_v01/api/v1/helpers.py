@@ -334,8 +334,20 @@ def check_delivery_note_status(pick_list):
                         filters={
                             'pick_list': pick_list
                         },
-                        fields=['docstatus']
+                        fields=['docstatus', 'owner']
                     )
     # if delivery note not exist, return 9
-    if not delivery_note: return 9
-    return delivery_note[0].get('docstatus')
+    if not delivery_note: return 9, None
+    creator_name = frappe.db.get_value('User', delivery_note[0].get('owner'), 'full_name')
+    return delivery_note[0].get('docstatus'), creator_name
+
+
+def get_item_bar_code(item_code):
+    try:
+        values = {'item_code': item_code}
+        data = frappe.db.sql("""SELECT item_bar_code FROM `tabItem` WHERE item_code=%(item_code)s""", values=values)
+        if data: return data[0][0]
+        return None
+    except Exception as e:
+        print('Exception occured in fetching barcode\n------\n', str(e))
+        return None

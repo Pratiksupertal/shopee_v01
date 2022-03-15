@@ -21,12 +21,12 @@ def get_purchase_order(name):
     return frappe.db.get_all('Purchase Order', filters = {'name': name}, fields =['supplier','supplier_address','company','address_display','contact_person','total','net_total','base_total_taxes_and_charges','total_taxes_and_charges','grand_total','currency','conversion_rate','buying_price_list','price_list_currency','plc_conversion_rate','total_qty','total_net_weight','total','net_total','base_total','base_net_total','base_rounded_total','rounded_total','base_in_words','name'], as_list = False)
 
 @frappe.whitelist()
-def get_item_CMT(name,material_type):
-    if material_type[0:1]=='B':
+def get_item_CMT(name,accessories_type):
+    if accessories_type[0:1]=='B':
        return frappe.db.sql("""select bi.item_code,bi.item_name,sum(woid.qty*bi.qty) qty,bi.description,bi.uom,bi.stock_uom,bi.rate, sum(woid.qty*bi.amount) amount,bi.conversion_factor,bi.parent from `tabWork Order Item Details` woid left join `tabBOM Item` bi on bi.parent = woid.bom inner join `tabItem` It on bi.item_name = It.item_name where woid.parent = %s and It.item_group like %s group by bi.item_code,bi.item_name""",(name,'%Raw Material%'),as_dict=True)
-    if material_type[0:1]=='A' or (not bool(material_type)):
+    if accessories_type[0:1]=='A' or (not bool(accessories_type)):
        return frappe.db.sql("""select bi.item_code,bi.item_name,sum(woid.qty*bi.qty) qty,bi.description,bi.uom,bi.stock_uom,bi.rate, sum(woid.qty*bi.amount) amount,bi.conversion_factor,bi.parent from `tabWork Order Item Details` woid left join `tabBOM Item` bi on bi.parent = woid.bom inner join `tabItem` It on bi.item_name = It.item_name where woid.parent = %s and It.item_group like %s group by bi.item_code,bi.item_name""",(name,'%Accessories%'),as_dict=True)
-    if material_type[0:4]=='WASH':
+    if accessories_type[0:4]=='WASH':
        return frappe.db.sql("""select bom.item item_code,woid.art_no item_name,woid.qty qty,woid.art_no description,'PCS' uom,'PCS' stock_uom,0 rate, 0 amount,1 conversion_factor,'' parent from `tabWork Order Item Details` woid left join `tabBOM` bom on woid.bom = bom.name where woid.parent = %s """,(name),as_dict=True)
 
 @frappe.whitelist()
