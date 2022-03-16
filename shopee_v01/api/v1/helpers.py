@@ -372,12 +372,21 @@ def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounti
             "Authorization": frappe.request.headers["Authorization"]
         },data={"source_name": source_name})
         sales_invoice_data = invoice_res_api_response.json().get("message")
+        
+        print(sales_invoice_data)
+        
         if submit: sales_invoice_data['docstatus'] = 1
         sales_invoice_data.update(accounting_dimensions)
+        
+        print(sales_invoice_data)
+        
         invoice_url_2 = base + '/api/resource/Sales%20Invoice'
         invoice_res_api_response_2 = requests.post(invoice_url_2.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         },data=json.dumps(sales_invoice_data))
+        
+        print(invoice_res_api_response_2.text)
+        
         sales_invoice_data_2 = invoice_res_api_response_2.json().get("data")
         return sales_invoice_data_2
     except Exception as e:

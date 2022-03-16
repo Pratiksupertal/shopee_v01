@@ -6,8 +6,6 @@ from frappe import _
 def data_validation_for_create_sales_order_web(order_data, payment_data):
     if not order_data.get("delivery_date"):
         order_data["delivery_date"] = today()
-    if not order_data.get("delivery_date"):
-        order_data["delivery_date"] = today()
     if not order_data.get("items"):
         raise Exception("Required data missing : Unable to proceed : Items are required")
     if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
