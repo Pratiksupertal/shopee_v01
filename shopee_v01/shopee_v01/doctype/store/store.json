@@ -1,5 +1,5 @@
 {
- "autoname": "ST.###",
+ "autoname": "field:store_name",
  "creation": "2022-01-14 18:21:16.182180",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -12,7 +12,8 @@
   {
    "fieldname": "store_name",
    "fieldtype": "Data",
-   "label": "Store Name"
+   "label": "Store Name",
+   "unique": 1
   },
   {
    "fieldname": "store_description",
@@ -20,7 +21,7 @@
    "label": "Store Description"
   }
  ],
- "modified": "2022-01-14 19:56:38.516727",
+ "modified": "2022-03-16 18:09:03.471169",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Store",
