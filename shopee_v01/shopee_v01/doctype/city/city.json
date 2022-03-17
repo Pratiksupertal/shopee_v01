@@ -1,5 +1,5 @@
 {
- "autoname": "field:city",
+ "autoname": "City.####",
  "creation": "2022-01-14 18:12:37.787618",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -11,11 +11,10 @@
   {
    "fieldname": "city",
    "fieldtype": "Data",
-   "label": "City",
-   "unique": 1
+   "label": "City"
   }
  ],
- "modified": "2022-03-16 18:06:08.211312",
+ "modified": "2022-01-14 20:24:46.842331",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "City",
