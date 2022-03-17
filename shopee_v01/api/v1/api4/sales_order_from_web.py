@@ -89,4 +89,10 @@ def create_sales_order_from_web():
         return format_result(success="True", result=response, status_code=200)
             
     except Exception as e:
+        if len(str(e)) < 1:
+            if not response['sales_order']: e = 'Sales Order creation failed.'
+            elif not response['sales_invoice']: e = 'Sales Invoice creation failed.'
+            elif not response['payment_entry']: e = 'Payment Entry creation failed.'
+            else: e = 'Something went wrong.'
+            e += ' Please, provide valid data.'
         return format_result(success=False, result=response, message=str(e), status_code=400)
