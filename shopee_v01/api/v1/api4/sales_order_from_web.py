@@ -61,30 +61,32 @@ def create_sales_order_from_web():
             submit=True
         )
         
-        if sales_order.status_code==200:
-            sales_order = sales_order.json().get('data')
-            so_name = sales_order.get("name")
-            print(so_name)
+        if sales_order.status_code!=200:
+            raise Exception('Sales order not created. Please, provide valid data. ')
             
-            response['sales_order'] = so_name
-            
-            sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-                base=base,
-                source_name=so_name,
-                accounting_dimensions=accounting_dimensions,
-                submit=True
-            )
-            response['sales_invoice'] = sales_invoice.get('name')
-            
-            payment_entry = create_payment_for_sales_order_from_web(
-                base=base,
-                payment_data=payment_data,
-                sales_invoice_data=sales_invoice,
-                accounting_dimensions=accounting_dimensions
-            )
-            response['payment_entry'] = payment_entry.get("name")
-            
-            return format_result(success="True", result=response, status_code=200)
+        sales_order = sales_order.json().get('data')
+        so_name = sales_order.get("name")
+        print(so_name)
+        
+        response['sales_order'] = so_name
+        
+        sales_invoice = create_and_submit_sales_invoice_from_sales_order(
+            base=base,
+            source_name=so_name,
+            accounting_dimensions=accounting_dimensions,
+            submit=True
+        )
+        response['sales_invoice'] = sales_invoice.get('name')
+        
+        payment_entry = create_payment_for_sales_order_from_web(
+            base=base,
+            payment_data=payment_data,
+            sales_invoice_data=sales_invoice,
+            accounting_dimensions=accounting_dimensions
+        )
+        response['payment_entry'] = payment_entry.get("name")
+        
+        return format_result(success="True", result=response, status_code=200)
             
     except Exception as e:
         return format_result(success=False, result=response, message=str(e), status_code=400)
