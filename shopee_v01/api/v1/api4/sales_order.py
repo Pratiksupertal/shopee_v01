@@ -20,6 +20,9 @@ def create_sales_order():
         order_data = data.get("order_data")
         accounting_dimensions = data.get("accounting_dimensions", {})
         
+        if not accounting_dimensions.get('region'):
+            accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
+        
         if not order_data.get("delivery_date"):
             order_data["delivery_date"] = today()
         if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
@@ -86,6 +89,9 @@ def create_sales_order_all():
         try:
             order_data = record.get('order_data', {})
             accounting_dimensions = record.get('accounting_dimensions', {})
+            
+            if not accounting_dimensions.get('region'):
+                accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
             
             if not order_data.get("delivery_date"):
                 order_data["delivery_date"] = today()
