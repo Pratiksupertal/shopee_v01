@@ -48,7 +48,7 @@ def create_sales_order_from_web():
         accounting_dimensions = data.get("accounting_dimensions", {})
         payment_data = data.get('payment_data')
         
-        if accounting_dimensions.get('region'):
+        if not accounting_dimensions.get('region'):
             accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
 
         data_validation_for_create_sales_order_web(order_data=order_data, payment_data=payment_data)
