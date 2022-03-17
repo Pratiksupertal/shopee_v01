@@ -1,3 +1,4 @@
+from dbm import error
 import json
 import frappe
 import requests
@@ -9,7 +10,11 @@ from shopee_v01.api.v1.helpers import *
 
 @frappe.whitelist()
 def create_sales_order():
-    res = {}
+    res = {
+        'sales_order': None,
+        'sales_invoice': None,
+        'delivery_note': None
+    }
     try:
         data = validate_data(frappe.request.data)
         order_data = data.get("order_data")
@@ -53,6 +58,12 @@ def create_sales_order():
             return format_result(success=True, result=res)
         else: raise Exception()
     except Exception as e:
+        if len(str(e)) < 1:
+            if not res['sales_order']: e = 'Sales Order creation failed.'
+            elif not res['sales_invoice']: e = 'Sales Invoice creation failed.'
+            elif not res['delivery_note']: e = 'Delivery Note creation failed.'
+            else: e = 'Something went wrong.'
+            e += ' Please, provide valid data.'
         return format_result(result=res, message=f'{str(e)}', status_code=400, success=False, exception=str(e))
 
 
@@ -121,12 +132,20 @@ def create_sales_order_all():
             else: raise Exception()
             
         except Exception as err:
+            if len(str(err)) < 1:
+                if not res['sales_order']: err = 'Sales Order creation failed.'
+                elif not res['sales_invoice']: err = 'Sales Invoice creation failed.'
+                elif not res['delivery_note']: err = 'Delivery Note creation failed.'
+                else: err = 'Something went wrong.'
+                err += ' Please, provide valid data.'
+            
             fail_count += 1
             res['message'] = str(err)
             result.append(res)
             
+    message = 'success' if success_count > 0 else 'failed'
     return format_result(result={
             "success_count": success_count,
             "fail_count": fail_count,
             "record": result
-        }, message="success", status_code=200)
+        }, message=message, status_code=200)
