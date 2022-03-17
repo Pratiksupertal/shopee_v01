@@ -351,3 +351,52 @@ def get_item_bar_code(item_code):
     except Exception as e:
         print('Exception occured in fetching barcode\n------\n', str(e))
         return None
+
+
+def create_and_submit_sales_order(base, order_data, submit=False):
+    try:
+        url = base + '/api/resource/Sales%20Order'
+        if submit: order_data['docstatus'] = 1
+        sales_order = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(order_data))
+        return sales_order
+    except Exception as e:
+        raise Exception(f'Problem in creating sales invoice. Reason: {str(e)}')
+
+
+def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False):
+    try:
+        invoice_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice'
+        invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={"source_name": source_name})
+        sales_invoice_data = invoice_res_api_response.json().get("message")
+        if submit: sales_invoice_data['docstatus'] = 1
+        sales_invoice_data.update(accounting_dimensions)
+        invoice_url_2 = base + '/api/resource/Sales%20Invoice'
+        invoice_res_api_response_2 = requests.post(invoice_url_2.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(sales_invoice_data))
+        sales_invoice_data_2 = invoice_res_api_response_2.json().get("data")
+        return sales_invoice_data_2
+    except Exception as e:
+        raise Exception(f'Problem in creating sales invoice. Reason: {str(e)}')
+
+
+def create_and_submit_delivery_note_from_sales_order(base, source_name, submit=False):
+    try:
+        dn_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
+        dn_res_api_response = requests.post(dn_url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data={"source_name": source_name})
+        dn_data = dn_res_api_response.json().get("message")
+        if submit: dn_data['docstatus'] = 1
+        dn_url_2 = base + '/api/resource/Delivery%20Note'
+        dn_res_api_response_2 = requests.post(dn_url_2.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(dn_data))
+        dn_data_2 = dn_res_api_response_2.json().get("data")
+        return dn_data_2
+    except Exception as e:
+        raise Exception(f'Problem in creating delivery note. Reason: {str(e)}')
