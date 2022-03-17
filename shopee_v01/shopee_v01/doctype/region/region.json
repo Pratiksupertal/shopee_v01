@@ -1,5 +1,4 @@
 {
- "autoname": "field:region",
  "creation": "2022-01-14 18:09:36.510507",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -11,11 +10,10 @@
   {
    "fieldname": "region",
    "fieldtype": "Data",
-   "label": "Region",
-   "unique": 1
+   "label": "Region"
   }
  ],
- "modified": "2022-03-16 18:07:27.625159",
+ "modified": "2022-01-14 18:09:42.190082",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Region",
