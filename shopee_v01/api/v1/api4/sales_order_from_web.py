@@ -12,6 +12,7 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
         payment_url = base + '/api/resource/Payment%20Entry'
         payment_data.update({
             "doctype": 1,
+            "docstatus": 1,
             "references": [{
                     "parenttype": "Payment Entry",
                     "reference_doctype": "Sales Invoice",
@@ -30,6 +31,8 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
         payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         },data=json.dumps(payment_data))
+        if payment_res_api_response.status_code != 200:
+            raise Exception('Please, provide valid payment information.')
         return payment_res_api_response.json().get("data")
     except Exception as e:
         raise Exception(f'Problem in creating payment entry. Reason: {str(e)}')
