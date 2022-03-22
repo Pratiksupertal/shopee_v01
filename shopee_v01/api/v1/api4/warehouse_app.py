@@ -12,10 +12,14 @@ def filter_picklist():
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         purpose = parse_qs(urlparse(url).query).get('purpose')
         source_app_name = parse_qs(urlparse(url).query).get('source_app_name')
+        chain = parse_qs(urlparse(url).query).get('chain')
+        store = parse_qs(urlparse(url).query).get('store')
         
         if docstatus: docstatus = docstatus[0]
         if purpose: purpose = purpose[0]
         if source_app_name: source_app_name = source_app_name[0]
+        if chain: chain = chain[0]
+        if store: store = store[0]
         
         filtered_picklist = frappe.db.get_list('Pick List',
                 filters={
@@ -43,6 +47,14 @@ def filter_picklist():
             
             if source_app_name:
                 if so_data[3] != source_app_name:
+                    continue
+            
+            if chain:
+                if so_data[3] != chain:
+                    continue
+            
+            if store:
+                if so_data[3] != store:
                     continue
             
             result.append({
@@ -508,3 +520,25 @@ def source_app_name_list():
         return format_result(result=result, success=True, status_code=200, message='Data Found')
     except Exception as e:
         return format_result(result=None, success=False, status_code=400, message=str(e))
+
+
+@frappe.whitelist()
+def chain_list():
+    try:
+        apps = frappe.db.sql("""SELECT name FROM `tabChain`""")
+        result = list(map(lambda app: app[0], apps))
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
+
+
+@frappe.whitelist()
+def store_list():
+    try:
+        apps = frappe.db.sql("""SELECT name FROM `tabStore`""")
+        result = list(map(lambda app: app[0], apps))
+        return format_result(result=result, success=True, status_code=200, message='Data Found')
+    except Exception as e:
+        return format_result(result=None, success=False, status_code=400, message=str(e))
+
+
