@@ -8,7 +8,7 @@ from shopee_v01.api.v1.validations import *
 
 
 @frappe.whitelist()
-def create_sales_order_from_web():
+def create_sales_order_complete_cycle():
     response = {
         'sales_order': None,
         'delivery_note': None,
