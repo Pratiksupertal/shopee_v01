@@ -362,7 +362,7 @@ def create_and_submit_sales_order(base, order_data, submit=False):
         },data=json.dumps(order_data))
         return sales_order
     except Exception as e:
-        raise Exception(f'Problem in creating sales invoice. Reason: {str(e)}')
+        raise Exception(f'Problem in creating sales order. Reason: {str(e)}')
 
 
 def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False):
@@ -374,10 +374,18 @@ def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounti
         sales_invoice_data = invoice_res_api_response.json().get("message")
         if submit: sales_invoice_data['docstatus'] = 1
         sales_invoice_data.update(accounting_dimensions)
+        
+        if submit: sales_invoice_data['docstatus'] = 1
+        sales_invoice_data.update(accounting_dimensions)
+        
         invoice_url_2 = base + '/api/resource/Sales%20Invoice'
         invoice_res_api_response_2 = requests.post(invoice_url_2.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         },data=json.dumps(sales_invoice_data))
+        
+        if invoice_res_api_response_2.status_code != 200:
+            raise Exception('Please, provide valid information.')
+        
         sales_invoice_data_2 = invoice_res_api_response_2.json().get("data")
         return sales_invoice_data_2
     except Exception as e:
@@ -396,6 +404,10 @@ def create_and_submit_delivery_note_from_sales_order(base, source_name, submit=F
         dn_res_api_response_2 = requests.post(dn_url_2.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         },data=json.dumps(dn_data))
+        
+        if dn_res_api_response_2.status_code != 200:
+            raise Exception('Please, provide valid information.')
+        
         dn_data_2 = dn_res_api_response_2.json().get("data")
         return dn_data_2
     except Exception as e:

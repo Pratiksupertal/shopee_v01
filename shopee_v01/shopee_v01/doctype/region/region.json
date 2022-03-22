@@ -11,11 +11,13 @@
   {
    "fieldname": "region",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Region",
+   "reqd": 1,
    "unique": 1
   }
  ],
- "modified": "2022-03-16 18:07:27.625159",
+ "modified": "2022-03-17 18:54:24.405328",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Region",
