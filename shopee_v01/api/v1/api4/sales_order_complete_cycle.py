@@ -8,7 +8,7 @@ from shopee_v01.api.v1.validations import *
 
 
 @frappe.whitelist()
-def create_sales_order_complete_cycle():
+def sales_order_cycle():
     response = {
         'sales_order': None,
         'delivery_note': None,
@@ -71,6 +71,7 @@ def create_sales_order_complete_cycle():
     except Exception as e:
         if len(str(e)) < 1:
             if not response['sales_order']: e = 'Sales Order creation failed.'
+            elif not response['delivery_note']: e = 'Delivery Note creation failed.'
             elif not response['sales_invoice']: e = 'Sales Invoice creation failed.'
             elif not response['payment_entry']: e = 'Payment Entry creation failed.'
             else: e = 'Something went wrong.'
