@@ -43,18 +43,18 @@ def filter_picklist():
             if len(items) < 1: continue
             
             sales_order = items[0].get('sales_order')
-            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner', 'source_app_name'])
+            so_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner', 'source_app_name', 'chain', 'store'])
             
             if source_app_name:
                 if so_data[3] != source_app_name:
                     continue
             
             if chain:
-                if so_data[3] != chain:
+                if so_data[4] != chain:
                     continue
             
             if store:
-                if so_data[3] != store:
+                if so_data[5] != store:
                     continue
             
             result.append({
