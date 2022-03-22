@@ -412,3 +412,35 @@ def create_and_submit_delivery_note_from_sales_order(base, source_name, submit=F
         return dn_data_2
     except Exception as e:
         raise Exception(f'Problem in creating delivery note. Reason: {str(e)}')
+    
+
+def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_data, accounting_dimensions, submit=False):
+    try:
+        payment_url = base + '/api/resource/Payment%20Entry'
+        payment_data.update({
+            "doctype": 1,
+            "references": [{
+                    "parenttype": "Payment Entry",
+                    "reference_doctype": "Sales Invoice",
+                    "reference_name": sales_invoice_data.get("name"),
+                    "due_date": None,
+                    "bill_no": None,
+                    "payment_term": None,
+                    "total_amount": sales_invoice_data.get("grand_total"),
+                    "outstanding_amount": sales_invoice_data.get("grand_total"),
+                    "allocated_amount": sales_invoice_data.get("grand_total"),
+                    "exchange_rate": 0,
+                    "doctype": "Payment Entry Reference"
+            }]
+        })
+        payment_data.update(accounting_dimensions)
+        if submit:
+            payment_data.update({"docstatus": 1})
+        payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        },data=json.dumps(payment_data))
+        if payment_res_api_response.status_code != 200:
+            raise Exception('Please, provide valid payment information.')
+        return payment_res_api_response.json().get("data")
+    except Exception as e:
+        raise Exception(f'Problem in creating payment entry. Reason: {str(e)}')
