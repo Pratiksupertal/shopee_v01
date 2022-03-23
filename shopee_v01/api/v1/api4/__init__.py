@@ -12,5 +12,6 @@ from shopee_v01.api.v1.api4.order import *
 from shopee_v01.api.v1.api4.picklist import *
 from shopee_v01.api.v1.api4.sales_order import *
 from shopee_v01.api.v1.api4.sales_order_from_web import *
+from shopee_v01.api.v1.api4.sales_order_complete_cycle import *
 from shopee_v01.api.v1.api4.stock_entry import *
 from shopee_v01.api.v1.api4.stock_transfer import *

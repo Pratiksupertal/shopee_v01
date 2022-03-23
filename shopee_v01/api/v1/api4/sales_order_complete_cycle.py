@@ -8,9 +8,10 @@ from shopee_v01.api.v1.validations import *
 
 
 @frappe.whitelist()
-def create_sales_order_from_web():
+def sales_order_cycle():
     response = {
         'sales_order': None,
+        'delivery_note': None,
         'sales_invoice': None,
         'payment_entry': None
     }
@@ -38,9 +39,15 @@ def create_sales_order_from_web():
             
         sales_order = sales_order.json().get('data')
         so_name = sales_order.get("name")
-        print(so_name)
         
         response['sales_order'] = so_name
+        
+        delivery_note = create_and_submit_delivery_note_from_sales_order(
+            base=base,
+            source_name=so_name,
+            submit=True
+        )
+        response['delivery_note'] = delivery_note.get('name')
         
         sales_invoice = create_and_submit_sales_invoice_from_sales_order(
             base=base,
@@ -64,6 +71,7 @@ def create_sales_order_from_web():
     except Exception as e:
         if len(str(e)) < 1:
             if not response['sales_order']: e = 'Sales Order creation failed.'
+            elif not response['delivery_note']: e = 'Delivery Note creation failed.'
             elif not response['sales_invoice']: e = 'Sales Invoice creation failed.'
             elif not response['payment_entry']: e = 'Payment Entry creation failed.'
             else: e = 'Something went wrong.'
