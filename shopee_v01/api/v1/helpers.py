@@ -398,7 +398,7 @@ def create_and_submit_sales_order(base, order_data, submit=False):
         raise Exception(f'Problem in creating sales order. Reason: {str(e)}')
 
 
-def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False):
+def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False) -> any:
     try:
         invoice_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice'
         invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
@@ -495,8 +495,6 @@ def auto_map_accounting_dimensions_fields(accounting_dimensions, order_data={}, 
                 print(items)
                 if items:
                     first_item_code = items[0].get('item_code')
-                    print(first_item_code)
-                    print(frappe.db.get_value('Item', first_item_code, 'brand'))
                     accounting_dimensions['brand'] = frappe.db.get_value('Item', first_item_code, 'brand')
         return accounting_dimensions
     except Exception:
