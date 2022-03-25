@@ -20,13 +20,17 @@ def create_sales_order():
         order_data = data.get("order_data")
         accounting_dimensions = data.get("accounting_dimensions", {})
         
-        if not accounting_dimensions.get('region'):
-            accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
-        
         if not order_data.get("delivery_date"):
             order_data["delivery_date"] = today()
         if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
             raise Exception("Sales order Number and Source app name both are required")
+        
+        accounting_dimensions = auto_map_accounting_dimensions_fields(
+            accounting_dimensions = accounting_dimensions,
+            order_data = order_data,
+            add_region = True,
+            add_brand = True
+        )
         
         base = get_base_url(url=frappe.request.url)
         
@@ -90,13 +94,17 @@ def create_sales_order_all():
             order_data = record.get('order_data', {})
             accounting_dimensions = record.get('accounting_dimensions', {})
             
-            if not accounting_dimensions.get('region'):
-                accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
-            
             if not order_data.get("delivery_date"):
                 order_data["delivery_date"] = today()
             if not order_data.get("external_so_number") or not  order_data.get("source_app_name"):
                 raise Exception("Sales order Number and Source app name both are required")
+            
+            accounting_dimensions = auto_map_accounting_dimensions_fields(
+                accounting_dimensions = accounting_dimensions,
+                order_data = order_data,
+                add_region = True,
+                add_brand =  True
+            )
             
             res['external_so_number'] = order_data.get('external_so_number')
             

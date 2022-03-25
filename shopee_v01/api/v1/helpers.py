@@ -372,8 +372,6 @@ def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounti
             "Authorization": frappe.request.headers["Authorization"]
         },data={"source_name": source_name})
         sales_invoice_data = invoice_res_api_response.json().get("message")
-        if submit: sales_invoice_data['docstatus'] = 1
-        sales_invoice_data.update(accounting_dimensions)
         
         if submit: sales_invoice_data['docstatus'] = 1
         sales_invoice_data.update(accounting_dimensions)
@@ -384,7 +382,7 @@ def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounti
         },data=json.dumps(sales_invoice_data))
         
         if invoice_res_api_response_2.status_code != 200:
-            raise Exception('Please, provide valid information.')
+            raise Exception('Please, provide valid information for accounting dimensions.')
         
         sales_invoice_data_2 = invoice_res_api_response_2.json().get("data")
         return sales_invoice_data_2
@@ -406,7 +404,7 @@ def create_and_submit_delivery_note_from_sales_order(base, source_name, submit=F
         },data=json.dumps(dn_data))
         
         if dn_res_api_response_2.status_code != 200:
-            raise Exception('Please, provide valid information.')
+            raise Exception('Please, check the item availability in the warehouse.')
         
         dn_data_2 = dn_res_api_response_2.json().get("data")
         return dn_data_2
@@ -444,3 +442,24 @@ def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_da
         return payment_res_api_response.json().get("data")
     except Exception as e:
         raise Exception(f'Problem in creating payment entry. Reason: {str(e)}')
+
+
+def auto_map_accounting_dimensions_fields(accounting_dimensions, order_data={}, add_region=False, add_brand=False):
+    try:
+        # auto map region from city by Territory Tree
+        if add_region:
+            if not accounting_dimensions.get('region'):
+                accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
+        # auto map brand name from item if all items are from same brand
+        if add_brand:
+            if not accounting_dimensions.get('brand'):
+                items = order_data.get('items')
+                print(items)
+                if items:
+                    first_item_code = items[0].get('item_code')
+                    print(first_item_code)
+                    print(frappe.db.get_value('Item', first_item_code, 'brand'))
+                    accounting_dimensions['brand'] = frappe.db.get_value('Item', first_item_code, 'brand')
+        return accounting_dimensions
+    except Exception:
+        return accounting_dimensions
