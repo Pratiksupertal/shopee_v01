@@ -15,6 +15,7 @@ frappe.ui.form.on('Sales Order Item', {
         });
     }
 });
+
 frappe.ui.form.on("Sales Order",{ before_load:function(frm) {
   var df=frappe.meta.get_docfield("Sales Order Item", "rate",frm.doc.name);
   var df2=frappe.meta.get_docfield("Sales Order Item", "amount",frm.doc.name);
@@ -33,8 +34,18 @@ frappe.ui.form.on("Sales Order",{ before_load:function(frm) {
   var df15=frappe.meta.get_docfield("Sales Order Item", "billed_amt",frm.doc.name);
   var df16=frappe.meta.get_docfield("Sales Order Item", "gross_profit",frm.doc.name);
   var df17=frappe.meta.get_docfield("Sales Order Item", "blanket_order_rate",frm.doc.name);
-  if (frappe.user_roles.includes("Sales User") || frappe.user_roles.includes("Accounting Supervisor") ||
+  if (frappe.user_roles.includes("Accounts Manager") || frappe.user_roles.includes("Accounting Supervisor") ||
        frappe.user_roles.includes("CEO")) {
+     frm.set_df_property("total", "hidden", 0);
+     frm.set_df_property("base_net_total", "hidden", 0);
+     frm.set_df_property("net_total", "hidden", 0);
+         frm.set_df_property("total_taxes_and_charges", "hidden", 0);
+         frm.set_df_property("discount_amount", "hidden", 0);
+         frm.set_df_property("grand_total", "hidden", 0);
+         frm.set_df_property("rounding_adjustment", "hidden", 0);
+         frm.set_df_property("rounded_total", "hidden", 0);
+         frm.set_df_property("in_words", "hidden", 0);
+         frm.set_df_property("advance_paid", "hidden", 0);
      df.hidden=0;
      df2.hidden=0;
      df3.hidden=0;
