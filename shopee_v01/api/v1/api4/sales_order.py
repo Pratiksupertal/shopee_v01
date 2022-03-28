@@ -10,8 +10,12 @@ from shopee_v01.api.v1.helpers import create_and_submit_delivery_note_from_sales
 from shopee_v01.api.v1.helpers import format_result
 
 
-"""
+"""Sales Order SPG APP (Single)
 
+Auto Create
+    - Sales Order
+    - Delivery Note
+    - Sales Invoice
 """
 @frappe.whitelist()
 def create_sales_order():
@@ -25,11 +29,19 @@ def create_sales_order():
         order_data = data.get("order_data")
         accounting_dimensions = data.get("accounting_dimensions", {})
 
+        """
+        1. If Delivery Date is not given, will update TODAY as delivery date
+        2. External SO Number and Source App Name fields mendatory
+        """
         if not order_data.get("delivery_date"):
             order_data["delivery_date"] = today()
         if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
             raise Exception("Sales order Number and Source app name both are required")
 
+        """Auto Map accounting dimensions
+        1. auto map region from city by Territory Tree
+        2. auto map brand name from item if all items are from same brand
+        """
         accounting_dimensions = auto_map_accounting_dimensions_fields(
             accounting_dimensions=accounting_dimensions,
             order_data=order_data,
@@ -39,6 +51,7 @@ def create_sales_order():
 
         base = get_base_url(url=frappe.request.url)
 
+        """step 1: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
             base=base,
             order_data=order_data,
@@ -52,6 +65,7 @@ def create_sales_order():
 
             res['sales_order'] = so_name
 
+            """step 2: create and submit delivery note"""
             delivery_note = create_and_submit_delivery_note_from_sales_order(
                 base=base,
                 source_name=so_name,
@@ -59,6 +73,7 @@ def create_sales_order():
             )
             res['delivery_note'] = delivery_note.get('name')
 
+            """step 3: create and submit sales invoice"""
             sales_invoice = create_and_submit_sales_invoice_from_sales_order(
                 base=base,
                 source_name=so_name,
@@ -90,6 +105,15 @@ def create_sales_order():
         )
 
 
+"""Sales Order SPG APP (Multiple)
+
+Create Multiple Order at a time with Delivery Note and Sales Invoice
+
+Auto Create
+    - Sales Order
+    - Delivery Note
+    - Sales Invoice
+"""
 @frappe.whitelist()
 def create_sales_order_all():
     data = validate_data(frappe.request.data)
@@ -112,11 +136,19 @@ def create_sales_order_all():
             order_data = record.get('order_data', {})
             accounting_dimensions = record.get('accounting_dimensions', {})
 
+            """
+            1. If Delivery Date is not given, will update TODAY as delivery date
+            2. External SO Number and Source App Name fields mendatory
+            """
             if not order_data.get("delivery_date"):
                 order_data["delivery_date"] = today()
             if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
                 raise Exception("Sales order Number and Source app name both are required")
 
+            """Auto Map accounting dimensions
+            1. auto map region from city by Territory Tree
+            2. auto map brand name from item if all items are from same brand
+            """
             accounting_dimensions = auto_map_accounting_dimensions_fields(
                 accounting_dimensions=accounting_dimensions,
                 order_data=order_data,
@@ -128,6 +160,7 @@ def create_sales_order_all():
 
             base = get_base_url(url=frappe.request.url)
 
+            """step 1: create and submit sales order"""
             sales_order = create_and_submit_sales_order(
                 base=base,
                 order_data=order_data,
@@ -140,6 +173,7 @@ def create_sales_order_all():
                 so_name = sales_order.get("name")
                 res['sales_order'] = so_name
 
+                """step 2: create and submit delivery note"""
                 delivery_note = create_and_submit_delivery_note_from_sales_order(
                     base=base,
                     source_name=so_name,
@@ -147,6 +181,7 @@ def create_sales_order_all():
                 )
                 res['delivery_note'] = delivery_note.get('name')
 
+                """step 3: create and submit sales invoice"""
                 sales_invoice = create_and_submit_sales_invoice_from_sales_order(
                     base=base,
                     source_name=so_name,
