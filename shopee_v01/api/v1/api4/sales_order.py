@@ -10,12 +10,15 @@ from shopee_v01.api.v1.helpers import create_and_submit_delivery_note_from_sales
 from shopee_v01.api.v1.helpers import format_result
 
 
+"""
+
+"""
 @frappe.whitelist()
 def create_sales_order():
     res = {
         'sales_order': None,
-        'sales_invoice': None,
-        'delivery_note': None
+        'delivery_note': None,
+        'sales_invoice': None
     }
     try:
         data = validate_data(frappe.request.data)
@@ -49,6 +52,13 @@ def create_sales_order():
 
             res['sales_order'] = so_name
 
+            delivery_note = create_and_submit_delivery_note_from_sales_order(
+                base=base,
+                source_name=so_name,
+                submit=True
+            )
+            res['delivery_note'] = delivery_note.get('name')
+
             sales_invoice = create_and_submit_sales_invoice_from_sales_order(
                 base=base,
                 source_name=so_name,
@@ -57,13 +67,6 @@ def create_sales_order():
             )
             res['sales_invoice'] = sales_invoice.get('name')
 
-            delivery_note = create_and_submit_delivery_note_from_sales_order(
-                base=base,
-                source_name=so_name,
-                submit=True
-            )
-            res['delivery_note'] = delivery_note.get('name')
-
             return format_result(success=True, result=res)
         else:
             raise Exception()
@@ -71,10 +74,10 @@ def create_sales_order():
         if len(str(e)) < 1:
             if not res['sales_order']:
                 e = 'Sales Order creation failed.'
-            elif not res['sales_invoice']:
-                e = 'Sales Invoice creation failed.'
             elif not res['delivery_note']:
                 e = 'Delivery Note creation failed.'
+            elif not res['sales_invoice']:
+                e = 'Sales Invoice creation failed.'
             else:
                 e = 'Something went wrong.'
             e += ' Please, provide valid data.'
@@ -101,8 +104,8 @@ def create_sales_order_all():
     for record in list(data):
         res = {
             'sales_order': None,
-            'sales_invoice': None,
             'delivery_note': None,
+            'sales_invoice': None,
             'status': 'failed'
         }
         try:
@@ -137,6 +140,13 @@ def create_sales_order_all():
                 so_name = sales_order.get("name")
                 res['sales_order'] = so_name
 
+                delivery_note = create_and_submit_delivery_note_from_sales_order(
+                    base=base,
+                    source_name=so_name,
+                    submit=True
+                )
+                res['delivery_note'] = delivery_note.get('name')
+
                 sales_invoice = create_and_submit_sales_invoice_from_sales_order(
                     base=base,
                     source_name=so_name,
@@ -145,12 +155,6 @@ def create_sales_order_all():
                 )
                 res['sales_invoice'] = sales_invoice.get('name')
 
-                delivery_note = create_and_submit_delivery_note_from_sales_order(
-                    base=base,
-                    source_name=so_name,
-                    submit=True
-                )
-                res['delivery_note'] = delivery_note.get('name')
                 res['status'] = 'success'
                 res['message'] = "Successfully created"
                 success_count += 1
@@ -163,10 +167,10 @@ def create_sales_order_all():
             if len(str(err)) < 1:
                 if not res['sales_order']:
                     err = 'Sales Order creation failed.'
-                elif not res['sales_invoice']:
-                    err = 'Sales Invoice creation failed.'
                 elif not res['delivery_note']:
                     err = 'Delivery Note creation failed.'
+                elif not res['sales_invoice']:
+                    err = 'Sales Invoice creation failed.'
                 else:
                     err = 'Something went wrong.'
                 err += ' Please, provide valid data.'
