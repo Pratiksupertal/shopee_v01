@@ -8,6 +8,7 @@ from shopee_v01.api.v1.helpers import create_and_submit_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_sales_invoice_from_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_delivery_note_from_sales_order
 from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import handle_empty_error_message
 
 
 """Sales Order SPG APP (Single)
@@ -82,26 +83,24 @@ def create_sales_order():
             )
             res['sales_invoice'] = sales_invoice.get('name')
 
-            return format_result(success=True, result=res)
+            return format_result(
+                success="True",
+                result=res,
+                status_code=200)
         else:
             raise Exception()
-    except Exception as e:
-        if len(str(e)) < 2:
-            if not res['sales_order']:
-                e = 'Sales Order creation failed.'
-            elif not res['delivery_note']:
-                e = 'Delivery Note creation failed.'
-            elif not res['sales_invoice']:
-                e = 'Sales Invoice creation failed.'
-            else:
-                e = 'Something went wrong.'
-            e += ' Please, provide valid data.'
+    except Exception as err:
+        if len(str(err)) < 2:
+            err = handle_empty_error_message(
+                response=res,
+                keys=['sales_order', 'delivery_note', 'sales_invoice']
+            )
         return format_result(
             result=res,
-            message=f'{str(e)}',
+            message=f'{str(err)}',
             status_code=400,
             success=False,
-            exception=str(e)
+            exception=str(err)
         )
 
 
@@ -200,16 +199,10 @@ def create_sales_order_all():
 
         except Exception as err:
             if len(str(err)) < 2:
-                if not res['sales_order']:
-                    err = 'Sales Order creation failed.'
-                elif not res['delivery_note']:
-                    err = 'Delivery Note creation failed.'
-                elif not res['sales_invoice']:
-                    err = 'Sales Invoice creation failed.'
-                else:
-                    err = 'Something went wrong.'
-                err += ' Please, provide valid data.'
-
+                err = handle_empty_error_message(
+                    response=res,
+                    keys=['sales_order', 'delivery_note', 'sales_invoice']
+                )
             fail_count += 1
             res['message'] = str(err)
             result.append(res)

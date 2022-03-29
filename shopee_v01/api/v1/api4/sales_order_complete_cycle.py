@@ -4,7 +4,9 @@ from shopee_v01.api.v1.helpers import get_base_url
 from shopee_v01.api.v1.helpers import create_and_submit_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_delivery_note_from_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_sales_invoice_from_sales_order
-from shopee_v01.api.v1.helpers import create_payment_for_sales_order_from_web, format_result
+from shopee_v01.api.v1.helpers import create_payment_for_sales_order_from_web
+from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import handle_empty_error_message
 from shopee_v01.api.v1.validations import validate_data
 from shopee_v01.api.v1.validations import data_validation_for_create_sales_order_web
 
@@ -35,9 +37,14 @@ def sales_order_cycle():
         1. auto map region from city by Territory Tree
         """
         if not accounting_dimensions.get('region'):
-            accounting_dimensions['region'] = frappe.db.get_value('Territory', accounting_dimensions.get("city"), 'parent')
+            accounting_dimensions['region'] = frappe.db.get_value(
+                'Territory',
+                accounting_dimensions.get("city"),
+                'parent')
 
-        data_validation_for_create_sales_order_web(order_data=order_data, payment_data=payment_data)
+        data_validation_for_create_sales_order_web(
+            order_data=order_data,
+            payment_data=payment_data)
 
         base = get_base_url(url=frappe.request.url)
 
@@ -82,23 +89,21 @@ def sales_order_cycle():
         )
         response['payment_entry'] = payment_entry.get("name")
 
-        return format_result(success="True", result=response, status_code=200)
-
-    except Exception as e:
-        if len(str(e)) < 2:
-            if not response['sales_order']:
-                e = 'Sales Order creation failed.'
-            elif not response['delivery_note']:
-                e = 'Delivery Note creation failed.'
-            elif not response['sales_invoice']:
-                e = 'Sales Invoice creation failed.'
-            elif not response['payment_entry']:
-                e = 'Payment Entry creation failed.'
-            else:
-                e = 'Something went wrong.'
-            e += ' Please, provide valid data.'
         return format_result(
-            success=False,
+            success="True",
             result=response,
-            message=str(e),
-            status_code=400)
+            status_code=200)
+
+    except Exception as err:
+        if len(str(err)) < 2:
+            err = handle_empty_error_message(
+                response=response,
+                keys=['sales_order', 'delivery_note', 'sales_invoice', 'payment_entry']
+            )
+        return format_result(
+            result=response,
+            message=f'{str(err)}',
+            status_code=400,
+            success=False,
+            exception=str(err)
+        )
