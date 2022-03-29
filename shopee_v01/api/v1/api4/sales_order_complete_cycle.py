@@ -13,11 +13,19 @@ from shopee_v01.api.v1.validations import data_validation_for_create_sales_order
 
 """Sales Order Cycle
 
-Auto Create
-    - Sales Order
-    - Delivery Note
-    - Sales Invoice
-    - Payment Entry
+@agenda
+1. Create Sales Order
+2. Auto Create Delivery Note from Sales Order
+3. Auto Create Sales Invoice from Sales Order
+4. Auto Create Payment Entry from Sales Invoice
+
+@lookup
+- Sales Order will link Sales Invoice and Delivery Note
+- Delivery Note will link Sales Order
+- Sales Invoice will link Sales Order and Payment Entry
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
 """
 @frappe.whitelist()
 def sales_order_cycle():

@@ -11,12 +11,19 @@ from shopee_v01.api.v1.helpers import handle_empty_error_message
 from shopee_v01.api.v1.validations import data_validation_for_create_sales_order_web
 
 
-"""Sales Order Web
+"""Sales Order Cycle
 
-Auto Create
-    - Sales Order
-    - Sales Invoice
-    - Payment Entry
+@agenda
+1. Create Sales Order
+2. Auto Create Sales Invoice from Sales Order
+3. Auto Create Payment Entry from Sales Invoice
+
+@lookup
+- Sales Order will link Sales Invoice
+- Sales Invoice will link Sales Order and Payment Entry
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
 """
 @frappe.whitelist()
 def create_sales_order_from_web():

@@ -13,10 +13,20 @@ from shopee_v01.api.v1.helpers import handle_empty_error_message
 
 """Sales Order SPG APP (Single)
 
-Auto Create
-    - Sales Order
-    - Delivery Note
-    - Sales Invoice
+@agenda
+1. Create Sales Order
+2. Auto Create Delivery Note from Sales Order
+3. Auto Create Sales Invoice from Sales Order
+
+@lookup
+- Sales Order will link Sales Invoice and Delivery Note
+- Delivery Note will link Sales Order
+- Sales Invoice will link Sales Order
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
+- Brand name (in Accounting Dimensions) will be auto mapped
+  and added from Item Details -> Brand
 """
 @frappe.whitelist()
 def create_sales_order():
@@ -106,12 +116,22 @@ def create_sales_order():
 
 """Sales Order SPG APP (Multiple)
 
+@agenda
 Create Multiple Order at a time with Delivery Note and Sales Invoice
 
-Auto Create
-    - Sales Order
-    - Delivery Note
-    - Sales Invoice
+1. Create Sales Order
+2. Auto Create Delivery Note from Sales Order
+3. Auto Create Sales Invoice from Sales Order
+
+@lookup
+- Sales Order will link Sales Invoice and Delivery Note
+- Delivery Note will link Sales Order
+- Sales Invoice will link Sales Order
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
+- Brand name (in Accounting Dimensions) will be auto mapped
+  and added from Item Details -> Brand
 """
 @frappe.whitelist()
 def create_sales_order_all():
