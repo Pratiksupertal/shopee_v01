@@ -86,7 +86,7 @@ def create_sales_order():
         else:
             raise Exception()
     except Exception as e:
-        if len(str(e)) < 1:
+        if len(str(e)) < 2:
             if not res['sales_order']:
                 e = 'Sales Order creation failed.'
             elif not res['delivery_note']:
@@ -199,7 +199,7 @@ def create_sales_order_all():
                 raise Exception()
 
         except Exception as err:
-            if len(str(err)) < 1:
+            if len(str(err)) < 2:
                 if not res['sales_order']:
                     err = 'Sales Order creation failed.'
                 elif not res['delivery_note']:

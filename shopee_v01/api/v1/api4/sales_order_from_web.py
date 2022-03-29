@@ -10,6 +10,13 @@ from shopee_v01.api.v1.helpers import format_result
 from shopee_v01.api.v1.validations import data_validation_for_create_sales_order_web
 
 
+"""Sales Order Web
+
+Auto Create
+    - Sales Order
+    - Sales Invoice
+    - Payment Entry
+"""
 @frappe.whitelist()
 def create_sales_order_from_web():
     response = {
@@ -25,6 +32,9 @@ def create_sales_order_from_web():
 
         data_validation_for_create_sales_order_web(order_data=order_data, payment_data=payment_data)
 
+        """Auto Map accounting dimensions
+        1. auto map region from city by Territory Tree
+        """
         accounting_dimensions = auto_map_accounting_dimensions_fields(
             accounting_dimensions=accounting_dimensions,
             add_region=True
@@ -32,6 +42,7 @@ def create_sales_order_from_web():
 
         base = get_base_url(url=frappe.request.url)
 
+        """step 1: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
             base=base,
             order_data=order_data,
@@ -45,6 +56,7 @@ def create_sales_order_from_web():
         so_name = sales_order.get("name")
         response['sales_order'] = so_name
 
+        """step 2: create and submit sales invoice"""
         sales_invoice = create_and_submit_sales_invoice_from_sales_order(
             base=base,
             source_name=so_name,
@@ -53,6 +65,7 @@ def create_sales_order_from_web():
         )
         response['sales_invoice'] = sales_invoice.get('name')
 
+        """step 3: create and submit payment entry"""
         payment_entry = create_payment_for_sales_order_from_web(
             base=base,
             payment_data=payment_data,
@@ -65,7 +78,7 @@ def create_sales_order_from_web():
         return format_result(success="True", result=response, status_code=200)
 
     except Exception as e:
-        if len(str(e)) < 1:
+        if len(str(e)) < 2:
             if not response['sales_order']:
                 e = 'Sales Order creation failed.'
             elif not response['sales_invoice']:
