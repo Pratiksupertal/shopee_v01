@@ -98,6 +98,6 @@ frappe.ui.form.on("Sales Order",{ before_load:function(frm) {
      cur_frm.set_df_property("total_commision", "hidden", 1);
 
   }
-  frm.refresh_fields();
+  cur_frm.refresh_fields();
 }
 });
