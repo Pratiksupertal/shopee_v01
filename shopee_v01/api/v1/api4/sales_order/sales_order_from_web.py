@@ -7,9 +7,24 @@ from shopee_v01.api.v1.helpers import create_and_submit_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_sales_invoice_from_sales_order
 from shopee_v01.api.v1.helpers import create_payment_for_sales_order_from_web
 from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import handle_empty_error_message
 from shopee_v01.api.v1.validations import data_validation_for_create_sales_order_web
 
 
+"""Sales Order Cycle
+
+@agenda
+1. Create Sales Order
+2. Auto Create Sales Invoice from Sales Order
+3. Auto Create Payment Entry from Sales Invoice
+
+@lookup
+- Sales Order will link Sales Invoice
+- Sales Invoice will link Sales Order and Payment Entry
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
+"""
 @frappe.whitelist()
 def create_sales_order_from_web():
     response = {
@@ -23,8 +38,13 @@ def create_sales_order_from_web():
         accounting_dimensions = data.get("accounting_dimensions", {})
         payment_data = data.get('payment_data')
 
-        data_validation_for_create_sales_order_web(order_data=order_data, payment_data=payment_data)
+        data_validation_for_create_sales_order_web(
+            order_data=order_data,
+            payment_data=payment_data)
 
+        """Auto Map accounting dimensions
+        1. auto map region from city by Territory Tree
+        """
         accounting_dimensions = auto_map_accounting_dimensions_fields(
             accounting_dimensions=accounting_dimensions,
             add_region=True
@@ -32,6 +52,7 @@ def create_sales_order_from_web():
 
         base = get_base_url(url=frappe.request.url)
 
+        """step 1: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
             base=base,
             order_data=order_data,
@@ -45,6 +66,7 @@ def create_sales_order_from_web():
         so_name = sales_order.get("name")
         response['sales_order'] = so_name
 
+        """step 2: create and submit sales invoice"""
         sales_invoice = create_and_submit_sales_invoice_from_sales_order(
             base=base,
             source_name=so_name,
@@ -53,6 +75,7 @@ def create_sales_order_from_web():
         )
         response['sales_invoice'] = sales_invoice.get('name')
 
+        """step 3: create and submit payment entry"""
         payment_entry = create_payment_for_sales_order_from_web(
             base=base,
             payment_data=payment_data,
@@ -62,22 +85,21 @@ def create_sales_order_from_web():
         )
         response['payment_entry'] = payment_entry.get("name")
 
-        return format_result(success="True", result=response, status_code=200)
-
-    except Exception as e:
-        if len(str(e)) < 1:
-            if not response['sales_order']:
-                e = 'Sales Order creation failed.'
-            elif not response['sales_invoice']:
-                e = 'Sales Invoice creation failed.'
-            elif not response['payment_entry']:
-                e = 'Payment Entry creation failed.'
-            else:
-                e = 'Something went wrong.'
-            e += ' Please, provide valid data.'
         return format_result(
-            success=False,
+            success="True",
             result=response,
-            message=str(e),
-            status_code=400
+            status_code=200)
+
+    except Exception as err:
+        if len(str(err)) < 2:
+            err = handle_empty_error_message(
+                response=response,
+                keys=['sales_order', 'sales_invoice', 'payment_entry']
+            )
+        return format_result(
+            result=response,
+            message=f'{str(err)}',
+            status_code=400,
+            success=False,
+            exception=str(err)
         )

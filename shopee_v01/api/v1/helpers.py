@@ -499,3 +499,20 @@ def auto_map_accounting_dimensions_fields(accounting_dimensions, order_data={}, 
         return accounting_dimensions
     except Exception:
         return accounting_dimensions
+
+
+def handle_empty_error_message(response, keys, *args, **kwargs):
+    for key in keys:
+        if not response[key]:
+            suggestion = 'Please, check the data you provided.'
+            if key == 'order_data':
+                suggestion = 'Please, check the order data.'
+            elif key == 'delivery_note':
+                suggestion = 'Please, check the availability of item of the specified warehouse.'
+            elif key == 'sales_invoice':
+                suggestion = 'Please, check the accounting dimensions information.'
+            elif key == 'payment_entry':
+                suggestion = 'Please, check the payment data.'
+            return key.replace('_', ' ').title() + ' creation failed. ' + suggestion
+    else:
+        return 'Something went wrong. Please, check the data you provided.'
