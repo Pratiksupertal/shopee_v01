@@ -1,6 +1,6 @@
 import frappe
 
-from shopee_v01.api.v1.helpers import *
+from shopee_v01.api.v1.helpers import format_result
 
 
 @frappe.whitelist()
