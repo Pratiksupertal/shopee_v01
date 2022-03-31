@@ -68,7 +68,6 @@ before_load:function(frm) {
 	   df15.hidden=0;
 	   df16.hidden=0;
      frm.set_df_property("total", "hidden", 0);
-     frm.set_df_property("base_net_total", "hidden", 0);
      frm.set_df_property("net_total", "hidden", 0);
      frm.set_df_property("total_taxes_and_charges", "hidden", 0);
 	   frm.set_df_property("taxes_and_charges_added", "hidden", 0);
@@ -79,7 +78,7 @@ before_load:function(frm) {
      frm.set_df_property("rounded_total", "hidden", 0);
      frm.set_df_property("in_words", "hidden", 0);
      frm.set_df_property("advance_paid", "hidden", 0);
-
+     frm.set_df_property("other_charges_calculation", "hidden", 0);
   }
   else {
      df.hidden=1;
@@ -99,7 +98,6 @@ before_load:function(frm) {
 	   df15.hidden=1;
 	   df16.hidden=1;
      frm.set_df_property("total", "hidden", 1);
-     frm.set_df_property("base_net_total", "hidden", 1);
      frm.set_df_property("net_total", "hidden", 1);
      frm.set_df_property("total_taxes_and_charges", "hidden", 1);
 	   frm.set_df_property("taxes_and_charges_added", "hidden", 1);
@@ -110,7 +108,7 @@ before_load:function(frm) {
      frm.set_df_property("rounded_total", "hidden", 1);
      frm.set_df_property("in_words", "hidden", 1);
      frm.set_df_property("advance_paid", "hidden", 1);
-
+     frm.set_df_property("other_charges_calculation", "hidden", 1);
   }
   frm.refresh_fields();
 }
