@@ -111,6 +111,7 @@ before_load:function(frm) {
      frm.set_df_property("other_charges_calculation", "hidden", 1);
   }
   frm.refresh_fields();
+	
 }
 });
 
