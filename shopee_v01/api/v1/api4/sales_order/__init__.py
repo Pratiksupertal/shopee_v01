@@ -10,3 +10,4 @@ from shopee_v01.api.v1.api4.sales_order.sales_order_from_app import create_sales
 from shopee_v01.api.v1.api4.sales_order.sales_order_from_app import create_sales_order_all
 from shopee_v01.api.v1.api4.sales_order.sales_order_from_web import create_sales_order_from_web
 from shopee_v01.api.v1.api4.sales_order.sales_order_complete_cycle import sales_order_cycle
+from shopee_v01.api.v1.api4.sales_order.sales_order_complete_cycle import sales_order_cycle_bulk
