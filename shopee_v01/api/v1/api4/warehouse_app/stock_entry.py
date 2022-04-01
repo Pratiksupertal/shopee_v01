@@ -124,6 +124,9 @@ def create_receive_at_warehouse():
             data={"source_name": data.get("outgoing_stock_entry")}
         )
 
+        if stock_entry.status_code != 200:
+            raise Exception('Please, check the outgoing stock entry status.')
+
         stock_entry_data = stock_entry.json().get("message")
         stock_entry_data["to_warehouse"] = data.get("t_warehouse")
         stock_entry_data["stock_entry_type"] = data.get("stock_entry_type")
@@ -311,7 +314,7 @@ def filter_receive_at_warehouse_for_packing_area():
             se['customer_name'] = picklist_data[0]
             se['picker'] = picklist_data[1]
             se['picker_name'] = frappe.db.get_value('User', picklist_data[1], 'full_name')
-            received_by = frappe.db.get_value('Stock Entry', se['outgoing_stock_entry'], 'owner')
+            received_by = frappe.db.get_value('Stock Entry', se.get('name'), 'owner')
             if received_by:
                 se['received_by'] = frappe.db.get_value(
                     'User', received_by, 'full_name'
