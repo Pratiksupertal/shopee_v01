@@ -31,7 +31,7 @@ def create_delivery_note_from_pick_list():
                 'parent': pick_list_name,
                 'parentfield': 'locations'
             },
-            fields=['item_code', 'item_name', 'qty', 'uom', 'warehouse']
+            fields=['item_code', 'item_name', 'qty', 'picked_qty', 'uom', 'warehouse']
         )
 
         delivery_note = frappe.new_doc('Delivery Note')
@@ -39,6 +39,9 @@ def create_delivery_note_from_pick_list():
         delivery_note.company = pick_list_data[2]
         delivery_note.pick_list = pick_list_name
         for item in pick_list_items:
+            item['qty'] = item['picked_qty']
+            if item['picked_qty'] == 0:
+                continue
             delivery_note.append("items", item)
         delivery_note.insert()
         return format_result(
