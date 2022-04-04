@@ -11,14 +11,14 @@ from shopee_v01.api.v1.validations import validate_data
 from shopee_v01.api.v1.validations import data_validation_for_create_receive_at_warehouse
 
 
-"""Filter Stock Entry
-
-Filter includes
-    - stock entry type
-    - order purpose
-"""
 @frappe.whitelist()
 def filter_stock_entry_for_warehouse_app():
+    """Filter Stock Entry
+
+    Filter includes
+        - stock entry type
+        - order purpose
+    """
     try:
         url = frappe.request.url
         stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')
@@ -238,17 +238,17 @@ def stock_entry_details_for_warehouse_app():
         )
 
 
-"""Filter Stock Entry Receive at Warehouse
-
-Filter includes
-    - stock entry type (receive at warehouse)
-    - order purpose
-    - docstatus (0/1/2)
-    - has delivery note (yes/no)
-    - delivery_note_status (0/1/2)
-"""
 @frappe.whitelist()
 def filter_receive_at_warehouse_for_packing_area():
+    """Filter Stock Entry Receive at Warehouse
+
+    Filter includes
+        - stock entry type (receive at warehouse)
+        - order purpose
+        - docstatus (0/1/2)
+        - has delivery note (yes/no)
+        - delivery_note_status (0/1/2)
+    """
     try:
         url = frappe.request.url
         stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')

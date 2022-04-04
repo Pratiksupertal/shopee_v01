@@ -4,13 +4,13 @@ from shopee_v01.api.v1.helpers import format_result
 from shopee_v01.api.v1.validations import validate_data
 
 
-"""
-@note After creating the delivery note from a picklist,
-        the stock entry that associated with it -
-        will go to Finished List from packing area
-"""
 @frappe.whitelist()
 def create_delivery_note_from_pick_list():
+    """
+    @note After creating the delivery note from a picklist,
+            the stock entry that associated with it -
+            will go to Finished List from packing area
+    """
     try:
         data = validate_data(frappe.request.data)
         pick_list_name = data.get('pick_list')

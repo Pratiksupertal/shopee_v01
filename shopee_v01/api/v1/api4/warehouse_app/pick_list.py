@@ -17,17 +17,17 @@ from shopee_v01.api.v1.validations import data_validation_for_save_picklist_and_
 from shopee_v01.api.v1.validations import data_validation_for_submit_picklist_and_create_stockentry
 
 
-"""Filter Pick List for Warehouse App
-
-Filter includes
-    - docstatus (0/1/2)
-    - purpose
-    - source app name
-    - chain
-    - store
-"""
 @frappe.whitelist()
 def filter_picklist():
+    """Filter Pick List for Warehouse App
+
+    Filter includes
+        - docstatus (0/1/2)
+        - purpose
+        - source app name
+        - chain
+        - store
+    """
     try:
         url = frappe.request.url
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
@@ -234,17 +234,17 @@ def assign_picker():
         )
 
 
-"""
-@agenda
-- Update Pick List Item Quantity
-- Create a Stock Entry
-
-@lookup
-- Only one item can be updated at a time
-- Only assigned picker can pick the item
-"""
 @frappe.whitelist()
 def save_picklist_and_create_stockentry():
+    """
+    @agenda
+    - Update Pick List Item Quantity
+    - Create a Stock Entry
+
+    @lookup
+    - Only one item can be updated at a time
+    - Only assigned picker can pick the item
+    """
     try:
         data = validate_data(frappe.request.data)
         data_validation_for_save_picklist_and_create_stockentry(data=data)
@@ -287,17 +287,17 @@ def save_picklist_and_create_stockentry():
         )
 
 
-"""
-@agenda
-- Submit the Pick List
-- Create a Stock Entry Send to Warehouse
-
-@lookup
-- Only assigned picker can submit the pick list
-- Auto correct the picked qty again
-"""
 @frappe.whitelist()
 def submit_picklist_and_create_stockentry():
+    """
+    @agenda
+    - Submit the Pick List
+    - Create a Stock Entry Send to Warehouse
+
+    @lookup
+    - Only assigned picker can submit the pick list
+    - Auto correct the picked qty again
+    """
     try:
         data = validate_data(frappe.request.data)
         data_validation_for_submit_picklist_and_create_stockentry(data=data)
