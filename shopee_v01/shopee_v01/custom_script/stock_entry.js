@@ -57,5 +57,43 @@ frappe.ui.form.on('Stock Entry', {
             }, __("Get items from"));
 
         }
+    },
+		before_load:function(frm) {
+	  var df=frappe.meta.get_docfield("Stock Entry Detail", "basic_rate",frm.doc.name);
+    var df2=frappe.meta.get_docfield("Stock Entry Detail", "basic_amount",frm.doc.name);
+    var df3=frappe.meta.get_docfield("Stock Entry Detail", "amount",frm.doc.name);
+    var df4=frappe.meta.get_docfield("Stock Entry Detail", "valuation_rate",frm.doc.name);
+    var df5=frappe.meta.get_docfield("Stock Entry Detail", "additional_cost",frm.doc.name);
+      if (frappe.user_roles.includes("Accounting Supervisor") || frappe.user_roles.includes("Accounts Manager") || frappe.user_roles.includes("CEO")) {
+			 df.hidden=0;
+			 df2.hidden=0;
+			 df3.hidden=0;
+			 df4.hidden=0;
+			 df5.hidden=0;
+
+			 frm.set_df_property("total_incoming_value", "hidden", 0);
+			 frm.set_df_property("total_outgoing_value", "hidden", 0);
+			 frm.set_df_property("value_difference", "hidden", 0);
+			 frm.set_df_property("total_additional_cost", "hidden", 0);
+			 frm.set_df_property("total_amount", "hidden", 0);
+			 frm.set_df_property("total_additional_costs", "hidden", 0);
+			 frm.set_df_property("additional_costs", "hidden", 0);
+	  }
+	  else {
+			 df.hidden=1;
+			 df2.hidden=1;
+			 df3.hidden=1;
+			 df4.hidden=1;
+			 df5.hidden=1;
+
+			 frm.set_df_property("total_incoming_value", "hidden", 1);
+			 frm.set_df_property("total_outgoing_value", "hidden", 1);
+			 frm.set_df_property("value_difference", "hidden", 1);
+			 frm.set_df_property("total_additional_cost", "hidden", 1);
+			 frm.set_df_property("total_amount", "hidden", 1);
+			 frm.set_df_property("total_additional_costs", "hidden", 1);
+			 frm.set_df_property("additional_costs", "hidden", 1);
+	  }
+	  frm.refresh_fields();
     }
 })
