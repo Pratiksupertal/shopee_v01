@@ -33,7 +33,8 @@ doctype_js = {
                 "Purchase Order":"shopee_v01/custom_script/purchase_order.js",
                 "Sales Order": "shopee_v01/custom_script/sales_order.js",
                 "Supplier":"shopee_v01/custom_script/supplier.js",
-                "Item":"shopee_v01/custom_script/item.js"
+                "Item":"shopee_v01/custom_script/item.js",
+                "Payment Entry": "shopee_v01/custom_script/payment_entry.js"
              }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_list_js = {"Purchase Order" : "shopee_v01/custom_script/purchase_order_list.js"}
@@ -106,7 +107,7 @@ doc_events = {
     },
     "Item":{
     "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
-    }
+    },
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
     # }
