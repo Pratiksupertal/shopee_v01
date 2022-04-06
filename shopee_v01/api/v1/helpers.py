@@ -317,15 +317,6 @@ def create_new_stock_entry_for_single_item(data, item):
     return new_doc_stock_entry
 
 
-def picklist_details_for_submit_picklist_and_create_stockentry(url):
-    picklist_details = requests.get(url.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    }, data={})
-    if picklist_details.status_code != 200:
-        raise Exception("Picklist name is not found")
-    return picklist_details.json().get("data")
-
-
 def pick_list_details_with_items(pick_list):
     """
     1. Pick List  Details (Company, Purpose)
