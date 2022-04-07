@@ -53,14 +53,19 @@ def get_outstanding_reference_documents(args):
 	# Add cost center condition
 	if args.get("cost_center"):
 		condition += " and cost_center='%s'" % args.get("cost_center")
-  
+
 	# Add source app name condition
 	if args.get("source_app_name"):
 		condition += " and source_app_name='%s'" % args.get("source_app_name")
-  
-    # Add store condition
+	# Add store condition
 	if args.get("store"):
 		condition += " and store='%s'" % args.get("store")
+
+	# Add department category condition
+	if args.get("department_category"):
+		list_args = args.get("department_category").split(",")
+		# condition += f" and department_category in {list_args}"
+		condition += " and department_category='%s'" % args.get("department_category")
 
 	date_fields_dict = {
 		'posting_date': ['from_posting_date', 'to_posting_date'],
@@ -101,5 +106,5 @@ def get_outstanding_reference_documents(args):
 	if not data:
 		frappe.msgprint(_("No outstanding invoices found for the {0} {1} which qualify the filters you have specified.")
 			.format(args.get("party_type").lower(), frappe.bold(args.get("party"))))
-
+	print(data)
 	return data

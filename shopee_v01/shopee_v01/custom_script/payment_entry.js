@@ -24,7 +24,9 @@ frappe.ui.form.on('Payment Entry', {
 			{fieldtype:"Section Break"},
 			{fieldtype:"Data", label: __("Source App Name"), options: 'Source App Name', fieldname:"source_app_name"},
             {fieldtype:"Column Break"},
-            {fieldtype:"Data", label: __("Store"), options: 'Store', fieldname:"store"},
+			{fieldtype:"Data", label: __("Store"), options: 'Store', fieldname:"store"},
+			{fieldtype:"Section Break"},
+			{fieldtype:"Data", label: __("Department Category"), options: 'Department Category', fieldname:"department_category"},
 			{fieldtype:"Section Break"},
 			{fieldtype:"Check", label: __("Allocate Payment Amount"), fieldname:"allocate_payment_amount", default:1},
 		];
