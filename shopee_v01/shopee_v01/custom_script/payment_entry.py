@@ -63,9 +63,18 @@ def get_outstanding_reference_documents(args):
 
 	# Add department category condition
 	if args.get("department_category"):
+		count = 0
 		list_args = args.get("department_category").split(",")
+		condition += f" and (department_category="
+		for category in list_args:
+			if count == 0:
+				condition += f"'{category}'"
+				count += 1
+			else:
+				condition += f" OR department_category='{category}'"
+		condition += ")"
 		# condition += f" and department_category in {list_args}"
-		condition += " and department_category='%s'" % args.get("department_category")
+		# condition += " and department_category='%s'" % args.get("department_category")
 
 	date_fields_dict = {
 		'posting_date': ['from_posting_date', 'to_posting_date'],
