@@ -78,6 +78,7 @@ frappe.ui.form.on('Stock Entry', {
 			 frm.set_df_property("total_amount", "hidden", 0);
 			 frm.set_df_property("total_additional_costs", "hidden", 0);
 			 frm.set_df_property("additional_costs", "hidden", 0);
+			 
 	  }
 	  else {
 			 df.hidden=1;
