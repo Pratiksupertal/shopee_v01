@@ -48,7 +48,11 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
 
-    return {
+    response = {}
+    if isinstance(result, list):
+        response["count"] = 0 if not result else len(result)
+
+    response.update({
         "success": success,
         "message": cleanhtml(message),
         "status_code": str(status_code),
@@ -60,7 +64,9 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
                 "raise_exception": raise_exception
             }
         ]
-    }
+    })
+
+    return response
 
 
 def get_last_parameter(url, link):
