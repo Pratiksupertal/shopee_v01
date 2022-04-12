@@ -1,11 +1,9 @@
-from operator import truediv
 import frappe
 
 from shopee_v01.api.v1.helpers import validate_data
 from shopee_v01.api.v1.helpers import auto_map_accounting_dimensions_fields
 from shopee_v01.api.v1.helpers import get_base_url
 from shopee_v01.api.v1.helpers import create_and_save_customer
-from shopee_v01.api.v1.helpers import save_and_link_customer_to_address
 from shopee_v01.api.v1.helpers import create_and_submit_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_sales_invoice_from_sales_order
 from shopee_v01.api.v1.helpers import create_payment_for_sales_order_from_web
@@ -59,17 +57,14 @@ def create_sales_order_from_web():
 
         """step 1: create and save the customer"""
         customer = create_and_save_customer(
-            base = base,
-            customer_data =customer_data,
-            submit = True
+            base=base,
+            customer_data=customer_data,
+            submit=True
         )
-        print(customer)
 
-        customer_name =  customer.get("name")
-        print(customer_name)
+        customer_name = customer.get("name")
         response['customer'] = customer_name
-        order_data['customer']  = customer_name
-        print(order_data)
+        order_data['customer'] = customer_name
 
         """step 2: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
@@ -112,7 +107,7 @@ def create_sales_order_from_web():
         if len(str(err)) < 2:
             err = handle_empty_error_message(
                 response=response,
-                keys=['customer','sales_order', 'sales_invoice', 'payment_entry']
+                keys=['customer', 'sales_order', 'sales_invoice', 'payment_entry']
             )
         return format_result(
             result=response,
