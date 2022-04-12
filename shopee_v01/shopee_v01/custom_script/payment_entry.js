@@ -4,7 +4,6 @@ frappe.ui.form.off('Payment Entry',
 
 frappe.ui.form.on('Payment Entry', {
     get_outstanding_invoice: function(frm) {
-        console.log('\n\n\n\nhi\n\n\n\n')
 		const today = frappe.datetime.get_today();
 		const fields = [
 			{fieldtype:"Section Break", label: __("Posting Date")},
