@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 import json
 import time
 import frappe
@@ -438,6 +439,82 @@ def get_item_bar_code(item_code):
         print('Exception occured in fetching barcode\n------\n', str(e))
         return None
 
+def create_and_save_customer(base, customer_data, submit = False):
+    try:
+        customer = frappe.get_doc({
+            "doctype": "Customer",
+            "customer_name": customer_data.get("customer_name"),
+            "customer_group":customer_data.get("customer_group"),
+            "territory":customer_data.get("territory")
+        })
+        customer.insert()
+        address_name = save_and_link_customer_to_address(customer_data, customer.name)
+        save_and_link_customer_to_contact(customer_data, customer.name, address_name)
+        return customer
+    except Exception as e:
+        raise Exception(f'Problem in creating Customer. Reason: {str(e)}') 
+
+
+def save_and_link_customer_to_address(customer_data, customer_name):
+    try:
+        address_details =customer_data["address"][0]
+        address = frappe.get_doc({
+            "doctype": "Address",
+            "address_type": "Billing",
+            "address_line1": address_details.get("address_line1"),
+            "address_line2": address_details.get("address_line2") or "",
+            "city": address_details.get("city"),
+            "country": address_details.get("country"),
+            "pincode": address_details.get("pincode") or "",
+                "links": [{
+                    "link_doctype": "Customer",
+                    "link_name": customer_name
+                }]
+        })
+        address.insert()
+        return address.name
+    except Exception as e:
+        raise Exception(f'Problem in creating Address. Reason: {str(e)}')
+
+def save_and_link_customer_to_contact(customer_data, customer_name, address_name):
+    try:
+        contact = frappe.get_doc({
+            "doctype": "Contact",
+            "first_name": customer_data.get("customer_name"),
+            "address": address_name,
+                "email_ids": [{
+                    "email_id": customer_data.get("email_id")
+                }],
+                # "phone_nos": [{
+                #     "phone": int(customer_data.get("mobile_no"))
+                # }],
+                "links": [{
+                    "link_doctype": "Customer",
+                    "link_name": customer_name
+                }]       
+        })
+        contact.insert()
+    except Exception as e:
+        raise Exception(f'Problem in creating Contact. Reason: {str(e)}')
+            
+
+    
+
+
+
+# def create_and_save_customer(base, customer_data, submit = False):
+#     try:
+#         print(customer_data)
+#         url = base + '/api/resource/Customer'
+#         if submit:
+#             customer_data['docstatus'] = 1
+#         customer = requests.post(url.replace("'", '"'), headers={
+#             "Authorization": frappe.request.headers["Authorization"]
+#         }, data=json.dumps(customer_data))
+#         print(customer)
+#         return customer
+#     except Exception as e:
+#         raise Exception(f'Problem in creating Customer. Reason: {str(e)}')        
 
 def create_and_submit_sales_order(base, order_data, submit=False):
     try:
