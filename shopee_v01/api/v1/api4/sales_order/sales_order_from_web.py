@@ -42,6 +42,7 @@ def create_sales_order_from_web():
         payment_data = data.get('payment_data')
 
         data_validation_for_create_sales_order_web(
+            customer_data=customer_data,
             order_data=order_data,
             payment_data=payment_data)
 
