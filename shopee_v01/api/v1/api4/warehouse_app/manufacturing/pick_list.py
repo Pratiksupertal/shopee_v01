@@ -38,10 +38,9 @@ def filter_picklist_for_manufacture():
             mwo.supplier AS supplier,
             mwo.is_external AS is_external
         FROM
-            `tabPick List` as pl,
-            `tabMain Work Order` as mwo
-        WHERE
-            mwo.name=(SELECT reference_main_work_order FROM `tabWork Order` WHERE name=work_order)
+            `tabPick List` as pl
+            JOIN `tabWork Order` as wo ON wo.name = pl.work_order
+            JOIN `tabMain Work Order` as mwo ON mwo.name = wo.reference_main_work_order
         """
 
         docstatus = validate_filter_field(
