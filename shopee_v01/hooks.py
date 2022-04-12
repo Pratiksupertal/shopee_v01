@@ -103,7 +103,8 @@ doc_events = {
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
     },
     "Sales Invoice":{
-    "validate":"shopee_v01.shopee_v01.custom_script.sales_invoice.validate"
+    "validate":"shopee_v01.shopee_v01.custom_script.sales_invoice.validate",
+    "on_submit":"shopee_v01.shopee_v01.custom_script.sales_invoice.make_customer_gl_entry"
     },
     "Item":{
     "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
@@ -120,11 +121,11 @@ doc_events = {
 
 # Jinja Configuration Methods
 jenv = {
-	"methods": [
-		"get_summary_sales_invoice:shopee_v01.shopee_v01.custom_script.sales_invoice.get_summary_sales_invoice",
+    "methods": [
+        "get_summary_sales_invoice:shopee_v01.shopee_v01.custom_script.sales_invoice.get_summary_sales_invoice",
         "get_summary_sales_order:shopee_v01.shopee_v01.custom_script.sales_order.get_summary_sales_order"
 
-	]
+    ]
 }
 
 # Scheduled Tasks
@@ -147,7 +148,7 @@ scheduler_events = {
 # 		"shopee_v01.tasks.monthly"
 # 	]
     "cron": {
-  	    "0 0 * * *": [
+        "0 0 * * *": [
             "shopee_v01.schedular.schedular.update_finished_901_item_qty_summary"
         ]
     }
@@ -164,7 +165,7 @@ fixtures = ["Custom Field", "Property Setter","Print Format","Role","Report","Wo
 # ------------------------------
 #
 override_whitelisted_methods = {
-	"erpnext.controllers.item_variant.create_variant": "shopee_v01.shopee_v01.custom_script.item.create_variant",
+    "erpnext.controllers.item_variant.create_variant": "shopee_v01.shopee_v01.custom_script.item.create_variant",
     "erpnext.controllers.item_variant.enqueue_multiple_variant_creation":"shopee_v01.shopee_v01.custom_script.item.enqueue_multiple_variant_creation"
 }
 # override_whitelisted_methods = {
@@ -177,3 +178,6 @@ override_whitelisted_methods = {
 # override_doctype_dashboards = {
 # 	"Task": "shopee_v01.task.get_dashboard_data"
 # }
+
+
+

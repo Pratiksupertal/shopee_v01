@@ -67,14 +67,13 @@ def get_outstanding_reference_documents(args):
 		list_args = args.get("department_category").split(",")
 		condition += f" and (department_category="
 		for category in list_args:
+			category = category.strip()
 			if count == 0:
 				condition += f"'{category}'"
 				count += 1
 			else:
 				condition += f" OR department_category='{category}'"
 		condition += ")"
-		# condition += f" and department_category in {list_args}"
-		# condition += " and department_category='%s'" % args.get("department_category")
 
 	date_fields_dict = {
 		'posting_date': ['from_posting_date', 'to_posting_date'],
@@ -115,5 +114,4 @@ def get_outstanding_reference_documents(args):
 	if not data:
 		frappe.msgprint(_("No outstanding invoices found for the {0} {1} which qualify the filters you have specified.")
 			.format(args.get("party_type").lower(), frappe.bold(args.get("party"))))
-	print(data)
 	return data
