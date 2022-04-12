@@ -576,3 +576,13 @@ def handle_empty_error_message(response, keys, *args, **kwargs):
             return key.replace('_', ' ').title() + ' creation failed. ' + suggestion
     else:
         return 'Something went wrong. Please, check the data you provided.'
+
+
+def validate_filter_field(filterfield, value, datatype=str):
+    if not value:
+        return None
+    try:
+        value = datatype(value[0])
+        return value
+    except Exception as err:
+        raise Exception(f"{filterfield} datatype is not correct. {str(err)}")

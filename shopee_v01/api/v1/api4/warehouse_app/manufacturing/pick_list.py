@@ -2,16 +2,13 @@ import frappe
 from urllib.parse import urlparse, parse_qs
 
 from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import validate_filter_field
 
 
 @frappe.whitelist()
 def filter_picklist_for_manufacture():
     """Filter Pick List for Warehouse App Manufacture
-
-    Filter includes
-        - docstatus (0/1/2)
-        - purpose
-        - is_external (0/1)
+    Filter includes: docstatus (0/1/2), purpose, is_external (0/1)
     """
     try:
         url = frappe.request.url
@@ -43,12 +40,29 @@ def filter_picklist_for_manufacture():
             mwo.name=(SELECT reference_main_work_order FROM `tabWork Order` WHERE name=work_order)
         """
 
-        if docstatus:
-            sql += " and pl.docstatus='%d'" % int(docstatus[0])
+        docstatus = validate_filter_field(
+            filterfield='docstatus',
+            value=docstatus,
+            datatype=int
+        )
+        if docstatus is not None:
+            sql += " and pl.docstatus='%d'" % docstatus
+
+        purpose = validate_filter_field(
+            filterfield='purpose',
+            value=purpose
+        )
         if purpose:
-            sql += " and pl.purpose='%s'" % purpose[0]
-        if is_external:
-            sql += " and mwo.is_external='%d'" % int(is_external[0])
+            sql += " and pl.purpose='%s'" % purpose
+
+        is_external = validate_filter_field(
+            filterfield='is_external',
+            value=is_external,
+            datatype=int
+        )
+        if is_external is not None:
+            sql += " and mwo.is_external='%d'" % is_external
+
         sql += ";"
 
         result = frappe.db.sql(sql, as_dict=True)
