@@ -8,14 +8,25 @@ from shopee_v01.api.v1.helpers import create_and_submit_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_sales_invoice_from_sales_order
 from shopee_v01.api.v1.helpers import create_and_submit_delivery_note_from_sales_order
 from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import handle_empty_error_message
 
 
 """Sales Order SPG APP (Single)
 
-Auto Create
-    - Sales Order
-    - Delivery Note
-    - Sales Invoice
+@agenda
+1. Create Sales Order
+2. Auto Create Delivery Note from Sales Order
+3. Auto Create Sales Invoice from Sales Order
+
+@lookup
+- Sales Order will link Sales Invoice and Delivery Note
+- Delivery Note will link Sales Order
+- Sales Invoice will link Sales Order
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
+- Brand name (in Accounting Dimensions) will be auto mapped
+  and added from Item Details -> Brand
 """
 @frappe.whitelist()
 def create_sales_order():
@@ -82,37 +93,45 @@ def create_sales_order():
             )
             res['sales_invoice'] = sales_invoice.get('name')
 
-            return format_result(success=True, result=res)
+            return format_result(
+                success="True",
+                result=res,
+                status_code=200)
         else:
             raise Exception()
-    except Exception as e:
-        if len(str(e)) < 1:
-            if not res['sales_order']:
-                e = 'Sales Order creation failed.'
-            elif not res['delivery_note']:
-                e = 'Delivery Note creation failed.'
-            elif not res['sales_invoice']:
-                e = 'Sales Invoice creation failed.'
-            else:
-                e = 'Something went wrong.'
-            e += ' Please, provide valid data.'
+    except Exception as err:
+        if len(str(err)) < 2:
+            err = handle_empty_error_message(
+                response=res,
+                keys=['sales_order', 'delivery_note', 'sales_invoice']
+            )
         return format_result(
             result=res,
-            message=f'{str(e)}',
+            message=f'{str(err)}',
             status_code=400,
             success=False,
-            exception=str(e)
+            exception=str(err)
         )
 
 
 """Sales Order SPG APP (Multiple)
 
+@agenda
 Create Multiple Order at a time with Delivery Note and Sales Invoice
 
-Auto Create
-    - Sales Order
-    - Delivery Note
-    - Sales Invoice
+1. Create Sales Order
+2. Auto Create Delivery Note from Sales Order
+3. Auto Create Sales Invoice from Sales Order
+
+@lookup
+- Sales Order will link Sales Invoice and Delivery Note
+- Delivery Note will link Sales Order
+- Sales Invoice will link Sales Order
+
+- Region name (in Accounting Dimensions) will be auto mapped
+  and added from City name by Territory Tree
+- Brand name (in Accounting Dimensions) will be auto mapped
+  and added from Item Details -> Brand
 """
 @frappe.whitelist()
 def create_sales_order_all():
@@ -199,17 +218,11 @@ def create_sales_order_all():
                 raise Exception()
 
         except Exception as err:
-            if len(str(err)) < 1:
-                if not res['sales_order']:
-                    err = 'Sales Order creation failed.'
-                elif not res['delivery_note']:
-                    err = 'Delivery Note creation failed.'
-                elif not res['sales_invoice']:
-                    err = 'Sales Invoice creation failed.'
-                else:
-                    err = 'Something went wrong.'
-                err += ' Please, provide valid data.'
-
+            if len(str(err)) < 2:
+                err = handle_empty_error_message(
+                    response=res,
+                    keys=['sales_order', 'delivery_note', 'sales_invoice']
+                )
             fail_count += 1
             res['message'] = str(err)
             result.append(res)
