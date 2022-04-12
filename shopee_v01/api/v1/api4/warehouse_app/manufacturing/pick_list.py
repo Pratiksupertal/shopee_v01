@@ -22,10 +22,14 @@ def filter_picklist_for_manufacture():
             pl.work_order AS work_order,
             pl.docstatus AS pick_list_status,
             pl.picker AS picker,
-            (SELECT full_name FROM `tabUser` WHERE name=pl.picker) AS picker_name,
-            (SELECT COUNT(*) FROM `tabPick List Item` WHERE parent=pl.name) AS total_product,
-            (SELECT SUM(qty) FROM `tabPick List Item` WHERE parent=pl.name) AS total_qty,
-            (SELECT SUM(picked_qty) FROM `tabPick List Item` WHERE parent=pl.name) AS total_picked_qty,
+            (SELECT full_name FROM `tabUser`
+                WHERE name=pl.picker) AS picker_name,
+            (SELECT COUNT(*) FROM `tabPick List Item`
+                WHERE parent=pl.name and parentfield='locations') AS total_product,
+            (SELECT SUM(qty) FROM `tabPick List Item`
+                WHERE parent=pl.name and parentfield='locations') AS total_qty,
+            (SELECT (SUM(qty)-SUM(picked_qty)) FROM `tabPick List Item`
+                WHERE parent=pl.name and parentfield='locations') AS total_picked_qty,
             mwo.name AS main_work_order,
             mwo.spk_date AS spk_date,
             mwo.expected_finish_date AS mwo_expected_finish_date,
