@@ -34,7 +34,8 @@ def filter_picklist_for_manufacture():
             mwo.spk_date AS spk_date,
             mwo.expected_finish_date AS mwo_expected_finish_date,
             mwo.owner AS mwo_created_by,
-            (SELECT full_name FROM `tabUser` WHERE name=mwo.owner) AS mwo_created_by_name,
+            (SELECT full_name FROM `tabUser`
+                WHERE name=mwo.owner) AS mwo_created_by_name,
             mwo.supplier AS supplier,
             mwo.is_external AS is_external
         FROM
