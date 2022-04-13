@@ -34,14 +34,14 @@ def filter_picklist_for_manufacture():
             mwo.spk_date AS spk_date,
             mwo.expected_finish_date AS mwo_expected_finish_date,
             mwo.owner AS mwo_created_by,
-            (SELECT full_name FROM `tabUser` WHERE name=mwo.owner) AS mwo_created_by_name,
+            (SELECT full_name FROM `tabUser`
+                WHERE name=mwo.owner) AS mwo_created_by_name,
             mwo.supplier AS supplier,
             mwo.is_external AS is_external
         FROM
-            `tabPick List` as pl,
-            `tabMain Work Order` as mwo
-        WHERE
-            mwo.name=(SELECT reference_main_work_order FROM `tabWork Order` WHERE name=work_order)
+            `tabPick List` as pl
+            JOIN `tabWork Order` as wo ON wo.name = pl.work_order
+            JOIN `tabMain Work Order` as mwo ON mwo.name = wo.reference_main_work_order
         """
 
         docstatus = validate_filter_field(
