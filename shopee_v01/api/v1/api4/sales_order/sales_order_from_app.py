@@ -139,7 +139,12 @@ def create_sales_order_all():
     if data:
         data = data.get('data', [])
     else:
-        return format_result(message='No data found', status_code=400, success=False, exception='No data found')
+        return format_result(
+            message='No data found',
+            status_code=400,
+            success=False,
+            exception='No data found'
+        )
 
     result = []
     success_count, fail_count = 0, 0
