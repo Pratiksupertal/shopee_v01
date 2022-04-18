@@ -82,7 +82,7 @@ jsbarcode-value="{{doc.name}}"/>
 <div class="col-xs-12">
 <table width="100%" style="table-layout: fixed;" border="1px" bordercolor="#d1d8dd">
 <tr>
-{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}
+{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
 <th class="tac" width="10%"><b>No.</b></th>
 <th class="tac" width="32%"><b>Kode Barang dan Deskripsi</b></th>
 <th class="tac" width="18%"><b>Image</b></th>
@@ -106,7 +106,7 @@ jsbarcode-value="{{doc.name}}"/>
 {% set fmt_qty = frappe.utils.fmt_money(row.qty,currency="") %}
 {% set price_tag = row.price_list_rate * row.qty %}
 {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
-{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}
+{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
 <td width="32%">{{ row.item_code or '' }} <br> {{ row.item_name}} <br>{{ row.description or '' }}</td>
 {% set fmt_price_list_rate = frappe.utils.fmt_money(row.price_list_rate,currency="") %}
 
@@ -134,7 +134,7 @@ jsbarcode-value="{{doc.name}}"/>
   {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
   {% set fmt_amt_price_amount = frappe.utils.fmt_money(amt.price_amount,currency="") %}
   <td class="tac" colspan="3">Total Quantity</td><td class="tac">{{fmt_total_qty}}</td><td></td>
-  <td class="tac" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}{{doc.currency}} {{fmt_amt_price_amount}} {% endif %}</td>
+  <td class="tac" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{fmt_amt_price_amount}} {% endif %}</td>
 </tr>
 </table>
 <div class="">
@@ -144,33 +144,33 @@ jsbarcode-value="{{doc.name}}"/>
     <table width="100%" style="table-layout: fixed;    margin-left: 15px;">
       {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
       <tr>
-        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}Total {% endif %}</b></td>
-        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}{{doc.currency}}&nbsp;{{ fmt_total or '' }}{% endif %}</td>
+        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}Total {% endif %}</b></td>
+        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}}&nbsp;{{ fmt_total or '' }}{% endif %}</td>
       </tr>
       <tr>
-        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}Diskon{% endif %}</b></td>
+        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}Diskon{% endif %}</b></td>
         {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
         {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
         {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}{% endif %}</td>
+        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}{% endif %}</td>
       </tr>
       <tr>
-        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}Total setelah Diskon{% endif %}</b></td>
+        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}Total setelah Diskon{% endif %}</b></td>
         {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
-        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}{{doc.currency}} {{ fmt_net_total }}{% endif %}</td>
+        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{ fmt_net_total }}{% endif %}</td>
       </tr>
       {% if doc.taxes_and_charges %}
       <tr>
         {% set fmt_total_taxes_and_charges = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
-        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}PPN{% endif %}</b></td>
-        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %} {{doc.currency}} {{fmt_total_taxes_and_charges}}{% endif %}
+        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}PPN{% endif %}</b></td>
+        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %} {{doc.currency}} {{fmt_total_taxes_and_charges}}{% endif %}
         </td>
       </tr>
       {% endif %}
       <tr>
-        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %}Grand Total{% endif %}</b></td>
+        <td colspan="6"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}Grand Total{% endif %}</b></td>
         {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
-        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role=="ISS Purchase User") or (role2.role=="Purchase AP") %} {{doc.currency}} {{fmt_grand_total}}{% endif %}
+        <td colspan="6" style="text-align: right;">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %} {{doc.currency}} {{fmt_grand_total}}{% endif %}
         </td>
       </tr>
     </table>
