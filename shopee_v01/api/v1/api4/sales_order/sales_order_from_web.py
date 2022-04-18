@@ -66,6 +66,7 @@ def create_sales_order_from_web():
         customer_name = customer.get("name")
         response['customer'] = customer_name
         order_data['customer'] = customer_name
+        payment_data['party'] = customer_name
 
         """step 2: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
