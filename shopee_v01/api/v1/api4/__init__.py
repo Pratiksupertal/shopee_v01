@@ -21,3 +21,4 @@ from shopee_v01.api.v1.api4.picklist import *
 from shopee_v01.api.v1.api4.sales_order import *
 from shopee_v01.api.v1.api4.stock_entry import *
 from shopee_v01.api.v1.api4.stock_transfer import *
+from shopee_v01.api.v1.api4.accounting_dimensions import *

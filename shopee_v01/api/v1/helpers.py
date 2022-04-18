@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 import json
 import time
 import frappe
@@ -317,35 +318,89 @@ def create_new_stock_entry_for_single_item(data, item):
     return new_doc_stock_entry
 
 
-def picklist_details_for_submit_picklist_and_create_stockentry(url):
-    picklist_details = requests.get(url.replace("'", '"'), headers={
-        "Authorization": frappe.request.headers["Authorization"]
-    }, data={})
-    if picklist_details.status_code != 200:
-        raise Exception("Picklist name is not found")
-    return picklist_details.json().get("data")
+def pick_list_details_with_items(pick_list):
+    """
+    1. Pick List  Details (Company, Purpose)
+    2. Pick List Items (paaarentfield: locations)
+    3. Correct the picked qty
+    """
+
+    pick_list_details = frappe.db.get_value(
+        'Pick List',
+        pick_list,
+        ['company', 'purpose'],
+        as_dict=1
+    )
+
+    if not pick_list_details:
+        raise Exception('Pick List not found.')
+
+    pick_list_items = frappe.db.get_list(
+        'Pick List Item',
+        filters={
+            'parent': pick_list,
+            'parentfield': 'locations'
+        },
+        fields=[
+            'name', 'item_code', 'item_name', 'qty', 'picked_qty'
+        ]
+    )
+
+    return pick_list_details, pick_list_items
 
 
-def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, picklist_details):
+def check_any_item_picked(pick_list_items):
+    for item in pick_list_items:
+        corrected_pick_list = item['qty'] - item['picked_qty']
+        if corrected_pick_list > 0.0:
+            return True
+    return False
+
+
+def correct_picked_qty_for_submit_pick_list(pick_list_items):
+    """Correct the picked_qty to (qty-picked_qty)"""
+    for item in pick_list_items:
+        frappe.db.set_value(
+            'Pick List Item',
+            item['name'],
+            'picked_qty',
+            item['qty'] - item['picked_qty']
+        )
+
+
+def update_endtime_and_submit_pick_list(pick_list):
+    doc_pick_list = frappe.get_doc('Pick List', pick_list)
+    doc_pick_list.end_time = frappe.utils.get_datetime()
+    doc_pick_list.docstatus = 1
+    """
+    Most Imporant:
+    Since ERP is not allowing partial pick item submission,
+    we can not use - `doc_pick_list.submit()`
+    If we use it, picked_qty will again be same as qty
+    """
+    doc_pick_list.save()
+
+
+def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, pick_list_details, pick_list_items):
     new_doc_stock_entry = frappe.new_doc('Stock Entry')
-    new_doc_stock_entry.company = picklist_details.get('company')
-    new_doc_stock_entry.purpose = picklist_details.get('purpose')
+    new_doc_stock_entry.company = pick_list_details.get('company')
+    new_doc_stock_entry.purpose = pick_list_details.get('purpose')
 
     new_doc_stock_entry.pick_list = data.get('pick_list')
 
-    for item in picklist_details.get('locations'):
-        picked_qty = item['qty'] - item['picked_qty']
-        if picked_qty <= 0.0:
+    for item in pick_list_items:
+        corrected_pick_list = item['qty'] - item['picked_qty']
+        if corrected_pick_list <= 0.0:
             continue
         new_doc_stock_entry.append("items", {
-            "item_code": item['item_code'],
-            "item_name": item['item_name'],
+            "item_code": item.get('item_code'),
+            "item_name": item.get('item_name'),
             "t_warehouse": data.get("t_warehouse"),
             "s_warehouse": data.get("s_warehouse"),
-            "qty": picked_qty
+            "qty": corrected_pick_list
         })
     if len(new_doc_stock_entry.get("items")) <= 0:
-        raise Exception('No picked items found. Can not create stock entry.')
+        raise Exception('No picked items found. Please, pick some items first.')
     new_doc_stock_entry.stock_entry_type = data.get("stock_entry_type")
     new_doc_stock_entry.save()
     new_doc_stock_entry.submit()
@@ -383,6 +438,20 @@ def get_item_bar_code(item_code):
     except Exception as e:
         print('Exception occured in fetching barcode\n------\n', str(e))
         return None
+
+
+def create_and_save_customer(base, customer_data, submit=False):
+    try:
+        url = base + '/api/resource/Customer'
+        customer_res = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        }, data=json.dumps(customer_data))
+        if customer_res.status_code != 200:
+            raise Exception()
+        customer = customer_res.json().get("data")
+        return customer
+    except Exception as e:
+        raise Exception(f'Problem in creating Customer. Reason: {str(e)}')
 
 
 def create_and_submit_sales_order(base, order_data, submit=False):
