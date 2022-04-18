@@ -1,6 +1,7 @@
 import frappe
 
-from shopee_v01.api.v1.helpers import *
+from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import get_last_parameter
 
 
 @frappe.whitelist()
@@ -15,6 +16,13 @@ def warehouses():
 
     warehouse_list = frappe.get_list('Warehouse', fields=fields)
     result = []
+
+    user = frappe.session.user
+    user_warehouses = frappe.db.sql(
+        "SELECT warehouse_id FROM `tabUser Warehouse Mapping` where user_id='{}'"
+        .format(user))
+    user_warehouses = [warehouse[0] for warehouse in user_warehouses]
+    print(user_warehouses)
 
     for i in warehouse_list:
         warehouse_areas = frappe.get_list('Warehouse', fields=[
@@ -44,10 +52,11 @@ def warehouses():
                 'update_user_id': j['modified_by'],
                 'usage_type_id': None,
                 'description': None
-            } for j in warehouse_areas]
+            } for j in warehouse_areas if j['name'] in user_warehouses]
         }
 
-        result.append(temp_dict)
+        if len(temp_dict.get('areas', [])):
+            result.append(temp_dict)
 
     return format_result(result=result, status_code=200, message='Data Found')
 
