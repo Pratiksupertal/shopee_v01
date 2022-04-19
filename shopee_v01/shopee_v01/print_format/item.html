@@ -1,76 +1,205 @@
 <style>
-	.print-format table, .print-format tr,
-	.print-format td, .print-format div, .print-format p {
+	.print-format table, .print-format tr,tabl , td , th ,
+	.print-format td, .print-format div, .print-format p , .adjust-line-height,p.solid{
 		font-family: Monospace;
 		line-height: 200%;
 		vertical-align: middle;
+        line-height: 0.3em;
+        
+        
 	}
 	table.center-bold {
-      margin-left: auto;
+
       margin-right: auto;
       font-weight: bold;
-      text-align:center;
-      font-size: 15px;
+      font-size: 10px;
+      margin-left: 4rem;
+      margin-bottom: -1rem;
+
     }
-    table.center {
-      margin-left: auto;
+    table.art-no{
+    font-size: 8px;
+    margin-bottom: -1rem;
+
+    }
+    table.front-bold{
       margin-right: auto;
-      text-align:center;
-      width: 100%;
+      font-weight: bold;
+      font-size: 8px;
+      margin-left: 0.1rem;
+      margin-bottom: 0rem;
+
+    }
+
+    .first-horizontal-line {
+        border: solid;
+        color: black;
+        margin-top: 0.1rem;
+        margin-bottom: 1rem;
+    }
+    .second-horizontal-line {
+
+        border: none;
+        border-top: 1px dotted black;
+        border-width: 2px;
+        margin-left: -.5rem;
+        margin-right: 1%;
+        margin-bottom: -0.1rem;
+    }
+
+    .barcode1{
+        height: 60px; 
+        width: 100%;
+        margin-bottom:-2rem;
+        margin-left: 0.3rem;
+
     }
     table.size {
-        font-size: 15px;
+        font-size: 8px;
+        margin-left: 0.1rem;
+        font-weight: bold;
+        margin-bottom: 0.1rem;
+
+    }
+    table.price {
+        font-size: 8px;
+        margin-left: 0.1rem;
+        font-weight: bold;
+        margin-bottom: 0.1rem;
+
     }
 	@media screen{
 	    .print-format {
-	        width: 4in;
+	        width: 1.50in; 
 	        padding: 0.25in;
-	        min-height: 5in;
+	        min-height: 2.5in;
+            border-style: solid;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+
 	    }
 	}
 
 </style>
 
 <div class="row section-break f_font">
+    <div class="adjust-line-height">
     <center>
-        <img src="https://indahsubursejati.com/wp-content/uploads/2020/02/lgs-300x200.jpeg" width="90" height="60">
+
+          
+        {% if doc.division_group == "JCA" %}
+
+         <img src="/files/JHN1.jpg" alt="" width="850" height="50">
+        
+         {% elif  doc.division_group == "FRL" %}
+         <img src="/files/JHN1.jpg" width="850" height="50">
+
+        {% elif  doc.division_group == "LAD" %}
+        <img src="/files/L-Lgs1.jpg" width="100" height="60">
+
+
+        {% elif  doc.division_group == "JEA" %}
+        <img src="/files/LGS1.jpg" width="90" height="60">
+
+        {% elif  doc.division_group == "CAS" %}
+        <img src="/files/LGS1.jpg" width="90" height="60">
+
+        {% elif  doc.division_group == "UWR" %}
+        <img src="/files/LGS1.jpg" width="90" height="60">
+
+
+        {% elif  doc.division_group == "YTH" %}
+        <img src="/files/LGS1.jpg" width="90" height="60">
+
+
+        {% elif  doc.division_group == "GIFT" %}
+        <img src="/files/LGS-Street.png" width="850" height="50">
+
+        {% elif  doc.division_group == "CCT4" %}
+        <img src="/files/LGS-Street.png" width="850" height="40">
+         
+        {% else %}
+
+        <img src="/files/LGS1.jpg" width="90" height="60">
+
+        {% endif %}
+        
     </center>
+    <hr class="first-horizontal-line"> 
+
     <table class="center-bold">
     <tr>
         <td>
-            Size: {{ doc.invent_size_id }}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Article: {{ doc.item_name }}
+            <p>
+            ART: 
+            <br>
+            &nbsp;
+            &nbsp;
+            &nbsp;
+            &nbsp;
+            <br>
+            <br>
         </td>
     </tr>
     </table>
-    <br>
+    
+    <table class="art-no">
+    <tr>
+
+        <td>
+            {{ doc.item_name }}
+            <br>
+            <br>
+            <br>
+            <br>
+    </tr>
+        </td>
+    </tr>
+    </table>
+    <table class="front-bold">
+    <tr>
+        <td>
+            Color: {{ doc.color }}
+            
+        </td>
+    </tr>
+    </table>
+
+
     <table class="size">
         <tr>
             <td>
-                Color: {{ doc.color }}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Price: Rp {{ doc.standard_rate }}
+                Size: {{ doc.invent_size_id }}
+                
             </td>
         </tr>
     </table>
-    <br>
-    <table class="center">
+
+    {% set itsvalue = doc.standard_rate %}
+    {% set fmt_value = frappe.utils.fmt_money(itsvalue,currency="") %}
+    {% set lengthvalue =  fmt_value | length %}
+
+    <table class="price">
+
         <tr>
             <td>
-                {{ doc.item_bar_code }}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                {{ doc.item_bar_code }}
+                Price:Rp {{ fmt_value[:  (lengthvalue-3)]}}
             </td>
         </tr>
     </table>
+
+    <div class="barcode">
+        <svg class="barcode1" {{ doc.item_bar_code }}</svg>
+        
+    </div>
+
+                <hr class="second-horizontal-line">
+
+    <div class="barcode">
+         
+        <svg class="barcode1" {{ doc.item_bar_code }}
+        </svg>
+    </div>
+    
+</div>
 </div>

@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 import json
 import time
 import frappe
@@ -443,6 +444,20 @@ def get_item_bar_code(item_code):
     except Exception as e:
         print('Exception occured in fetching barcode\n------\n', str(e))
         return None
+
+
+def create_and_save_customer(base, customer_data, submit=False):
+    try:
+        url = base + '/api/resource/Customer'
+        customer_res = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        }, data=json.dumps(customer_data))
+        if customer_res.status_code != 200:
+            raise Exception()
+        customer = customer_res.json().get("data")
+        return customer
+    except Exception as e:
+        raise Exception(f'Problem in creating Customer. Reason: {str(e)}')
 
 
 def create_and_submit_sales_order(base, order_data, submit=False):
