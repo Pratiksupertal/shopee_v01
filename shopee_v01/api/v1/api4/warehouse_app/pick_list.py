@@ -2,13 +2,15 @@ import frappe
 from urllib.parse import urlparse, parse_qs
 
 from shopee_v01.api.v1.helpers import format_result
-from shopee_v01.api.v1.helpers import get_base_url
 from shopee_v01.api.v1.helpers import get_last_parameter
 from shopee_v01.api.v1.helpers import get_item_bar_code
 from shopee_v01.api.v1.helpers import cleanhtml
 from shopee_v01.api.v1.helpers import picklist_item
 from shopee_v01.api.v1.helpers import create_new_stock_entry_for_single_item
-from shopee_v01.api.v1.helpers import picklist_details_for_submit_picklist_and_create_stockentry
+from shopee_v01.api.v1.helpers import pick_list_details_with_items
+from shopee_v01.api.v1.helpers import check_any_item_picked
+from shopee_v01.api.v1.helpers import correct_picked_qty_for_submit_pick_list
+from shopee_v01.api.v1.helpers import update_endtime_and_submit_pick_list
 from shopee_v01.api.v1.helpers import create_and_submit_stock_entry_submit_picklist_and_create_stockentry
 
 from shopee_v01.api.v1.validations import validate_data
@@ -137,7 +139,7 @@ def picklist_details_for_warehouse_app():
             'Pick List',
             pick_list,
             ['name', 'docstatus', 'purpose', 'customer', 'creation',
-             'modified', 'picker', 'start_time'],
+             'modified', 'picker', 'start_time', 'end_time'],
             as_dict=1
         )
 
@@ -296,31 +298,50 @@ def submit_picklist_and_create_stockentry():
 
     @lookup
     - Only assigned picker can submit the pick list
+    - At least one item has to be picked with some quantity
+    - Partial picking allowed
     - Auto correct the picked qty again
     """
     try:
         data = validate_data(frappe.request.data)
         data_validation_for_submit_picklist_and_create_stockentry(data=data)
 
-        base = get_base_url(url=frappe.request.url)
-        url = base + '/api/resource/Pick%20List/' + data.get('pick_list')
+        """GET Pick List Details and Items"""
+        pick_list_details, pick_list_items = pick_list_details_with_items(
+            pick_list=data.get('pick_list')
+        )
 
-        """GET Pick List Details"""
-        picklist_details = picklist_details_for_submit_picklist_and_create_stockentry(url=url)
+        """If any of the items not picked, do no proceed."""
+        is_item_picked = check_any_item_picked(
+            pick_list_items=pick_list_items
+        )
+        if not is_item_picked:
+            raise Exception('No picked items found. Please, pick some items first.')
+
+        """Correct picked qty"""
+        correct_picked_qty_for_submit_pick_list(
+            pick_list_items=pick_list_items
+        )
+
+        """Update end time picking and submit pick list"""
+        update_endtime_and_submit_pick_list(
+            pick_list=data.get('pick_list')
+        )
+
+        """If pick list is not submitted, do not create stock entry"""
+        pick_list_status = frappe.db.get_value('Pick List', data.get('pick_list'), 'docstatus')
+        if pick_list_status != 1:
+            correct_picked_qty_for_submit_pick_list(
+                pick_list_items=pick_list_items
+            )
+            raise Exception('Pick List submission failed. Can not create stock entry.')
 
         """Create new stick entry, save and submit"""
         new_doc_stock_entry = create_and_submit_stock_entry_submit_picklist_and_create_stockentry(
             data=data,
-            picklist_details=picklist_details
+            pick_list_details=pick_list_details,
+            pick_list_items=pick_list_items
         )
-
-        """Correct picked qty"""
-        for item in picklist_details.get('locations'):
-            picked_qty = item['qty'] - item['picked_qty']
-            frappe.db.set_value('Pick List Item', item['name'], 'picked_qty', picked_qty)
-
-        """Submit Pick List"""
-        frappe.db.set_value('Pick List', picklist_details['name'], 'docstatus', 1)
 
         return format_result(
             result={'stock entry': new_doc_stock_entry.name,

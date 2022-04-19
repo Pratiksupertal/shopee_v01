@@ -18,3 +18,8 @@ from shopee_v01.api.v1.api4.warehouse_app.stock_entry import stock_entry_details
 from shopee_v01.api.v1.api4.warehouse_app.stock_entry import filter_receive_at_warehouse_for_packing_area
 
 from shopee_v01.api.v1.api4.warehouse_app.delivery_note import create_delivery_note_from_pick_list
+
+
+"""import all apis from manufacturing"""
+
+from shopee_v01.api.v1.api4.warehouse_app.manufacturing import *
