@@ -11,7 +11,9 @@ def warehouses():
     Using in Mobile App (flow: login -> Receiving -> PO -> Supplier DO -> Target warehouse)
     There will show all the warehouse mapped with logged in user (Warehouse and User Mapping)
     """
-    user_warehouses = get_user_mapped_warehouses()
+    user_warehouses = get_user_mapped_warehouses(
+        user=frappe.session.user
+    )
     warehouse_areas = frappe.get_list(
         'Warehouse',
         fields=[
