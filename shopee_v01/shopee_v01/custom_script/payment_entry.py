@@ -114,4 +114,16 @@ def get_outstanding_reference_documents(args):
 	if not data:
 		frappe.msgprint(("No outstanding invoices found for the {0} {1} which qualify the filters you have specified.")
 			.format(args.get("party_type").lower(), frappe.bold(args.get("party"))))
+
+	total_invoice_amount = 0
+	total_outstanding_amount = 0
+
+	for current_data in data:
+		total_invoice_amount += current_data['invoice_amount']
+		total_outstanding_amount += current_data['outstanding_amount']
+	if args.get('additional_view') == 1:
+		new_data = [{'voucher_no': None, 'voucher_type': 'Sales Invoice', 'posting_date': None,
+					 'invoice_amount': total_invoice_amount, 'payment_amount': 0,'outstanding_amount': total_outstanding_amount,
+					 'due_date': None, 'currency': 'IDR', 'exchange_rate': 1}]
+		return new_data
 	return data

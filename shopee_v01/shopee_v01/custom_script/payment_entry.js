@@ -28,6 +28,7 @@ frappe.ui.form.on('Payment Entry', {
 			{fieldtype:"Data", label: __("Department Category"), options: 'Department Category', fieldname:"department_category"},
 			{fieldtype:"Section Break"},
 			{fieldtype:"Check", label: __("Allocate Payment Amount"), fieldname:"allocate_payment_amount", default:1},
+			{fieldtype:"Check", label: __("Additional Sales Invoice View"), fieldname:"additional_view"},
 		];
 
 		frappe.prompt(fields, function(filters){
