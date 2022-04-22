@@ -7,7 +7,9 @@
   "item_label",
   "item_code",
   "operation",
-  "operation_details"
+  "operation_details",
+  "column_break_5",
+  "supplied_qty"
  ],
  "fields": [
   {
@@ -35,10 +37,19 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Operation Details"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplied_qty",
+   "fieldtype": "Int",
+   "label": "Supplied Qty"
   }
  ],
  "istable": 1,
- "modified": "2021-09-07 15:43:00.223399",
+ "modified": "2022-04-22 13:55:50.468739",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Required Item",
