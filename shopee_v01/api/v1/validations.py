@@ -14,7 +14,28 @@ def validate_data(data):
         return "Invalid JSON submitted"
 
 
-def data_validation_for_create_sales_order_web(order_data, payment_data):
+def data_validation_for_create_sales_order_web(customer_data, order_data, payment_data):
+    if not customer_data.get('customer_name'):
+        raise Exception('Customer name is required')
+    if not customer_data.get('customer_type'):
+        raise Exception('Customer type is required')
+    if not customer_data.get('customer_group'):
+        raise Exception('Customer group is required')
+    if not customer_data.get('territory'):
+        raise Exception('Customer territory is required')
+    if not customer_data.get('email_id'):
+        raise Exception('Customer email id is required')
+    if not customer_data.get('mobile_no'):
+        raise Exception('Customer mobile no is required')
+    if not customer_data.get('address_type'):
+        raise Exception('Customer address type is required')
+    if not customer_data.get('address_line1'):
+        raise Exception('Customer address line 1 is required')
+    if not customer_data.get('city'):
+        raise Exception('Customer city is required')
+    if not customer_data.get('country'):
+        raise Exception('Customer country is required')
+
     if not order_data.get("delivery_date"):
         order_data["delivery_date"] = today()
     if not order_data.get("items"):

@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 import json
 import time
 import frappe
@@ -48,7 +49,11 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
     indicator = "green" if success else "red"
     raise_exception = 1 if exception else 0
 
-    return {
+    response = {}
+    if isinstance(result, list):
+        response["count"] = 0 if not result else len(result)
+
+    response.update({
         "success": success,
         "message": cleanhtml(message),
         "status_code": str(status_code),
@@ -60,7 +65,9 @@ def format_result(success=None, result=None, message=None, status_code=None, exc
                 "raise_exception": raise_exception
             }
         ]
-    }
+    })
+
+    return response
 
 
 def get_last_parameter(url, link):
@@ -439,6 +446,20 @@ def get_item_bar_code(item_code):
         return None
 
 
+def create_and_save_customer(base, customer_data, submit=False):
+    try:
+        url = base + '/api/resource/Customer'
+        customer_res = requests.post(url.replace("'", '"'), headers={
+            "Authorization": frappe.request.headers["Authorization"]
+        }, data=json.dumps(customer_data))
+        if customer_res.status_code != 200:
+            raise Exception()
+        customer = customer_res.json().get("data")
+        return customer
+    except Exception as e:
+        raise Exception(f'Problem in creating Customer. Reason: {str(e)}')
+
+
 def create_and_submit_sales_order(base, order_data, submit=False):
     try:
         url = base + '/api/resource/Sales%20Order'
@@ -570,3 +591,13 @@ def handle_empty_error_message(response, keys, *args, **kwargs):
             return key.replace('_', ' ').title() + ' creation failed. ' + suggestion
     else:
         return 'Something went wrong. Please, check the data you provided.'
+
+
+def validate_filter_field(filterfield, value, datatype=str):
+    if not value:
+        return None
+    try:
+        value = datatype(value[0])
+        return value
+    except Exception as err:
+        raise Exception(f"{filterfield} datatype is not correct. {str(err)}")
