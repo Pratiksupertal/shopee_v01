@@ -9,7 +9,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, get_link_to_form
 # import frappe
 
-class DeliveryNoteShopee(Document):
+class DeliveryNoteISS(Document):
 	pass
 
 @frappe.whitelist()

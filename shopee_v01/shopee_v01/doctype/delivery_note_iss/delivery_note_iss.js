@@ -1,4 +1,4 @@
-frappe.ui.form.on('Delivery Note Shopee', {
+frappe.ui.form.on('Delivery Note ISS', {
   	// refresh: function(frm) {
     refresh(frm) {
             frm.add_custom_button(__('Purchase Order'),
@@ -34,7 +34,7 @@ frappe.ui.form.on('Delivery Note Shopee', {
                   for (var ia = 0; ia < selections.length; ia=ia+1) {
                     console.log(selections);
                       frappe.call({
-                          method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_purchase_order",
+                          method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_purchase_order",
                           args: {
                               name: selections[ia]
                           },
@@ -69,7 +69,7 @@ frappe.ui.form.on('Delivery Note Shopee', {
                   for (var ia = 0; ia < selections.length; ia=ia+1) {
                     console.log(selections);
                       frappe.call({
-                          method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_purchase_order",
+                          method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_purchase_order",
                           args: {
                               name: selections[ia]
                           },
@@ -121,7 +121,7 @@ frappe.ui.form.on('Delivery Note Shopee', {
                       console.log(selections);
                       console.log(frm.doc.accessories_type);
                         frappe.call({
-                            method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_CMT",
+                            method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_CMT",
                             args: {
                                 name: selections[ia],
                                 accessories_type:frm.doc.accessories_type
@@ -163,7 +163,7 @@ frappe.ui.form.on('Delivery Note Shopee', {
                     console.log("Total Qty di sini 2:");
                     console.log(tot_qty);
                     frappe.call({
-                        method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_CMT_Address_Supplier",
+                        method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_CMT_Address_Supplier",
                         args: {
                             name: selections[ia]
                         },
