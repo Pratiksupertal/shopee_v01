@@ -13,6 +13,7 @@
   "naming_series",
   "customer",
   "customer_name",
+  "warehouse_head",
   "supplier",
   "column_break1",
   "amended_from",
@@ -1340,11 +1341,17 @@
    "print_width": "150px",
    "read_only": 1,
    "width": "150px"
+  },
+  {
+   "fieldname": "warehouse_head",
+   "fieldtype": "Select",
+   "label": "Warehouse Head",
+   "options": "Hendra\nAditya\nSusilo"
   }
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2022-04-26 22:36:24.631248",
+ "modified": "2022-05-05 18:53:23.361647",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Delivery Note ISS",

@@ -131,7 +131,7 @@
 
     </tr>
 {% for row in doc.items %}
-<tr>
+    <tr>
         <td class="tac" width="5%">{{ row.idx or '' }}</td>
         <td width="30%">{{ row.item_code or '' }}</td>
         <td width="50%">{{ row.description or '' }}</td>
@@ -150,12 +150,22 @@
 <div class="row section-break f_font">
 <div class="col-xs-12">
 <table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
 
+<tr><td colspan="12" height="70px"></td></tr>
+{% set username = ""%}
+{% if frappe.session.user != "Administrator" %}
+{% set user = frappe.get_doc('User', frappe.session.user)%}
+{% set username= user.full_name %} {% endif%}
+{% if frappe.session.user == "Administrator"%}
+{% set username= frappe.session.user %} {% endif%}
 <tr>
-<td colspan="3" class="tac">Tanda Terima</td>
-<td colspan="3" class="tac"></td>
-<td colspan="3" class="tac"></td>
-<td colspan="3" class="tac">Hormat Kami</td>
+<!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
+<td colspan="3" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+<td colspan="3" class="tac "></td>
+<td colspan="3" class="tac "><u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.warehouse_head }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></td>
+<td colspan="3" class="tac "></td>
 </tr>
 </table>
 </div>
@@ -168,15 +178,24 @@
 <br>
 <br>
 <br>
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 <div class="row section-break f_font">
 <div class="col-xs-12">
 <table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
+<tr><td colspan="12" height="70px"></td></tr>
 <tr>
-<td colspan="3" class="tac ">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</td>
-<td colspan="3" class="tac " style=""></td>
-<td colspan="3" class="tac " style=""></td>
-<td colspan="3" class="tac ">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</td>
+<td colspan="4" class="tac"><b>Dibuat Oleh</b></td>
+<td colspan="4" class="tac "><b>Ekspedisi</b></td>
+<td colspan="4" class="tac "><b>Kepala Gudang</b></td>
+<td colspan="4" class="tac "><b>Diterima Oleh</b></td>
 </tr>
 </table>
 </div>
