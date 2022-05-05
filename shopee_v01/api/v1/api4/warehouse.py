@@ -1,55 +1,40 @@
 import frappe
 
-from shopee_v01.api.v1.helpers import *
+from shopee_v01.api.v1.helpers import format_result
+from shopee_v01.api.v1.helpers import get_last_parameter
+from shopee_v01.api.v1.helpers import get_user_mapped_warehouses
 
 
 @frappe.whitelist()
 def warehouses():
-    fields = [
-        'idx',
-        'warehouse_name',
-        'name',
-        'parent',
-        'warehouse_type',
-    ]
-
-    warehouse_list = frappe.get_list('Warehouse', fields=fields)
-    result = []
-
-    for i in warehouse_list:
-        warehouse_areas = frappe.get_list('Warehouse', fields=[
+    """
+    Using in Mobile App (flow: login -> Receiving -> PO -> Supplier DO -> Target warehouse)
+    There will show all the warehouse mapped with logged in user (Warehouse and User Mapping)
+    """
+    user_warehouses = get_user_mapped_warehouses(
+        user=frappe.session.user
+    )
+    warehouse_areas = frappe.get_list(
+        'Warehouse',
+        fields=[
             "idx",
-            "warehouse_id",
             "name",
-            # "usage_type_id",
-            # "description",
+            "warehouse_id",
             "creation",
             "owner",
             "modified",
-            "modified_by"
-        ], filters={'parent_warehouse': i['name']})
-
-        temp_dict = {
-            "id": str(i['idx']),
-            "name": i['warehouse_name'],
-            "code": i['name'],
-            "description": None,
-            "areas": [{
-                'id': j['idx'],
-                'warehouse_id': j['warehouse_id'],
-                'name': j['name'],
-                'create_time': j['creation'],
-                'update_time': j['modified'],
-                'create_user_id': j['owner'],
-                'update_user_id': j['modified_by'],
-                'usage_type_id': None,
-                'description': None
-            } for j in warehouse_areas]
+            "modified_by",
+            "parent"
+        ],
+        filters={
+            "name": ["in", user_warehouses]
         }
-
-        result.append(temp_dict)
-
-    return format_result(result=result, status_code=200, message='Data Found')
+    )
+    return format_result(
+        result=warehouse_areas,
+        status_code=200,
+        message='Data Found'
+    )
 
 
 @frappe.whitelist()
@@ -82,4 +67,8 @@ def warehouseAreas():
         }
         result.append(temp_dict)
 
-    return format_result(result=result, status_code=200, message='Data Found')
+    return format_result(
+        result=result,
+        status_code=200,
+        message='Data Found'
+    )

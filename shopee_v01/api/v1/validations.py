@@ -1,11 +1,41 @@
 import frappe
+import json
 from frappe.utils import today
-from frappe import _
 
 
-def data_validation_for_create_sales_order_web(order_data, payment_data):
-    if not order_data.get("delivery_date"):
-        order_data["delivery_date"] = today()
+def validate_data(data):
+    if not data:
+        return data
+    if not len(data):
+        return data
+    try:
+        return json.loads(data)
+    except ValueError:
+        return "Invalid JSON submitted"
+
+
+def data_validation_for_create_sales_order_web(customer_data, order_data, payment_data):
+    if not customer_data.get('customer_name'):
+        raise Exception('Customer name is required')
+    if not customer_data.get('customer_type'):
+        raise Exception('Customer type is required')
+    if not customer_data.get('customer_group'):
+        raise Exception('Customer group is required')
+    if not customer_data.get('territory'):
+        raise Exception('Customer territory is required')
+    if not customer_data.get('email_id'):
+        raise Exception('Customer email id is required')
+    if not customer_data.get('mobile_no'):
+        raise Exception('Customer mobile no is required')
+    if not customer_data.get('address_type'):
+        raise Exception('Customer address type is required')
+    if not customer_data.get('address_line1'):
+        raise Exception('Customer address line 1 is required')
+    if not customer_data.get('city'):
+        raise Exception('Customer city is required')
+    if not customer_data.get('country'):
+        raise Exception('Customer country is required')
+
     if not order_data.get("delivery_date"):
         order_data["delivery_date"] = today()
     if not order_data.get("items"):
@@ -40,7 +70,7 @@ def data_validation_for_create_receive_at_warehouse(data):
         raise Exception("Required data missing : Stock Entry Type name is required")
     if not data.get("t_warehouse"):
         raise Exception("Required data missing : Target Warehouse is required")
-    
+
     outgoing_stock_entry = frappe.get_list("Stock Entry", {"outgoing_stock_entry": data.get("outgoing_stock_entry")})
     if len(outgoing_stock_entry) > 0:
         raise Exception('Received at warehouse is already done for this Stock entry')
@@ -60,6 +90,10 @@ def data_validation_for_save_picklist_and_create_stockentry(data):
     if not data.get("stock_entry_type"):
         raise Exception("Required data missing : Stock entry type is required")
 
+    picker = frappe.db.get_value('Pick List', data.get("pick_list"), 'picker')
+    if not frappe.session.user or not picker or frappe.session.user != picker:
+        raise Exception("You are not authorized to do this.")
+
 
 def data_validation_for_submit_picklist_and_create_stockentry(data):
     if not data.get("pick_list"):
@@ -70,6 +104,11 @@ def data_validation_for_submit_picklist_and_create_stockentry(data):
         raise Exception("Required data missing : Source Warehouse is required")
     if not data.get("t_warehouse"):
         raise Exception("Required data missing : Target Warehouse is required")
+
+    picker = frappe.db.get_value('Pick List', data.get("pick_list"), 'picker')
+    print('\n\n\n', frappe.session.user, '\n\n\n', picker, '\n\n\n')
+    if not frappe.session.user or not picker or frappe.session.user != picker:
+        raise Exception("You are not authorized to do this.")
 
 
 def data_validation_for_assign_picker(data):
@@ -97,9 +136,9 @@ def data_validation_for_stock_entry_receive_at_warehouse(data):
     if not data.get("items"):
         raise Exception("Required data missing (Items are required)")
     for item in data['items']:
-            if not item.get("item_code"):
-                raise Exception("Required data missing (Item code is required)")
-            if not item.get("t_warehouse"):
-                raise Exception("Required data missing (Target Warehouse is required)")
-            if not item.get("qty"):
-                raise Exception("Required data missing (Qty is required)")
+        if not item.get("item_code"):
+            raise Exception("Required data missing (Item code is required)")
+        if not item.get("t_warehouse"):
+            raise Exception("Required data missing (Target Warehouse is required)")
+        if not item.get("qty"):
+            raise Exception("Required data missing (Qty is required)")
