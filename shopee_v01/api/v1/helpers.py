@@ -601,3 +601,11 @@ def validate_filter_field(filterfield, value, datatype=str):
         return value
     except Exception as err:
         raise Exception(f"{filterfield} datatype is not correct. {str(err)}")
+
+
+def get_user_mapped_warehouses(user=frappe.session.user):
+    user_warehouses = frappe.db.sql(
+        "SELECT warehouse_id FROM `tabUser Warehouse Mapping` where user_id='{}'"
+        .format(user))
+    user_warehouses = [warehouse[0] for warehouse in user_warehouses]
+    return user_warehouses
