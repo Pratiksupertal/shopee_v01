@@ -35,7 +35,7 @@ def get_summary_sales_order(doc):
 
 def get_reserved_qty(item_code, warehouse="Delivery Area - ISS"):
     """warehouse is hard coded as per Mr. Albert's instructions"""
-	reserved_qty = frappe.db.sql("""
+    reserved_qty = frappe.db.sql("""
 		select
 			sum(dnpi_qty * ((so_item_qty - so_item_delivered_qty) / so_item_qty))
 		from
@@ -76,5 +76,4 @@ def get_reserved_qty(item_code, warehouse="Delivery Area - ISS"):
 		where
 			so_item_qty >= so_item_delivered_qty
 	""", (item_code, warehouse, item_code, warehouse))
-
-	return flt(reserved_qty[0][0]) if reserved_qty else 0
+    return flt(reserved_qty[0][0]) if reserved_qty else 0
