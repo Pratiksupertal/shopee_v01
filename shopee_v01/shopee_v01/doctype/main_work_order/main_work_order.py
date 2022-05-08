@@ -69,6 +69,7 @@ class MainWorkOrder(Document):
 				})
 				doc.reference_main_work_order = self.name
 				tax_category = frappe.get_value("Supplier",doc.supplier,"tax_category")
+
 				taxes_and_charges = frappe.get_doc('Purchase Taxes and Charges Template',{"tax_category":tax_category})
 				tax_template = frappe.get_doc('Purchase Taxes and Charges Template', taxes_and_charges.name)
 				doc.append("taxes",{
@@ -88,12 +89,27 @@ class MainWorkOrder(Document):
 				if doc.is_subcontracted == "Yes":
 					doc.reserve_warehouse = self.source_warehouse
 					supp_items = doc.get("supplied_items")
+					supplied_qty = {}
+					doc.total_supplied_amount = 0
+					for i,val in enumerate(self.required_item):
+						supplied_qty[val.item_code]= val.supplied_qty
 					for d in supp_items:
+						d.supplied_qty = supplied_qty[d.rm_item_code]
 						d.reserve_warehouse = self.source_warehouse
+						d.supplied_qty_amount = d.supplied_qty * d.rate
+						d.rate = 5000
+						doc.total_supplied_amount = doc.total_supplied_amount + d.supplied_qty_amount
+					doc.total_supplied_amount_with_tax = doc.total_supplied_amount + (doc.total_supplied_amount * tax_template.taxes[0].rate)
+					
 				doc.save()
 				doc.submit()
-
-
+				doc1 = frappe.get_doc("Purchase Order", doc.name)
+				doc1.title     # I not sure what to type here
+				doc1.grand_total = doc.grand_total - doc.total_supplied_amount_with_tax
+				doc1.rounded_total = doc1.grand_total
+				from frappe.utils import money_in_words
+				doc1.in_words = money_in_words(doc1.grand_total, "IDR")
+				doc1.save()
 
 	def on_submit(self):
 		# External production will create new purchase order.
@@ -342,6 +358,3 @@ def stop_job_cards(in_progress_job_card_list):
 		frappe.msgprint("Operation failed. No Job Card is selected.")
 	else:
 		frappe.msgprint("<br>".join(response))
-
-
-
