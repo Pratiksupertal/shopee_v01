@@ -42,7 +42,8 @@ def login():
             "id": str(user_data.idx),
             "username": str(user_data.username),
             "api_key": str(user_data.api_key + ':' + api_secret['message']['api_secret']),
-            "warehouse_id": str(warehouse_id)
+            "warehouse_id": str(warehouse_id),
+            "user_roles": api_secret['message']['user_roles']
         })
     except Exception as e:
         return format_result(status_code=403, message=f'Login Failed. {str(e)}', exception=str(e))

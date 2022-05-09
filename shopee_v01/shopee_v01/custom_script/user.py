@@ -28,5 +28,8 @@ def generate_keys(user):
 
         user_details.api_secret = api_secret
         user_details.save()
-        return {"api_secret": api_secret}
+        return {
+            "api_secret": api_secret,
+            "user_roles": user_roles
+        }
     frappe.throw(frappe._("Not Permitted"), frappe.PermissionError)
