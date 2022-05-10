@@ -176,8 +176,5 @@ override_whitelisted_methods = {
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 override_doctype_dashboards = {
-    "Purchase Order": "shopee_v01.utils.get_po_dashboard_data"
+    "Purchase Order": "shopee_v01.shopee_v01.custom_script.custom_dashboard.get_po_dashboard_data"
 }
-
-
-
