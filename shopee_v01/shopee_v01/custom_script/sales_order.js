@@ -11,6 +11,7 @@ frappe.ui.form.on('Sales Order Item', {
                         frappe.model.set_value(row.doctype, row.name, "invent_size_id", resp[0]);
                         frappe.model.set_value(row.doctype, row.name, "basic_rate", resp[1]);
                         frappe.model.set_value(row.doctype, row.name, "available_qty", resp[2]);
+                        frappe.model.set_value(row.doctype, row.name, "actual_available_qty", resp[2]-resp[3]);
               }
         });
     }
