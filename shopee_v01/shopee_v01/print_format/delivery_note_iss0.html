@@ -7,7 +7,6 @@
 {% if doc.accessories_type[:4] == "WASH" %}
     {% set accessories_type = "WASH" %}
 {% endif %}
-{% set lengthvalue =  doc.art_no_size_qty | length %}
 <div class="print-heading">
   <h2>Delivery Note {{ accessories_type }}<br><small>{{ doc.name }}</small>
   </h2>
@@ -64,18 +63,6 @@
 		</table>
   </div>
 </div>
-{% if accessories_type == "Accessories" %}
-  <div class="row section-break f_font">
-    <div class="col-xs-6"></div>
-    <div class="col-xs-6">
-      <table width="100%" style="table-layout: fixed;">
-        <tr>
-          <td width="40%">{{doc.art_no_size_qty[0:lengthvalue-1]}}</td>
-        </tr>
-      </table>
-    </div>
-  </div>
-{% endif %}
 <div class="row section-break f_font">
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
@@ -130,17 +117,27 @@
     </table>
   </div>
 </div>
+<div class="row section-break f_font">
+  <div class="col-xs-12">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="30%"><b>Notes</b></td>
+        <td width="70%"><b>{{ doc.notes or '' }}</b></td>
+      </tr>
+    </table>
+  </div>
+</div>
 
 {% set disc=namespace(discount=0) %}
 {% set amt=namespace(price_amount=0) %}
 {% set uom=namespace(uom_name="") %}
-
+{% set tot_qty = 0 %}
 <br><table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
     <tr>
         <th class="tac" width="5%"><b>No.</b></th>
         <th class="tac" width="30%"><b>Kode Barang</b></th>
         <th class="tac" width="25%"><b>Deskripsi</b></th>
-        <th class="tac" width="25%"><b>Notes</b></th>
+        <th class="tac" width="25%"><b>Remarks</b></th>
         <th class="tac" width="15%"><b>Quantity</b></th>
         <!--<th class="tac" width="%"><b>Deskripsi</b></th>-->
 
@@ -153,13 +150,14 @@
         <td width="25%">{{ row.description or '' }}</td>
         <td width="25%">{{ row.remarks or '' }}</td>
         <td class="tac" width="15%"> {{row.qty}}&nbsp; {{ row.uom or 0}}</td>
+        {% set tot_qty = tot_qty + 200 %}
 		<!--<td width="30%">{{ row.description or '' }}</td>-->
 
     </tr>
 {% endfor %}
   <tr>
-    <td class="tac" colspan="4">Total Quantity</td>
-    <td class="tac">{{ doc.total_qty or '' }}&nbsp;{{uom.uom_name}}</td>
+    <td class="tac" colspan="3">Total Quantity</td>
+    <td class="tac">{{ tot_qty or '' }}&nbsp;{{uom.uom_name}}</td>
   </tr>
 </table>
 <br>

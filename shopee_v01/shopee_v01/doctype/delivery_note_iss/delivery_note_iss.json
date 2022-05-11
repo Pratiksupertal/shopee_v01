@@ -156,7 +156,10 @@
   "mwo_email_id",
   "mwo_phone",
   "mwo_name",
-  "mwo_total_qty"
+  "mwo_total_qty",
+  "art_no_size_qty",
+  "art_no_size",
+  "art_no_quantity"
  ],
  "fields": [
   {
@@ -569,7 +572,7 @@
    "label": "Items",
    "oldfieldname": "delivery_note_details",
    "oldfieldtype": "Table",
-   "options": "Delivery Note Item",
+   "options": "Delivery Note Item ISS",
    "reqd": 1
   },
   {
@@ -1347,11 +1350,26 @@
    "fieldtype": "Select",
    "label": "Warehouse Head",
    "options": "Hendra\nAditya\nSusilo"
+  },
+  {
+   "fieldname": "art_no_size_qty",
+   "fieldtype": "Data",
+   "label": "Art No Size Quantity"
+  },
+  {
+   "fieldname": "art_no_size",
+   "fieldtype": "Data",
+   "label": "Art No size"
+  },
+  {
+   "fieldname": "art_no_quantity",
+   "fieldtype": "Data",
+   "label": "Art No Quantity"
   }
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2022-05-05 18:53:23.361647",
+ "modified": "2022-05-11 13:24:08.727339",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Delivery Note ISS",

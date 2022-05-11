@@ -734,13 +734,15 @@
    "print_hide": 1
   },
   {
+   "columns": 5,
    "fieldname": "remarks",
    "fieldtype": "Data",
-   "label": "Remarks"
+   "in_list_view": 1,
+   "label": "Notes"
   }
  ],
  "istable": 1,
- "modified": "2022-05-05 16:41:26.751967",
+ "modified": "2022-05-11 13:54:45.250737",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Delivery Note Item ISS",
