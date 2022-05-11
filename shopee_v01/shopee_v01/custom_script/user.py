@@ -10,6 +10,8 @@ def generate_keys(user):
     modified by: Amirul Islam (9 May, 2022)
     original path: /api/method/frappe.core.doctype.user.user.generate_keys
     updates: added more role (Warehouse Login)
+
+    notes: Project manager told to make it faster, so we made the hacks in just code
     """
     allowed_roles = ["System Manager", "Warehouse Login"]
     user_roles = frappe.get_roles()
