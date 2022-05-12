@@ -117,7 +117,7 @@ frappe.ui.form.on('Delivery Note ISS', {
                 }else{
                     var tot_qty = 0;
 				            var tot_amount = 0;
-                    var notes = "Size/Qty :";
+                    var notes = "Size/Qty : ";
                     for (var ia = 0; ia < selections.length; ia=ia+1) {
                       console.log(selections);
                       console.log(frm.doc.accessories_type);
@@ -169,7 +169,7 @@ frappe.ui.form.on('Delivery Note ISS', {
                             console.log(res2.message.length);
                             if (res2 && res2.message){
                 									for (var i = 0; i<res2.message.length; i=i+1) {
-                                      notes = notes + res2.message[i].art_no_size;
+                                      notes = notes + " " + res2.message[i].art_no_size;
                                       notes = notes + "(" + res2.message[i].art_no_quantity + "),";
                 									}
                                 }
