@@ -188,8 +188,6 @@ frappe.ui.form.on('Delivery Note ISS', {
                             console.log(res2.message.length);
                             if (res2 && res2.message){
                                 for (var i = 0; i<res2.message.length; i=i+1) {
-									                  console.log(res2.message[i].supplier);
-                                    console.log(res2.message[i].supplier_address);
                                     console.log("Total Qty di sini 3:");
                                     console.log(tot_qty);
                                     frm.set_value({mwo_name: res2.message[i].name,supplier: res2.message[i].supplier, supplier_address: res2.message[i].supplier_address,company: res2.message[i].company,po_address_display: res2.message[i].address_display,po_contact_person: res2.message[i].contact_person,total: tot_amount,grand_total: tot_amount,total_qty: tot_qty,rounded_total: tot_amount,art_no_size_qty: notes});
