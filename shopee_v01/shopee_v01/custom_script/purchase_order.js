@@ -203,6 +203,7 @@ frappe.ui.form.on("Purchase Order Item", {
   },
 });
 
+
 erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend({
 	refresh: function(doc, cdt, cdn) {
 		var me = this;
@@ -428,3 +429,43 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 
 // for backward compatibility: combine new and previous states
 $.extend(cur_frm.cscript, new erpnext.buying.PurchaseOrderController({frm: cur_frm}));
+
+
+frappe.ui.form.on('Purchase Order', {
+	refresh:function(frm){
+	    if(frm.doc.docstatus==1){
+          var start_btn = frm.add_custom_button(__('Create Pick List'), function() {
+                frm.trigger("create_pick_list");
+          });
+          start_btn.addClass('btn-primary');
+        }
+    },
+
+    create_pick_list: function(frm, purpose='Material Transfer for Manufacture') {
+        let pick_list_data = [];
+        let max_qty = frm.doc.total_qty/frm.doc.items.length
+        const dialog = frappe.prompt({
+            fieldname: 'input_qty',
+            fieldtype: 'Data',
+            label: __('Qty for Material Transfer for Manufacture'),
+            description: __('Max: {0}', [max_qty]),
+            data: pick_list_data,
+            in_place_edit: true,
+            get_data: function() {
+
+            return pick_list_data;
+            }
+            }, function(data) {
+            console.log(data.input_qty);
+            frappe.call({
+             method: "shopee_v01.shopee_v01.custom_script.purchase_order.create_pick_list",
+             args: {
+                'source_name': frm.doc.name,
+                'input_qty': data.input_qty,
+                'total_qty': frm.doc.total_qty
+             }
+            });
+        }, __("Create Pick List"), __("Create"));
+    },
+});
+
