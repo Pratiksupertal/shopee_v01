@@ -311,7 +311,8 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 		var items = $.map(cur_frm.doc.items, function(d) { return d.bom ? d.item_code : false; });
 		var me = this;
 
-		if(items.length >= 1){
+		// new column added -> supplied_qty
+    if(items.length >= 1){
 			me.raw_material_data = [];
 			me.show_dialog = 1;
 			let title = __('Transfer Material to Supplier');
@@ -338,6 +339,14 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 						read_only:1,
 						fieldname:'qty',
 						label: __('Quantity'),
+						read_only:1,
+						in_list_view:1
+					},
+          {
+						fieldtype:'Float',
+						read_only:1,
+						fieldname:'supplied_qty',
+						label: __('Supplied Qty'),
 						read_only:1,
 						in_list_view:1
 					},
@@ -381,7 +390,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 			title: title, fields: fields
 		});
 
-		// updating the qty to supplied_qty from (item.required_qty - item.supplied_qty)
+		// updating the new column -> supplied_qty
 		if (me.frm.doc['supplied_items']) {
 			me.frm.doc['supplied_items'].forEach((item, index) => {
 			if (item.rm_item_code && item.main_item_code && item.supplied_qty != 0) {
@@ -390,7 +399,8 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 						'item_code': item.main_item_code,
 						'rm_item_code': item.rm_item_code,
 						'item_name': item.rm_item_code,
-						'qty': item.supplied_qty,
+						'qty': item.required_qty - item.supplied_qty,
+            'supplied_qty': item.supplied_qty,
 						'warehouse':item.reserve_warehouse,
 						'rate':item.rate,
 						'amount':item.amount,
@@ -408,6 +418,8 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 			me.values = me.dialog.get_values();
 			if(me.values) {
 				me.values.sub_con_rm_items.map((row,i) => {
+          // qty updated with supplied qty before creating stock entry
+          row.qty = row.supplied_qty;
 					if (!row.item_code || !row.rm_item_code || !row.warehouse || !row.qty || row.qty === 0) {
 						frappe.throw(__("Item Code, warehouse, quantity are required on row" + (i+1)));
 					}
