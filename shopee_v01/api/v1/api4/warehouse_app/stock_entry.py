@@ -75,12 +75,13 @@ def filter_stock_entry_for_warehouse_app():
             se['sales_order'] = sales_order
 
             so_data = frappe.db.get_value(
-                'Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner']
+                'Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner', 'external_so_number']
             )
             if so_data:
                 se['transaction_date'] = so_data[0]
                 se['delivery_date'] = so_data[1]
                 se['so_created_by'] = frappe.db.get_value('User', so_data[2], 'full_name')
+                se['external_so_number'] = so_data[3]
 
             items_se = frappe.db.get_list(
                 'Stock Entry Detail',
@@ -196,7 +197,7 @@ def stock_entry_details_for_warehouse_app():
         so_date_data = frappe.db.get_value(
             'Sales Order',
             sales_order,
-            ['customer', 'customer_name', 'customer_address', 'transaction_date', 'delivery_date']
+            ['customer', 'customer_name', 'customer_address', 'transaction_date', 'delivery_date', 'external_so_number']
         )
         if so_date_data:
             stock_entry_details.customer = so_date_data[0]
@@ -210,6 +211,7 @@ def stock_entry_details_for_warehouse_app():
             )
             stock_entry_details.transaction_date = so_date_data[3]
             stock_entry_details.delivery_date = so_date_data[4]
+            stock_entry_details.external_so_number = so_date_data[5]
 
         """GET ITEMS"""
         items = frappe.db.get_list(
@@ -333,11 +335,12 @@ def filter_receive_at_warehouse_for_packing_area():
             sales_order = items_pl[0].get('sales_order')
             se['sales_order'] = sales_order
 
-            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner'])
+            so_date_data = frappe.db.get_value('Sales Order', sales_order, ['transaction_date', 'delivery_date', 'owner', 'external_so_number'])
             if so_date_data:
                 se['transaction_date'] = so_date_data[0]
                 se['delivery_date'] = so_date_data[1]
                 se['so_created_by'] = frappe.db.get_value('User', so_date_data[2], 'full_name')
+                se['external_so_number'] = so_date_data[3]
 
             items_se = frappe.db.get_list(
                 'Stock Entry Detail',
