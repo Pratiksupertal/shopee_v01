@@ -13,3 +13,4 @@ def schedular_log(msg):
     logging.info(msg)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
+
