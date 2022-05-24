@@ -77,7 +77,7 @@ def filter_picklist():
             so_data = frappe.db.get_value(
                 'Sales Order',
                 sales_order,
-                ['transaction_date', 'delivery_date', 'owner', 'source_app_name', 'chain', 'store']
+                ['transaction_date', 'delivery_date', 'owner', 'source_app_name', 'chain', 'store', 'external_so_number']
             )
 
             if source_app_name:
@@ -110,7 +110,8 @@ def filter_picklist():
                     pl.get('picker'),
                     'full_name'
                 ),
-                "pick_start_time": pl.get('start_time')
+                "pick_start_time": pl.get('start_time'),
+                "external_so_number": so_data[6]
             })
         return format_result(
             result=result,
@@ -164,12 +165,13 @@ def picklist_details_for_warehouse_app():
         so_details = frappe.db.get_value(
             'Sales Order',
             picklist_details.sales_order,
-            ['creation', 'delivery_date', 'owner'],
+            ['creation', 'delivery_date', 'owner', 'external_so_number'],
             as_dict=1
         )
 
         picklist_details.so_date = so_details.creation
         picklist_details.delivery_date = so_details.delivery_date
+        picklist_details.external_so_number = so_details.external_so_number
 
         picklist_details.so_created_by = frappe.db.get_value(
             'User', so_details.owner, 'full_name'
