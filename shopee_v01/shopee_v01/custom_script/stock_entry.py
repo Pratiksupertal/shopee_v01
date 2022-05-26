@@ -36,3 +36,52 @@ def update_finished901itemsummary(doc,method):
             idx = idx[0][0]+1 if idx else 1
             sql = "insert into `tabTotal Item count in Warehouse` (name,idx,creation,modified,modified_time,modified_by,owner,parent,parentfield,parenttype,item_code,item_name,available_items,warehouse) values ('{0}',{4},now(),now(),now(),'{3}','{3}','Finished901ItemQtySummary','total_item_count_in_warehouse','Finished901ItemQtySummary','{0}','{5}',{1},'{2}')".format(item.item_code,balance_qty,item.t_warehouse,frappe.session.user,idx,item.item_name)
             query = frappe.db.sql(sql)
+
+
+def submit(doc,method):
+    import requests
+    request_body,warehouse_list,warehouse,warehouse_array = {},{},{},[]
+    config = frappe.get_single("Online Warehouse Configuration")
+    for i in config.online_warehouse:
+        warehouse[i.warehouse] = {
+                                    "warehouse_name" : i.warehouse,
+                                    # "vendor_name" : "Developer Store",
+                                    "vendor_name" : i.supplier,
+                                    "halosis_warehouse" : i.halosis_warehouse,
+                                    }
+        warehouse_array.append(i.warehouse)
+    request_body["type"] = "in" if (doc.to_warehouse in warehouse_array) else "out" if (doc.from_warehouse in warehouse_array) else ""
+    if(doc.to_warehouse in warehouse_array) or (doc.from_warehouse in warehouse_array):
+        w = doc.to_warehouse if request_body["type"] == "in" else doc.from_warehouse if request_body["type"] == "out" else ""
+        request_body["vendor_name"] = warehouse[w]["vendor_name"]
+        request_body["warehouse_name"] = warehouse[w]["halosis_warehouse"]
+        request_body["product_type"] = "product"
+        request_body["code"] = doc.items[0].item_code
+        # request_body["code"] = "NN-001"
+        request_body["qty"] = int(doc.items[0].qty)
+    try:
+        url = config.base_url + 'auth'
+        # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/auth'
+        data = {     "username": config.username,
+                     "password": config.get_password('password')}
+        res = requests.post(url.replace("'", '"'), data=data)
+    except Exception as e:
+        raise
+        frappe.log_error(title="Update stock API Login part",message =frappe.get_traceback())
+
+    if res.status_code != 200:
+        raise Exception('Entered credentials are invalid!')
+    else:
+        try:
+            import json
+            r = json.loads(res.text)
+            auth = "Bearer "+r["data"]["token"]
+            url = config.base_url + 'update-stock'
+            # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/update-stock'
+            res = requests.post(url.replace("'", '"'), data=request_body,headers={
+                "Authorization":auth},)
+        except Exception as e:
+            raise
+            frappe.log_error(title="Update stock API update stock part",message =frappe.get_traceback())
+
+    frappe.msgprint("Stock is Updated to Halosis")
