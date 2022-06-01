@@ -1,0 +1,35 @@
+{
+ "add_total_row": 0,
+ "creation": "2022-01-19 07:40:40.407100",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Purchase Order Letter Head",
+ "modified": "2022-05-26 14:47:39.353159",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Sales Person Commission Sumarry Total",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "select a.territory as \"Territory::100\",\n     sum(a.net_total) as \"Amount:Float:150\",\n     sum(a.total_qty) as \"Quantity:Float:80\",\n\t a.sales_person as \"Sales Person::150\",\n\t a.commission_rate as \"commission Rate:100\",\n\t sum(incentives) as \"Incentives:Float:100\"\n     from\n     (\n\t\tSELECT dt.territory,dt.net_total,dt.total_qty, st.commission_rate,st.sales_person, st.allocated_percentage, \n\t\tst.allocated_amount, st.incentives from `tabSales Order` dt inner join `tabSales Team` st on dt.name = st.parent \n\t\twhere st.parenttype = 'Sales Order' and dt.docstatus = 1) a\n        group by a.sales_person order by a.sales_person asc;",
+ "ref_doctype": "Delivery Note",
+ "report_name": "Sales Person Commission Sumarry Total",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ]
+}

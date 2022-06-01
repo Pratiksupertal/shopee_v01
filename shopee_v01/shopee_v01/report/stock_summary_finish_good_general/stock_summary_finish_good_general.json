@@ -1,0 +1,34 @@
+{
+ "add_total_row": 0,
+ "creation": "2022-01-06 12:51:33.033895",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2022-05-26 14:25:16.727918",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Stock Summary Finish Good General",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "select a.item_name as \"Item Name::170\",\n     a.item_code as \"Item Code::180\",\n     a.item_group as \"Item Group:Link/Item Group:50\",\n     a.division_group as \"Division Group::50\",\n     a.retail_group as \"Retail Group::50\",\n     a.price_list as \"Price::80\",\n     sum(a.actual_qty) as \"Stok Gudang:Float:70\",\n         sum(a.planned_qty) as \"Stok Masuk:Float:85\",\n     sum(a.delivered_qty) as \"Delivered Qty:Float:85\",\n     sum(a.reserved_qty) as \"Akan Dikirim:Float:85\",\n\t sum(a.projected_qty) as \"Stok Akhir:Float:85\"\n     from\n     (\n     SELECT\n       a.item_name ,\n       a.item_code ,\n       a.item_group ,\n       a.division_group ,\n       a.retail_group ,\n       a.brand ,\n       format(max(d.price_list_rate),0) as \"price_list\",\n       b.actual_qty ,\n       c.delivered_qty ,\n       b.reserved_qty as \"reserved_qty\",\n       (b.planned_qty+b.ordered_qty+b.indented_qty) as \"planned_qty\",\n       b.projected_qty ,\n       b.warehouse \n     FROM `tabItem` a LEFT JOIN `tabBin` b\n         ON a.item_code = b.item_code\n     LEFT JOIN `tabSales Order Item` c\n         ON a.item_code = c.item_code\n     LEFT JOIN `tabItem Price` d\n         ON a.item_code = d.item_code\n     where substring(b.warehouse,1,3) = '901'\n     group by a.item_code, b.warehouse) a\n     where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0 \n     group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.price_list\n         order by a.item_name asc;",
+ "ref_doctype": "Delivery Note",
+ "report_name": "Stock Summary Finish Good General",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ]
+}
