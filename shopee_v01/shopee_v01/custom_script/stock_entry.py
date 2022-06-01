@@ -56,15 +56,14 @@ def submit(doc,method):
         request_body["vendor_name"] = warehouse[w]["vendor_name"]
         request_body["warehouse_name"] = warehouse[w]["halosis_warehouse"]
         request_body["product_type"] = "product"
-        request_body["code"] = doc.items[0].item_code
-        # request_body["code"] = "NN-001"
-        request_body["qty"] = int(doc.items[0].qty)
         try:
             url = config.base_url + 'auth'
             # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/auth'
             data = {     "username": config.username,
                          "password": config.get_password('password')}
             res = requests.post(url.replace("'", '"'), data=data)
+            import json
+            r = json.loads(res.text)
         except Exception as e:
             raise
             frappe.log_error(title="Update stock API Login part",message =frappe.get_traceback())
@@ -73,14 +72,15 @@ def submit(doc,method):
             raise Exception('Entered credentials are invalid!')
         else:
             try:
-                import json
-                r = json.loads(res.text)
-                auth = "Bearer "+r["data"]["token"]
-                url = config.base_url + 'update-stock'
-                # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/update-stock'
-                res = requests.post(url.replace("'", '"'), data=request_body,headers={
-                    "Authorization":auth},)
-                frappe.log_error(title="Update stock API update stock part",message =res.text )
+                for item in doc.items:
+                    request_body["code"] = item.item_code
+                    request_body["qty"] = int(item.qty)
+                    auth = "Bearer "+r["data"]["token"]
+                    url = config.base_url + 'update-stock'
+                    # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/update-stock'
+                    res = requests.post(url.replace("'", '"'), data=request_body,headers={
+                        "Authorization":auth},)
+                    frappe.log_error(title="Update stock API update stock part",message =res.text )
             except Exception as e:
                 raise
                 frappe.log_error(title="Update stock API update stock part",message =frappe.get_traceback())
