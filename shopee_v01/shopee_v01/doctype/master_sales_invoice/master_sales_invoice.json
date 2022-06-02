@@ -32,12 +32,18 @@
   "quantity_col_break",
   "total_qty",
   "total_amount",
-  "discount_col_break",
+  "section_break_3",
   "discount_percentage",
-  "discount_sec_break",
+  "discount_col_break",
   "discount_amount",
   "subtotal",
-  "column_break_16",
+  "section_break_4",
+  "tax_percent",
+  "tax_col_break",
+  "tax_amount",
+  "subtotal_after_tax",
+  "section_break_5",
+  "final_total",
   "amended_from"
  ],
  "fields": [
@@ -122,10 +128,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_16",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -196,7 +198,7 @@
   {
    "fieldname": "total_amount",
    "fieldtype": "Currency",
-   "label": "Total Amount",
+   "label": "Total Reference Amount",
    "read_only": 1
   },
   {
@@ -211,18 +213,13 @@
   },
   {
    "fieldname": "discount_col_break",
-   "fieldtype": "Section Break",
-   "label": "Discount"
+   "fieldtype": "Column Break"
   },
   {
    "default": "0",
    "fieldname": "discount_percentage",
    "fieldtype": "Percent",
    "label": "Discount Percentage"
-  },
-  {
-   "fieldname": "discount_sec_break",
-   "fieldtype": "Column Break"
   },
   {
    "default": "0",
@@ -237,10 +234,56 @@
    "fieldtype": "Currency",
    "label": "Subtotal",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Discount"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "Tax"
+  },
+  {
+   "default": "0",
+   "fieldname": "tax_percent",
+   "fieldtype": "Percent",
+   "label": "Tax Percentage"
+  },
+  {
+   "fieldname": "tax_col_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "tax_amount",
+   "fieldtype": "Currency",
+   "label": "Tax Amount",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "subtotal_after_tax",
+   "fieldtype": "Currency",
+   "label": "Subtotal After tax",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Final Total"
+  },
+  {
+   "default": "0",
+   "fieldname": "final_total",
+   "fieldtype": "Currency",
+   "label": "Final Total Amount",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2022-06-02 18:35:08.763026",
+ "modified": "2022-06-02 21:37:28.935115",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Master Sales Invoice",

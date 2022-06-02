@@ -100,6 +100,8 @@ frappe.ui.form.on('Master Sales Invoice', {
 					frm.set_value("total_qty", total_qty);
 					frm.set_value("total_amount", total_amount);
 					frm.set_value("subtotal", total_amount);
+					frm.set_value("subtotal_after_tax", total_amount);
+					frm.set_value("final_total", total_amount);
 					frm.refresh_fields();
 				}
 			}
@@ -112,6 +114,19 @@ frappe.ui.form.on('Master Sales Invoice', {
 			frm.doc.subtotal = parseInt(frm.doc.total_amount) - parseInt(frm.doc.discount_amount);
 			frm.set_value("discount_amount", frm.doc.discount_amount);
 			frm.set_value("subtotal", frm.doc.subtotal);
+			frm.set_value("subtotal_after_tax", frm.doc.subtotal);
+			frm.set_value("final_total", frm.doc.subtotal);
+			frm.refresh_fields();
+		}
+	},
+
+	tax_percent: function(frm) {
+		if (frm.doc.tax_percent != null) {
+			frm.doc.tax_amount = (parseInt(frm.doc.subtotal) / 100.0) * parseInt(frm.doc.tax_percent);
+			frm.doc.subtotal_after_tax = parseInt(frm.doc.subtotal) + parseInt(frm.doc.tax_amount);
+			frm.set_value("tax_amount", frm.doc.tax_amount);
+			frm.set_value("subtotal_after_tax", frm.doc.subtotal_after_tax);
+			frm.set_value("final_total", frm.doc.subtotal_after_tax);
 			frm.refresh_fields();
 		}
 	}
