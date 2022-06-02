@@ -1,11 +1,8 @@
-// frappe.ui.form.off('Master Sales Invoice', 
-//     'get_outstanding_invoice'
-// );
-
 frappe.ui.form.on('Master Sales Invoice', {
-	// refresh: function(frm) {
-
-	// }
+	on_change: function(frm) {
+		frm.set_value("count", Math.random()*100);
+		frm.refresh_fields();
+	},
 
 	get_outstanding_invoice: function(frm) {
 		const today = frappe.datetime.get_today();
@@ -29,14 +26,10 @@ frappe.ui.form.on('Master Sales Invoice', {
             {fieldtype:"Column Break"},
 			{fieldtype:"Data", label: __("Store"), options: 'Store', fieldname:"store"},
 			{fieldtype:"Section Break"},
-			{fieldtype:"Data", label: __("Department Category"), options: 'Department Category', fieldname:"department_category"},
-			{fieldtype:"Section Break"},
-			{fieldtype:"Check", label: __("Allocate Payment Amount"), fieldname:"allocate_payment_amount", default:1},
-			{fieldtype:"Check", label: __("Additional Sales Invoice View"), fieldname:"additional_view"},
+			{fieldtype:"Data", label: __("Department Category"), options: 'Department Category', fieldname:"department_category"}
 		];
 
 		frappe.prompt(fields, function(filters){
-			console.log('\n\n\n\n\n\nline 94\n\n\n\n\n\n');
 			frappe.flags.allocate_payment_amount = true;
 			frm.events.validate_filters_data(frm, filters);
 			frm.events.get_outstanding_documents(frm, filters);
@@ -44,7 +37,6 @@ frappe.ui.form.on('Master Sales Invoice', {
 	},
 
 	validate_filters_data: function(frm, filters) {
-		console.log('\n\n\n\n\n\nline 46\n\n\n\n\n\n');
 		const fields = {
 			'Posting Date': ['from_posting_date', 'to_posting_date'],
 			'Due Date': ['from_posting_date', 'to_posting_date'],
@@ -68,33 +60,16 @@ frappe.ui.form.on('Master Sales Invoice', {
 	},
 
     get_outstanding_documents: function(frm, filters) {
-		console.log('\n\n\n\n\n\nline 69\n\n\n\n\n\n');
 		frm.clear_table("references");
-
-		if(!frm.doc.party) {
-			return;
-		}
-
-		frm.events.check_mandatory_to_fetch(frm);
-		var company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 
 		var args = {
 			"posting_date": frm.doc.posting_date,
-			"company": frm.doc.company,
-			"party_type": frm.doc.party_type,
-			"payment_type": frm.doc.payment_type,
-			"party": frm.doc.party,
-			"party_account": frm.doc.payment_type=="Receive" ? frm.doc.paid_from : frm.doc.paid_to,
 			"cost_center": frm.doc.cost_center
 		}
 
 		for (let key in filters) {
 			args[key] = filters[key];
 		}
-
-		frappe.flags.allocate_payment_amount = filters['allocate_payment_amount'];
-
-		console.log('\n\n\n\n\n\nline 94\n\n\n\n\n\n');
 
 		return  frappe.call({
 			method: 'shopee_v01.shopee_v01.doctype.master_sales_invoice.master_sales_invoice.get_outstanding_reference_documents',
@@ -103,8 +78,10 @@ frappe.ui.form.on('Master Sales Invoice', {
 			},
 			callback: function(r, rt) {
 				if(r.message) {
-					var total_positive_outstanding = 0;
-					var total_negative_outstanding = 0;
+					console.log(r.message);
+					var count = 0;
+					var total_qty = 0;
+					var total_amount = 0;
 
 					$.each(r.message, function(i, d) {
 						var c = frm.add_child("references");
@@ -114,50 +91,17 @@ frappe.ui.form.on('Master Sales Invoice', {
 						c.total_amount = d.invoice_amount;
 						c.outstanding_amount = d.outstanding_amount;
 						c.bill_no = d.bill_no;
-
-						if(!in_list(["Sales Order", "Purchase Order", "Expense Claim", "Fees"], d.voucher_type)) {
-							if(flt(d.outstanding_amount) > 0)
-								total_positive_outstanding += flt(d.outstanding_amount);
-							else
-								total_negative_outstanding += Math.abs(flt(d.outstanding_amount));
-						}
-
-						var party_account_currency = frm.doc.payment_type=="Receive" ?
-							frm.doc.paid_from_account_currency : frm.doc.paid_to_account_currency;
-
-						if(party_account_currency != company_currency) {
-							c.exchange_rate = d.exchange_rate;
-						} else {
-							c.exchange_rate = 1;
-						}
-						if (in_list(['Sales Invoice', 'Purchase Invoice', "Expense Claim", "Fees"], d.reference_doctype)){
-							c.due_date = d.due_date;
-						}
+						c.exchange_rate = 1;
+						count += 1;
+						total_qty += parseInt(d.qty),
+						total_amount += flt(d.outstanding_amount);
 					});
-
-					if(
-						(frm.doc.payment_type=="Receive" && frm.doc.party_type=="Customer") ||
-						(frm.doc.payment_type=="Pay" && frm.doc.party_type=="Supplier")  ||
-						(frm.doc.payment_type=="Pay" && frm.doc.party_type=="Employee") ||
-						(frm.doc.payment_type=="Receive" && frm.doc.party_type=="Student")
-					) {
-						if(total_positive_outstanding > total_negative_outstanding)
-							if (!frm.doc.paid_amount)
-								frm.set_value("paid_amount",
-									total_positive_outstanding - total_negative_outstanding);
-					} else if (
-						total_negative_outstanding &&
-						total_positive_outstanding < total_negative_outstanding
-					) {
-						if (!frm.doc.received_amount)
-							frm.set_value("received_amount",
-								total_negative_outstanding - total_positive_outstanding);
-					}
+					frm.set_value("count", count);
+					frm.set_value("total_qty", total_qty);
+					frm.set_value("total_amount", total_amount);
+					frm.refresh_fields();
 				}
-
-				frm.events.allocate_party_amount_against_ref_docs(frm,
-					(frm.doc.payment_type=="Receive" ? frm.doc.paid_amount : frm.doc.received_amount));
-
+				console.log(frm.doc.references);
 			}
 		});
 	},
