@@ -99,10 +99,20 @@ frappe.ui.form.on('Master Sales Invoice', {
 					frm.set_value("count", count);
 					frm.set_value("total_qty", total_qty);
 					frm.set_value("total_amount", total_amount);
+					frm.set_value("subtotal", total_amount);
 					frm.refresh_fields();
 				}
-				console.log(frm.doc.references);
 			}
 		});
 	},
+
+	discount_percentage: function(frm) {
+		if (frm.doc.discount_percentage != null) {
+			frm.doc.discount_amount = (parseInt(frm.doc.total_amount) / 100.0) * parseInt(frm.doc.discount_percentage);
+			frm.doc.subtotal = parseInt(frm.doc.total_amount) - parseInt(frm.doc.discount_amount);
+			frm.set_value("discount_amount", frm.doc.discount_amount);
+			frm.set_value("subtotal", frm.doc.subtotal);
+			frm.refresh_fields();
+		}
+	}
 });

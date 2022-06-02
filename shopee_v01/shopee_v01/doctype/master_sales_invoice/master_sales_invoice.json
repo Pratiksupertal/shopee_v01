@@ -32,6 +32,11 @@
   "quantity_col_break",
   "total_qty",
   "total_amount",
+  "discount_col_break",
+  "discount_percentage",
+  "discount_sec_break",
+  "discount_amount",
+  "subtotal",
   "column_break_16",
   "amended_from"
  ],
@@ -118,7 +123,7 @@
   },
   {
    "fieldname": "column_break_16",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "amended_from",
@@ -203,10 +208,39 @@
    "fieldtype": "Int",
    "label": "Total Quantity",
    "read_only": 1
+  },
+  {
+   "fieldname": "discount_col_break",
+   "fieldtype": "Section Break",
+   "label": "Discount"
+  },
+  {
+   "default": "0",
+   "fieldname": "discount_percentage",
+   "fieldtype": "Percent",
+   "label": "Discount Percentage"
+  },
+  {
+   "fieldname": "discount_sec_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount Amount",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "subtotal",
+   "fieldtype": "Currency",
+   "label": "Subtotal",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2022-06-02 01:57:07.869917",
+ "modified": "2022-06-02 18:35:08.763026",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Master Sales Invoice",
