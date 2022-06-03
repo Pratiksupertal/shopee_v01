@@ -105,6 +105,7 @@
    "label": "Reference"
   },
   {
+   "depends_on": "eval:!in_list([1, 2], doc.docstatus)",
    "fieldname": "get_outstanding_invoice",
    "fieldtype": "Button",
    "label": "Get Outstanding Invoice"
@@ -283,7 +284,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2022-06-02 21:37:28.935115",
+ "modified": "2022-06-03 12:49:00.777007",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Master Sales Invoice",

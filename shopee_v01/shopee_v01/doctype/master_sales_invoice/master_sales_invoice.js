@@ -1,8 +1,4 @@
 frappe.ui.form.on('Master Sales Invoice', {
-	on_change: function(frm) {
-		frm.set_value("count", Math.random()*100);
-		frm.refresh_fields();
-	},
 
 	get_outstanding_invoice: function(frm) {
 		const today = frappe.datetime.get_today();
@@ -110,8 +106,8 @@ frappe.ui.form.on('Master Sales Invoice', {
 
 	discount_percentage: function(frm) {
 		if (frm.doc.discount_percentage != null) {
-			frm.doc.discount_amount = (parseInt(frm.doc.total_amount) / 100.0) * parseInt(frm.doc.discount_percentage);
-			frm.doc.subtotal = parseInt(frm.doc.total_amount) - parseInt(frm.doc.discount_amount);
+			frm.doc.discount_amount = -((flt(frm.doc.total_amount) / 100.0) * flt(frm.doc.discount_percentage));
+			frm.doc.subtotal = flt(frm.doc.total_amount) + flt(frm.doc.discount_amount);
 			frm.set_value("discount_amount", frm.doc.discount_amount);
 			frm.set_value("subtotal", frm.doc.subtotal);
 			frm.set_value("subtotal_after_tax", frm.doc.subtotal);
@@ -122,8 +118,8 @@ frappe.ui.form.on('Master Sales Invoice', {
 
 	tax_percent: function(frm) {
 		if (frm.doc.tax_percent != null) {
-			frm.doc.tax_amount = (parseInt(frm.doc.subtotal) / 100.0) * parseInt(frm.doc.tax_percent);
-			frm.doc.subtotal_after_tax = parseInt(frm.doc.subtotal) + parseInt(frm.doc.tax_amount);
+			frm.doc.tax_amount = (flt(frm.doc.subtotal) / 100.0) * flt(frm.doc.tax_percent);
+			frm.doc.subtotal_after_tax = flt(frm.doc.subtotal) + flt(frm.doc.tax_amount);
 			frm.set_value("tax_amount", frm.doc.tax_amount);
 			frm.set_value("subtotal_after_tax", frm.doc.subtotal_after_tax);
 			frm.set_value("final_total", frm.doc.subtotal_after_tax);
