@@ -54,7 +54,7 @@ def submit(doc,method):
     if(doc.to_warehouse in warehouse_array) or (doc.from_warehouse in warehouse_array):
         w = doc.to_warehouse if request_body["type"] == "in" else doc.from_warehouse if request_body["type"] == "out" else ""
         request_body["vendor_name"] = warehouse[w]["vendor_name"]
-        request_body["warehouse_name"] = warehouse[w]["halosis_warehouse"]
+        # request_body["warehouse_name"] = warehouse[w]["halosis_warehouse"]
         request_body["product_type"] = "product"
         try:
             url = config.base_url + 'auth'
@@ -75,6 +75,7 @@ def submit(doc,method):
                 for item in doc.items:
                     request_body["code"] = item.item_code
                     request_body["qty"] = int(item.qty)
+                    request_body["warehouse_name"] = warehouse[item.t_warehouse]["halosis_warehouse"]
                     auth = "Bearer "+r["data"]["token"]
                     url = config.base_url + 'update-stock'
                     # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/update-stock'
