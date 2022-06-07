@@ -87,20 +87,25 @@ def get_outstanding_reference_documents(args):
 		frappe.msgprint(("No outstanding invoices found.").format())
   
 	outstanding_invoices = []
+	pe_map = frappe._dict()
+	precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
 	for d in invoice_list:
-		outstanding_invoices.append(
-			frappe._dict({
-				'voucher_no': d.voucher_no,
-				'voucher_type': d.voucher_type,
-				'posting_date': d.posting_date,
-				'invoice_amount': flt(d.invoice_amount),
-				'payment_amount': flt(d.invoice_amount),
-				'outstanding_amount': flt(d.invoice_amount),
-				'due_date': d.due_date,
-				'currency': d.currency,
-				'qty': frappe.db.sql("""SELECT total_qty from `tabSales Invoice` WHERE name='{}';""".format(d.voucher_no))
-			})
-		)
+		payment_amount = pe_map.get((d.voucher_type, d.voucher_no), 0)
+		outstanding_amount = flt(d.invoice_amount - payment_amount, precision)
+		if outstanding_amount > 0.5 / (10**precision) and d.voucher_no:
+			outstanding_invoices.append(
+				frappe._dict({
+					'voucher_no': d.voucher_no,
+					'voucher_type': d.voucher_type,
+					'posting_date': d.posting_date,
+					'invoice_amount': flt(d.invoice_amount),
+					'payment_amount': flt(payment_amount),
+					'outstanding_amount': flt(outstanding_amount),
+					'due_date': d.due_date,
+					'currency': d.currency,
+					'qty': frappe.db.sql("""SELECT total_qty from `tabSales Invoice` WHERE name='{}';""".format(d.voucher_no))
+				})
+			)
 
 	outstanding_invoices = sorted(outstanding_invoices, key=lambda k: k['due_date'] or getdate(nowdate()))
 	return outstanding_invoices
