@@ -54,12 +54,10 @@ def submit(doc,method):
     if(doc.to_warehouse in warehouse_array) or (doc.from_warehouse in warehouse_array):
         w = doc.to_warehouse if request_body["type"] == "in" else doc.from_warehouse if request_body["type"] == "out" else ""
         request_body["vendor_name"] = warehouse[w]["vendor_name"]
-        # request_body["warehouse_name"] = warehouse[w]["halosis_warehouse"]
         # request_body["product_type"] = "product"
         request_body["product_type"] = "variation"
         try:
             url = config.base_url + 'auth'
-            # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/auth'
             data = {     "username": config.username,
                          "password": config.get_password('password')}
             res = requests.post(url.replace("'", '"'), data=data)
