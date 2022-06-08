@@ -87,12 +87,12 @@ frappe.ui.form.on('Master Sales Invoice', {
 						c.due_date = d.due_date
 						c.total_amount = d.invoice_amount;
 						c.outstanding_amount = d.outstanding_amount;
-						c.allocated_amount = d.outstanding_amount;
+						c.allocated_amount = d.invoice_amount - d.outstanding_amount;
 						c.bill_no = d.bill_no;
 						c.exchange_rate = 1;
 						count += 1;
 						total_qty += parseInt(d.qty),
-						total_amount += flt(d.allocated_amount);
+						total_amount += flt(d.invoice_amount);
 					});
 					frm.set_value("count", count);
 					frm.set_value("total_qty", total_qty);
