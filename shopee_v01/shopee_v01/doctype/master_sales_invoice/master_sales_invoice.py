@@ -26,10 +26,10 @@ def get_outstanding_reference_documents(args):
 		args = json.loads(args)
   
 	condition = ""
-
-	# Add cost center condition
-	if args.get("cost_center"):
-		condition += " and cost_center='%s'" % args.get("cost_center")
+  
+	# Add customer condition
+	if args.get("customer"):
+		condition += " and customer='%s'" % args.get("customer")
 
 	# Add source app name condition
 	if args.get("source_app_name"):
@@ -65,21 +65,22 @@ def get_outstanding_reference_documents(args):
 	if args.get("company"):
 		condition += " and company = {0}".format(frappe.db.escape(args.get("company")))
 
-	dr_or_cr = "debit_in_account_currency - credit_in_account_currency"	
 	invoice_list = frappe.db.sql("""
 		select
-			voucher_no, voucher_type, posting_date, due_date,
-			ifnull(sum({dr_or_cr}), 0) as invoice_amount,
-			account_currency as currency
+			name AS voucher_no,
+   			'Sales Invoice' AS voucher_type,
+      		posting_date,
+        	due_date,
+			rounded_total AS invoice_amount,
+			outstanding_amount,
+			currency,
+			total_qty
 		from
-			`tabGL Entry`
+			`tabSales Invoice`
 		where
-			{dr_or_cr} > 0
+			docstatus = 1
 			{condition}
-			and voucher_type = 'Sales Invoice'
-		group by voucher_type, voucher_no
 		order by posting_date, name""".format(
-			dr_or_cr=dr_or_cr,
 			condition=condition or ""
 		), {}, as_dict=True)
 
@@ -90,8 +91,11 @@ def get_outstanding_reference_documents(args):
 	pe_map = frappe._dict()
 	precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
 	for d in invoice_list:
-		payment_amount = pe_map.get((d.voucher_type, d.voucher_no), 0)
-		outstanding_amount = flt(d.invoice_amount - payment_amount, precision)
+		sales_invoice_doc = frappe.get_doc("Sales Invoice", d.voucher_no)
+		if sales_invoice_doc.get('status') not in ['Unpaid', 'Overdue', 'Unpaid and Discounted', 'Overdue and Discounted', 'Return']:
+			continue
+		outstanding_amount = flt(d.outstanding_amount, precision)
+		payment_amount = flt(d.invoice_amount - outstanding_amount, precision)
 		if outstanding_amount > 0.5 / (10**precision) and d.voucher_no:
 			outstanding_invoices.append(
 				frappe._dict({
@@ -103,7 +107,7 @@ def get_outstanding_reference_documents(args):
 					'outstanding_amount': flt(outstanding_amount),
 					'due_date': d.due_date,
 					'currency': d.currency,
-					'qty': frappe.db.sql("""SELECT total_qty from `tabSales Invoice` WHERE name='{}';""".format(d.voucher_no))
+					'qty': d.total_qty
 				})
 			)
 
