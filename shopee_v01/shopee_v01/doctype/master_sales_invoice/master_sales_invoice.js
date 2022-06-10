@@ -92,7 +92,7 @@ frappe.ui.form.on('Master Sales Invoice', {
 						c.exchange_rate = 1;
 						count += 1;
 						total_qty += parseInt(d.qty),
-						total_amount += flt(c.allocated_amount);
+						total_amount += flt(d.allocated_amount);
 					});
 					frm.set_value("count", count);
 					frm.set_value("total_qty", total_qty);
