@@ -74,7 +74,8 @@ def get_outstanding_reference_documents(args):
 			rounded_total AS invoice_amount,
 			outstanding_amount,
 			currency,
-			total_qty
+			total_qty,
+			is_return
 		from
 			`tabSales Invoice`
 		where
@@ -91,25 +92,31 @@ def get_outstanding_reference_documents(args):
 	pe_map = frappe._dict()
 	precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
 	for d in invoice_list:
-		sales_invoice_doc = frappe.get_doc("Sales Invoice", d.voucher_no)
-		if sales_invoice_doc.get('status') not in ['Unpaid', 'Overdue', 'Unpaid and Discounted', 'Overdue and Discounted', 'Return']:
-			continue
 		outstanding_amount = flt(d.outstanding_amount, precision)
+		invoice_check = filter_invoices(d, outstanding_amount)
+		if not invoice_check:
+			continue
 		payment_amount = flt(d.invoice_amount - outstanding_amount, precision)
-		if outstanding_amount > 0.5 / (10**precision) and d.voucher_no:
-			outstanding_invoices.append(
-				frappe._dict({
-					'voucher_no': d.voucher_no,
-					'voucher_type': d.voucher_type,
-					'posting_date': d.posting_date,
-					'invoice_amount': flt(d.invoice_amount),
-					'payment_amount': flt(payment_amount),
-					'outstanding_amount': flt(outstanding_amount),
-					'due_date': d.due_date,
-					'currency': d.currency,
-					'qty': d.total_qty
-				})
-			)
+		# if outstanding_amount > 0.5 / (10**precision) and d.voucher_no:
+		outstanding_invoices.append(
+			frappe._dict({
+				'voucher_no': d.voucher_no,
+				'voucher_type': d.voucher_type,
+				'posting_date': d.posting_date,
+				'invoice_amount': flt(d.invoice_amount),
+				'payment_amount': flt(payment_amount),
+				'outstanding_amount': flt(outstanding_amount),
+				'due_date': d.due_date,
+				'currency': d.currency,
+				'qty': d.total_qty
+			})
+		)
 
 	outstanding_invoices = sorted(outstanding_invoices, key=lambda k: k['due_date'] or getdate(nowdate()))
 	return outstanding_invoices
+
+
+def filter_invoices(invoice, outstanding_amount):
+	if outstanding_amount > 0:
+		return True
+	return False
