@@ -38,7 +38,7 @@ def update_finished901itemsummary(doc,method):
             query = frappe.db.sql(sql)
 
 
-def submit(doc,method):
+def submit1(doc,method):
     import requests
     request_body,warehouse_list,warehouse,warehouse_array = {},{},{},[]
     config = frappe.get_single("Online Warehouse Configuration")
@@ -78,10 +78,65 @@ def submit(doc,method):
                     auth = "Bearer "+r["data"]["token"]
                     url = config.base_url + 'update-stock'
                     # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/update-stock'
-                    res = requests.post(url.replace("'", '"'), data=request_body,headers={
+                    respose = requests.post(url.replace("'", '"'), data=request_body,headers={
                         "Authorization":auth},)
-                    frappe.log_error(title="Update stock API update stock part",message =res.text )
+                    frappe.log_error(title="Update stock API update stock part",message =respose.text )
             except Exception as e:
                 raise
                 frappe.log_error(title="Update stock API update stock part",message =frappe.get_traceback())
-        frappe.msgprint("Stock is Updated to Halosis")
+            if respose.status_code != 200:
+                raise Exception('Failed to update the qty !')
+            else:
+                frappe.msgprint("Stock is Updated to Halosis")
+
+def submit(doc,method):
+    import requests
+    warehouse_list,warehouse,request = {},{},[]
+    #Comparing the parent warehouse
+    config = frappe.get_single("Online Warehouse Configuration")
+    # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00089")
+    for item in doc.items:
+        request_body = {}
+        request_body["item_code"] = item.item_code
+        # item_brand = frappe.db.get_value("Item",item.item_code,"brand")
+        request_body["brand"] = frappe.db.get_value("Item",item.item_code,"brand")
+        request_body["qty"] = int(item.qty)
+        request_body["type"] = "in" if (parent_warehouse(item.t_warehouse)==True) else "out" if (parent_warehouse(item.s_warehouse)==True) else ""
+        # request_body["type"] = "in" if parent_warehouse(item.t_warehouse)==True else ""
+        if((request_body["type"] == "in") or(request_body["type"] == "out")):
+            request.append(request_body)
+            if (request):
+                try:
+                    url = config.base_url + '/v3/erp/auth'
+                    data = {     "username": config.username,
+                                 "password": config.get_password('password')}
+                    res = requests.post(url.replace("'", '"'), data=data)
+                    import json
+                    r = json.loads(res.text)
+
+                    # frappe.log_error(title="Update stock API Login part",message =res.text)
+                except Exception as e:
+                    raise
+                    frappe.log_error(title="Update stock API Login part",message =frappe.get_traceback())
+                auth = "Bearer "+r["data"]["token"]
+                try:
+                    url = config.base_url + '/v3/erp/update-stock'
+                    respose = requests.post(url.replace("'", '"'), data=request_body,headers={
+                        "Authorization":auth},)
+                    frappe.log_error(title="Update stock API update stock part",message =respose.text )
+                except Exception as e:
+                    raise
+                    frappe.log_error(title="Update stock API Data part",message =frappe.get_traceback())
+
+def parent_warehouse(warehouse):
+    config = frappe.get_single("Online Warehouse Configuration")
+    warehouse_list = [i.warehouse for i in config.online_warehouse]
+    a = frappe.db.get_value("Warehouse",warehouse,"parent")
+    if not a:
+        return False
+    elif a in warehouse_list:
+        return True
+        print(" Parent of {0} is in warehouse list",warehouse)
+    else:
+        b = parent_warehouse(a)
+        return True
