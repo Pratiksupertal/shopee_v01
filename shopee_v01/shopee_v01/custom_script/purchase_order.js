@@ -312,7 +312,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 		var me = this;
 
 		// new column added -> supplied_qty
-    if(items.length >= 1){
+    		if(items.length >= 1){
 			me.raw_material_data = [];
 			me.show_dialog = 1;
 			let title = __('Transfer Material to Supplier');
@@ -418,8 +418,8 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 			me.values = me.dialog.get_values();
 			if(me.values) {
 				me.values.sub_con_rm_items.map((row,i) => {
-          // qty updated with supplied qty before creating stock entry
-          row.qty = row.supplied_qty;
+					// qty updated with supplied qty before creating stock entry
+					row.qty = row.supplied_qty;
 					if (!row.item_code || !row.rm_item_code || !row.warehouse || !row.qty || row.qty === 0) {
 						frappe.throw(__("Item Code, warehouse, quantity are required on row" + (i+1)));
 					}
@@ -457,16 +457,15 @@ frappe.ui.form.on('Purchase Order', {
         let pick_list_data = [];
         let max_qty = frm.doc.total_qty/frm.doc.items.length
         const dialog = frappe.prompt({
-            fieldname: 'input_qty',
-            fieldtype: 'Data',
-            label: __('Qty for Material Transfer for Manufacture'),
-            description: __('Max: {0}', [max_qty]),
-            data: pick_list_data,
-            in_place_edit: true,
-            get_data: function() {
-
-            return pick_list_data;
-            }
+		fieldname: 'input_qty',
+		fieldtype: 'Data',
+		label: __('Qty for Material Transfer for Manufacture'),
+		description: __('Max: {0}', [max_qty]),
+		data: pick_list_data,
+		in_place_edit: true,
+		get_data: function() {
+		    return pick_list_data;
+		}
             }, function(data) {
             console.log(data.input_qty);
             frappe.call({
