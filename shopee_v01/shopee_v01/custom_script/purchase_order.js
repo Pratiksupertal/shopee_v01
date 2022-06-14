@@ -342,7 +342,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 						read_only:1,
 						in_list_view:1
 					},
-          {
+          				{
 						fieldtype:'Float',
 						read_only:1,
 						fieldname:'supplied_qty',
