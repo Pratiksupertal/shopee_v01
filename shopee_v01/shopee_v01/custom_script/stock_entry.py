@@ -1,7 +1,5 @@
-import frappe
-from frappe.model.mapper import get_mapped_doc
-from frappe.model.document import Document
-group_warehouse, node_warehouse = [],[]
+import frappe, json
+group_warehouse, node_warehouse = [], []
 
 def update_finished901itemsummary(doc,method):
     warehouse_tuple = []
@@ -38,50 +36,62 @@ def update_finished901itemsummary(doc,method):
             query = frappe.db.sql(sql)
 
 
-def submit(doc,method):
-    import requests
-    request_body,warehouse_list,warehouse,warehouse_array = {},{},{},[]
-    config = frappe.get_single("Online Warehouse Configuration")
-    for i in config.online_warehouse:
-        warehouse[i.warehouse] = {
-                                    "warehouse_name" : i.warehouse,
-                                    # "vendor_name" : "Developer Store",
-                                    "vendor_name" : i.supplier,
-                                    "halosis_warehouse" : i.halosis_warehouse,
-                                    }
-        warehouse_array.append(i.warehouse)
-    request_body["type"] = "in" if (doc.to_warehouse in warehouse_array) else "out" if (doc.from_warehouse in warehouse_array) else ""
-    if(doc.to_warehouse in warehouse_array) or (doc.from_warehouse in warehouse_array):
-        w = doc.to_warehouse if request_body["type"] == "in" else doc.from_warehouse if request_body["type"] == "out" else ""
-        request_body["vendor_name"] = warehouse[w]["vendor_name"]
-        # request_body["product_type"] = "product"
-        request_body["product_type"] = "variation"
-        try:
-            url = config.base_url + 'auth'
-            data = {     "username": config.username,
-                         "password": config.get_password('password')}
-            res = requests.post(url.replace("'", '"'), data=data)
-            import json
-            r = json.loads(res.text)
-        except Exception as e:
-            raise
-            frappe.log_error(title="Update stock API Login part",message =frappe.get_traceback())
+def submit(doc, method):
+    update_stock_to_halosis(doc=doc)
 
-        if res.status_code != 200:
-            raise Exception('Entered credentials are invalid!')
-        else:
+def update_stock_to_halosis(doc):
+    import requests
+    # Comparing the parent warehouse
+    request = []
+    # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00089")
+    config = frappe.get_single("Online Warehouse Configuration")
+    frappe.msgprint('Updating to Halosis. Please, check error log for more update.')
+    for item in doc.items:
+        request_body = {
+            "item_code": item.item_code,
+            "brand": frappe.db.get_value("Item", item.item_code, "brand"),
+            "qty": int(item.qty),
+            "type": "in" if (parent_warehouse(item.t_warehouse)) else ("out" if (parent_warehouse(item.s_warehouse)) else "")
+        }
+        if (request_body["type"] in ["in", "out"]):
             try:
-                for item in doc.items:
-                    request_body["code"] = item.item_code
-                    request_body["qty"] = int(item.qty)
-                    request_body["warehouse_name"] = warehouse[item.t_warehouse]["halosis_warehouse"]
-                    auth = "Bearer "+r["data"]["token"]
-                    url = config.base_url + 'update-stock'
-                    # url = 'https://stg.v4.mobileshop.halosis.dev/v3/erp/update-stock'
-                    res = requests.post(url.replace("'", '"'), data=request_body,headers={
-                        "Authorization":auth},)
-                    frappe.log_error(title="Update stock API update stock part",message =res.text )
-            except Exception as e:
+                url = config.base_url + 'auth'
+                data = {
+                    "username": config.username,
+                    "password": config.get_password('password')
+                }
+                auth_res = requests.post(url.replace("'", '"'), data=data)
+                auth_res_json = json.loads(auth_res.text)
+                request.append(request_body)
+                # print(auth_res_json)
+            except Exception:
                 raise
-                frappe.log_error(title="Update stock API update stock part",message =frappe.get_traceback())
-        frappe.msgprint("Stock is Updated to Halosis")
+                frappe.log_error(title="Update stock API Login part", message=frappe.get_traceback())
+                frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
+    auth_token = "Bearer " + auth_res_json["data"]["token"]
+    request = json.dumps(request).replace("'", '"')
+    try:
+        url = config.base_url + 'update-stock'
+        response = requests.post(
+            url.replace("'", '"'),
+            json =json.loads(request),
+            headers={"Authorization": auth_token},)
+        frappe.log_error(title="Update stock API update stock part", message=response.text)
+        frappe.msgprint(f'{response.text}')
+    except Exception:
+        raise
+        frappe.log_error(title="Update stock API Data part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
+
+def parent_warehouse(warehouse):
+    config = frappe.get_single("Online Warehouse Configuration")
+    warehouse_list = [i.warehouse for i in config.online_warehouse]
+    a = frappe.db.get_value("Warehouse", warehouse, "parent")
+    if not a:
+        return False
+    elif a in warehouse_list:
+        # parent matched
+        return True
+    else:
+        parent_warehouse(a)
+        return True
