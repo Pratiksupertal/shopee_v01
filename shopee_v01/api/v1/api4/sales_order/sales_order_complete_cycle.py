@@ -10,7 +10,6 @@ from shopee_v01.api.v1.helpers import handle_empty_error_message
 from shopee_v01.api.v1.helpers import auto_map_accounting_dimensions_fields
 
 from shopee_v01.api.v1.validations import validate_data
-# from shopee_v01.api.v1.validations import data_validation_for_create_sales_order_web
 from shopee_v01.api.v1.validations import data_validation_for_sales_order_cycle
 
 
@@ -92,6 +91,7 @@ def sales_order_cycle():
         """step 4: create and submit payment entry"""
         payment_entry = create_payment_for_sales_order_from_web(
             base=base,
+            order_data=order_data,
             payment_data=payment_data,
             sales_invoice_data=sales_invoice,
             accounting_dimensions=accounting_dimensions,
@@ -210,6 +210,7 @@ def sales_order_cycle_bulk():
             """step 4: create and submit payment entry"""
             payment_entry = create_payment_for_sales_order_from_web(
                 base=base,
+                order_data=order_data,
                 payment_data=payment_data,
                 sales_invoice_data=sales_invoice,
                 accounting_dimensions=accounting_dimensions,
