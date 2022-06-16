@@ -7,10 +7,22 @@ frappe.ui.form.on('Main Work Order', {
     console.log(frm.doc);
 
     if(frm.doc.docstatus==1){
-      var start_btn = frm.add_custom_button(__('Create Pick List'), function() {
-        frm.trigger("start_work_order");
-      });
-      start_btn.addClass('btn-primary');
+      if(frm.doc.is_external == 1){
+        var start_btn = frm.add_custom_button(__('Create Pick List'),
+          function() {
+                    frm.trigger("start_purchase_order");
+                  });
+        start_btn.addClass('btn-primary');
+      }
+
+      else{
+        var start_btn = frm.add_custom_button(__('Create Pick List'),
+          function() {
+                    frm.trigger("start_work_order");
+                  });
+        start_btn.addClass('btn-primary');
+      }
+
 
        var job_card_btn = frm.add_custom_button(__('Job Card'),
            function() {
@@ -277,6 +289,69 @@ frappe.ui.form.on('Main Work Order', {
               dialog.fields_dict.order_list.df.data.push({
                 'name': data.name,
                 'qty': data.qty
+              });
+          });
+          dialog.fields_dict.order_list.grid.refresh();
+         }
+       });
+
+		dialog.fields_dict.order_list.grid.refresh();
+    },
+
+
+ start_purchase_order:function(frm){
+		let purchase_order_data = [];
+
+    const dialog = frappe.prompt({fieldname: 'order_list', fieldtype: 'Table', label: __('Purchase Order'),
+      fields: [
+        {
+          fieldtype:'Link',
+          fieldname: 'name',
+          label: __('Purchase Order'),
+          options:'Purchase Order',
+          read_only:1,
+          in_list_view:1
+        },
+        {
+          fieldtype:'Float',
+          fieldname:'total_qty',
+          label: __('Qty'),
+          read_only:1,
+          in_list_view:1
+        }
+      ],
+      data: purchase_order_data,
+      in_place_edit: true,
+      get_data: function() {
+
+        return purchase_order_data;
+      }
+    }, function(data) {
+    console.log(data);
+       frappe.call({
+         method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.purchase_order_pick_lists",
+         args: {
+            purchase_order_list: data.order_list
+         }
+       });
+    }, __("Select Purchase Orders"), __("Create Pick List"));
+
+    dialog.fields_dict["order_list"].grid.wrapper.find('.grid-add-row').hide();
+
+    frappe.call({
+      method: "shopee_v01.shopee_v01.doctype.main_work_order.main_work_order.purchase_order_data",
+      args: {
+        main_work_order: frm.doc.name,
+      },
+      freeze: true,
+      callback: function(r) {
+          var resp = r.message;
+          console.log(resp);
+          resp.forEach(data => {
+              let qty = data.total_qty/data.number
+              dialog.fields_dict.order_list.df.data.push({
+                'name': data.name,
+                'total_qty': data.total_qty
               });
           });
           dialog.fields_dict.order_list.grid.refresh();
