@@ -13,7 +13,7 @@ def validate_data(data):
     except ValueError:
         return "Invalid JSON submitted"
 
-#it is created by pratik/Rakesh as sales order cycle doesn't have the customer data for validation
+# it is created by pratik/Rakesh as sales order cycle doesn't have the customer data for validation
 def data_validation_for_sales_order_cycle(order_data, payment_data):
     if not order_data.get("delivery_date"):
         order_data["delivery_date"] = today()
