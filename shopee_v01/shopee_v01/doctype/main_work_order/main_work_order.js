@@ -293,30 +293,30 @@ frappe.ui.form.on('Main Work Order', {
   onload:function(frm){
     //
     frm.set_query("wip_warehouse", function() {
-                        return {
-                                filters: {
-                                        'company': frm.doc.company,
-                                }
-                        };
-                });
+			return {
+				filters: {
+					'company': frm.doc.company,
+				}
+			};
+		});
 
-                frm.set_query("fg_warehouse", function() {
-                        return {
-                                filters: {
-                                        'company': frm.doc.company,
-                                        'is_group': 0
-                                }
-                        };
-                });
+		frm.set_query("fg_warehouse", function() {
+			return {
+				filters: {
+					'company': frm.doc.company,
+					'is_group': 0
+				}
+			};
+		});
 
-                frm.set_query("scrap_warehouse", function() {
-                        return {
-                                filters: {
-                                        'company': frm.doc.company,
-                                        'is_group': 0
-                                }
-                        };
-                });
+		frm.set_query("scrap_warehouse", function() {
+			return {
+				filters: {
+					'company': frm.doc.company,
+					'is_group': 0
+				}
+			};
+		});
 
   },
 
