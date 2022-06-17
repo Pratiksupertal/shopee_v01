@@ -300,7 +300,7 @@ frappe.ui.form.on('Main Work Order', {
                         };
                 });
 
-                    frm.set_query("fg_warehouse", function() {
+                frm.set_query("fg_warehouse", function() {
                         return {
                                 filters: {
                                         'company': frm.doc.company,
@@ -309,7 +309,7 @@ frappe.ui.form.on('Main Work Order', {
                         };
                 });
 
-                    frm.set_query("scrap_warehouse", function() {
+                frm.set_query("scrap_warehouse", function() {
                         return {
                                 filters: {
                                         'company': frm.doc.company,
