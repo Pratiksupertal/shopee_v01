@@ -80,9 +80,9 @@ def create_pick_list(source_name, input_qty=0, total_qty=0):
         total_qty = int(total_qty)
         all_items = []
         purchase_order_doc = frappe.get_doc('Purchase Order', source_name)
-        rows = purchase_order_doc.supplied_items
+        rows = purchase_order_doc.items
         for row in rows:
-            all_items.append(row.rm_item_code)
+            all_items.append(row.item_name)
         max_qty = total_qty/len(all_items)
         if input_qty > max_qty:
             message = f"Pick List not created for purchase Order input quantity entered is greater than max quantity"
