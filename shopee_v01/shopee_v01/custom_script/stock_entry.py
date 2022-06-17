@@ -43,9 +43,8 @@ def update_stock_to_halosis(doc):
     import requests
     # Comparing the parent warehouse
     request = []
-    # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00089")
+    # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00092")
     config = frappe.get_single("Online Warehouse Configuration")
-    frappe.msgprint('Updating to Halosis. Please, check error log for more update.')
     for item in doc.items:
         request_body = {
             "item_code": item.item_code,
@@ -55,6 +54,7 @@ def update_stock_to_halosis(doc):
         }
         if (request_body["type"] in ["in", "out"]):
             try:
+                request.append(request_body)
                 url = config.base_url + 'auth'
                 data = {
                     "username": config.username,
@@ -62,36 +62,41 @@ def update_stock_to_halosis(doc):
                 }
                 auth_res = requests.post(url.replace("'", '"'), data=data)
                 auth_res_json = json.loads(auth_res.text)
-                request.append(request_body)
-                # print(auth_res_json)
+                auth_token = "Bearer " + auth_res_json["data"]["token"]
+                print(auth_res_json)
             except Exception:
                 raise
                 frappe.log_error(title="Update stock API Login part", message=frappe.get_traceback())
                 frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
-    auth_token = "Bearer " + auth_res_json["data"]["token"]
     request = json.dumps(request).replace("'", '"')
-    try:
-        url = config.base_url + 'update-stock'
-        response = requests.post(
-            url.replace("'", '"'),
-            json =json.loads(request),
-            headers={"Authorization": auth_token},)
-        frappe.log_error(title="Update stock API update stock part", message=response.text)
-        frappe.msgprint(f'{response.text}')
-    except Exception:
-        raise
-        frappe.log_error(title="Update stock API Data part", message=frappe.get_traceback())
-        frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
+    if len(request)>2:
+        try:
+            url = config.base_url + 'update-stock'
+            response = requests.post(
+                url.replace("'", '"'),
+                json =json.loads(request),
+                headers={"Authorization": auth_token},)
+            frappe.log_error(title="Update stock API update stock part", message=response.text)
+
+            if response.status_code == 200:
+                frappe.msgprint('Updating to Halosis. Please, check error log for more update.')
+        except Exception:
+            raise
+            frappe.log_error(title="Update stock API Data part", message=frappe.get_traceback())
+            frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
 
 def parent_warehouse(warehouse):
     config = frappe.get_single("Online Warehouse Configuration")
     warehouse_list = [i.warehouse for i in config.online_warehouse]
+    base_parent = [frappe.db.get_value("Warehouse",warehouse,"parent") for warehouse in warehouse_list]
     a = frappe.db.get_value("Warehouse", warehouse, "parent")
     if not a:
         return False
     elif a in warehouse_list:
         # parent matched
         return True
+    elif a in base_parent:
+        return False
     else:
-        parent_warehouse(a)
-        return True
+        b = parent_warehouse(a)
+        return b
