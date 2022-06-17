@@ -317,7 +317,7 @@ frappe.ui.form.on('Main Work Order', {
 				}
 			};
 		});
-
+    
   },
 
   packing_template:function(frm){
