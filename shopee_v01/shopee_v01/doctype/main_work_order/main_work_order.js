@@ -417,3 +417,4 @@ frappe.ui.form.on('Work Order Item Details', {
 	}
 
 });
+
