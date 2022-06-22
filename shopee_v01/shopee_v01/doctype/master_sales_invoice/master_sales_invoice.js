@@ -115,6 +115,14 @@ frappe.ui.form.on('Master Sales Invoice', {
 			frm.set_value("subtotal_after_tax", frm.doc.subtotal);
 			frm.set_value("final_total", frm.doc.subtotal);
 			frm.refresh_fields();
+			if (frm.doc.tax_percent != null) {
+                frm.doc.tax_amount = (flt(frm.doc.subtotal) / 100.0) * flt(frm.doc.tax_percent);
+                frm.doc.subtotal_after_tax = flt(frm.doc.subtotal) + flt(frm.doc.tax_amount);
+                frm.set_value("tax_amount", frm.doc.tax_amount);
+                frm.set_value("subtotal_after_tax", frm.doc.subtotal_after_tax);
+                frm.set_value("final_total", frm.doc.subtotal_after_tax);
+                frm.refresh_fields();
+            }
 		}
 	},
 
