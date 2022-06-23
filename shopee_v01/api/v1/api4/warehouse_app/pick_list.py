@@ -218,8 +218,8 @@ def assign_picker():
             'Pick List',
             data.get('pick_list'),
             {
-                'picker': data.get('picker'),
-                'start_time': data.get('start_time')
+                'picker': frappe.session.user,
+                'start_time': frappe.utils.get_datetime()
             }
         )
 

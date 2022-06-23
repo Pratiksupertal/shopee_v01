@@ -1,0 +1,35 @@
+{
+ "add_total_row": 1,
+ "creation": "2022-02-10 19:21:03.342311",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Purchase Order Letter Head",
+ "modified": "2022-05-26 14:55:56.544808",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Stock Summary Detail Not In Finish Good Warehouse",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "select a.item_name as \"Item Name::170\",\r\n     a.item_code as \"Item Code::180\",\r\n     a.item_group as \"Item Group:Link/Item Group:50\",\r\n     a.division_group as \"Division Group::50\",\r\n     a.retail_group as \"Retail Group::50\",\r\n     a.price_list as \"Price::80\",\r\n     sum(a.actual_qty) as \"Stok Gudang:Float:85\",\r\n     sum(a.planned_qty) as \"Stok Masuk:Float:85\",\r\n     sum(a.delivered_qty) as \"Sudah Dikirim:Float:85\",\r\n     sum(a.reserved_qty) as \"Akan Dikirim:Float:85\",\r\n\t sum(a.projected_qty) as \"Stok Akhir:Float:85\",\r\n\t \t replace(a.warehouse,' - ISS','') as \"Warehouse:Link/Warehouse:160\"\r\n     from\r\n     (\r\n     SELECT\r\n       a.item_name ,\r\n       a.item_code ,\r\n       a.item_group ,\r\n       a.division_group ,\r\n       a.retail_group ,\r\n       a.brand ,\r\n       format(max(d.price_list_rate),0) as \"price_list\",\r\n       b.actual_qty ,\r\n       c.delivered_qty ,\r\n       b.reserved_qty as \"reserved_qty\",\r\n       b.projected_qty ,\r\n      (b.planned_qty+b.ordered_qty+b.indented_qty) as \"planned_qty\",\r\n       b.warehouse \r\n     FROM `tabItem` a LEFT JOIN `tabBin` b\r\n         ON a.item_code = b.item_code\r\n     LEFT JOIN `tabSales Order Item` c\r\n         ON a.item_code = c.item_code\r\n     LEFT JOIN `tabItem Price` d\r\n         ON a.item_code = d.item_code\r\n     where substring(b.warehouse,1,3) not in ('901','FIN')\r\n     group by a.item_code, b.warehouse) a\r\n     where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0\r\n     group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.price_list,a.warehouse \r\n         order by a.item_name asc;",
+ "ref_doctype": "Delivery Note",
+ "report_name": "Stock Summary Detail Not In Finish Good Warehouse",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ]
+}

@@ -1,0 +1,35 @@
+{
+ "add_total_row": 1,
+ "creation": "2022-01-23 08:05:09.725602",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Purchase Order Letter Head",
+ "modified": "2022-05-29 18:18:35.242094",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Stock Movement Report 2",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "query": "select a.item_name as \"Artikel::150\",a.bulan as \"Bulan::80\",a.warehouse as \"Warehouse::120\",a.produksi_spk as \"Produksi SPK:Float:150\",b.produksi_masuk as \"Produksi Masuk:float:150\",d.material_receipt as \"Material Receipt:Float:150\",a.produksi_spk-IFNULL(d.material_receipt,0)-IFNULL(b.produksi_masuk,0) as \"Selisih SPK:Float:120\",IFNULL(e.material_konter,0) as \"Konter:Float:120\",IFNULL(c.sales,0) as \"Sales:Float:120\",IFNULL(b.produksi_masuk,0)+IFNULL(d.material_receipt,0)-IFNULL(c.sales,0) as \"Sisa:Float:120\" from (\nselect mwo.item_name,mwo.bulan,mwo.warehouse,sum(mwo.produksi_spk) as produksi_spk from (\nselect b.art_no \"item_name\",concat(month(a.spk_date),'-',year(a.spk_date)) as \"bulan\",a.fg_warehouse as \"warehouse\",\nb.qty as \"produksi_spk\" from `tabMain Work Order` a inner join `tabWork Order Item Details` b on a.name = b.parent \n    where ((a.fg_warehouse='Finish Good Before BIN - ISS') or (substring(a.fg_warehouse,1,3) = '901'))) mwo group by mwo.item_name,mwo.bulan,mwo.warehouse) \n\ta left join \n\t(select pm.item_name,pm.bulan,pm.warehouse,sum(pm.produksi_masuk) as produksi_masuk from (\n    select sed.item_name,sed.qty as \"produksi_masuk\",sed.t_warehouse as \"warehouse\",concat(month(se.posting_date),'-',year(se.posting_date)) \n\tas \"bulan\" from `tabStock Entry Detail` sed inner join `tabStock Entry` se on sed.parent = se.name where \n\t((sed.t_warehouse = 'Finish Good Before BIN - ISS') or (substring(sed.t_warehouse,1,3) = '901')) and se.purpose='Manufacture') pm group by pm.item_name,\n    pm.bulan,pm.warehouse) b on a.item_name = b.item_name and a.bulan = b.bulan left join (select mr.item_name,mr.bulan,mr.warehouse,sum(mr.material_receipt) as material_receipt from (\nselect sed.item_name,sed.qty as \"material_receipt\",sed.t_warehouse as \"warehouse\",concat(month(se.posting_date),'-',year(se.posting_date)) as \"bulan\" from `tabStock Entry Detail` sed \ninner join `tabStock Entry` se on sed.parent = se.name where (substring(sed.t_warehouse,1,3) = '901')\nand se.purpose='Material Receipt') mr group by mr.item_name,mr.bulan,mr.warehouse)d on a.item_name = d.item_name and a.bulan = d.bulan\n    left join (select so.item_name,so.bulan,sum(so.sales) as \"sales\" from (\n    select item_name,concat(month(delivery_date),'-',year(delivery_date)) as \"bulan\",delivered_qty as \"sales\" from `tabSales Order Item` \n    where parenttype = 'Sales Order') so group by so.item_name,so.bulan) c on a.item_name = c.item_name and a.bulan = c.bulan \n    left join (select store.item_name,store.bulan,store.warehouse,sum(store.material_konter) as material_konter from (\nselect sed.item_name,sed.qty as \"material_konter\",sed.t_warehouse as \"warehouse\",concat(month(se.posting_date),'-',year(se.posting_date)) as \"bulan\" from `tabStock Entry Detail` sed \ninner join `tabStock Entry` se on sed.parent = se.name where (substring(sed.t_warehouse,1,3) = 'MDS')\nand se.purpose='Material Receipt') store group by store.item_name,store.bulan,store.warehouse) e on a.item_name = e.item_name and a.bulan = e.bulan\n    order by a.bulan desc;",
+ "ref_doctype": "Delivery Note",
+ "report_name": "Stock Movement Report 2",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ]
+}
