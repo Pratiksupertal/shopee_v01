@@ -1,20 +1,16 @@
-{% if doc.accessories_type[:1] == "A" %}
-    {% set accessories_type = "Accessories" %}
-{% endif %}
-{% if doc.accessories_type[:1] == "B" %}
-    {% set accessories_type = "Raw Material" %}
-{% endif %}
-{% if doc.accessories_type[:4] == "WASH" %}
-    {% set accessories_type = "WASH" %}
-{% endif %}
-{% set lengthvalue =  doc.art_no_size_qty | length %}
+{% if doc.accessories_type[:1] == "A" %} {% set accessories_type = "Accessories"
+%} {% endif %} {% if doc.accessories_type[:1] == "B" %} {% set accessories_type
+= "Raw Material" %} {% endif %} {% if doc.accessories_type[:4] == "WASH" %} {%
+set accessories_type = "WASH" %} {% endif %} {% set lengthvalue =
+doc.art_no_size_qty | length %}
 <div class="print-heading">
-  <h2>Delivery Note {{ accessories_type }}<br><small>{{ doc.name }}</small>
+  <h2>
+    Delivery Note {{ accessories_type }}<br /><small>{{ doc.name }}</small>
   </h2>
 </div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
         <td width="40%"><b>Company</b></td>
         <td width="60%"><b>{{ doc.company or '' }}</b></td>
@@ -22,10 +18,15 @@
     </table>
   </div>
   <div class="col-xs-6">
-	<table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
         <td width="40%"><b>Date</b></td>
-        <td width="60%"><b>{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</b></td>
+        <td width="60%">
+          <b
+            >{{ frappe.utils.formatdate(doc.get_formatted('posting_date'),
+            "dd-mm-yyyy") }}</b
+          >
+        </td>
       </tr>
     </table>
   </div>
@@ -40,179 +41,225 @@
     </table>
   </div>-->
   <div class="col-xs-6">
-	  <table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
         <td width="40%">{% if doc.mwo_name is not none %} SPK {% endif %}</td>
-        <td width="60%">{% if doc.mwo_name is not none %} {{ doc.mwo_name or '' }} {% endif %}</td>
+        <td width="60%">
+          {% if doc.mwo_name is not none %} {{ doc.mwo_name or '' }} {% endif %}
+        </td>
       </tr>
     </table>
   </div>
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
-		   <tr>
-		    <td width="40%">Art No :</td>
-      {% set check = namespace(value="1") %}
-			{% set woid = frappe.get_all('Work Order Item Details', filters={'parent': doc.mwo_name}, fields=['art_no']) %}
-				{% for woid in woid %}
-          {% set vcount = namespace(value=1) %}
-             {% if (woid.art_no is not none) and (check.value=="1") %}
-					        <td width="60%">{{ woid.art_no }}</td>
-                  {% set check.value = "2" %}
-            {% endif %}
-				{% endfor %}
-		   </tr>
-		</table>
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td width="40%">Art No :</td>
+        {% set check = namespace(value="1") %} {% set woid =
+        frappe.get_all('Work Order Item Details', filters={'parent':
+        doc.mwo_name}, fields=['art_no']) %} {% for woid in woid %} {% set
+        vcount = namespace(value=1) %} {% if (woid.art_no is not none) and
+        (check.value=="1") %}
+        <td width="60%">{{ woid.art_no }}</td>
+        {% set check.value = "2" %} {% endif %} {% endfor %}
+      </tr>
+    </table>
   </div>
 </div>
 {% if accessories_type == "Accessories" %}
-  <div class="row section-break f_font">
-    <div class="col-xs-6"></div>
-    <div class="col-xs-6">
-      <table width="100%" style="table-layout: fixed;">
-        <tr>
-          <td width="40%">{{doc.art_no_size_qty[0:lengthvalue-1]}}</td>
-        </tr>
-      </table>
-    </div>
+<div class="row section-break f_font">
+  <div class="col-xs-6"></div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td width="40%">{{doc.art_no_size_qty[0:lengthvalue-1]}}</td>
+      </tr>
+    </table>
   </div>
+</div>
 {% endif %}
 <div class="row section-break f_font">
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
-        <td width="40%">{% if doc.supplier is not none %} Penerima {% endif %}</td>
-        <td width="60%"><b>{% if doc.supplier is not none %} {{ doc.supplier or '' }} {% endif %}</b></td>
+        <td width="40%">
+          {% if doc.supplier is not none %} Penerima {% endif %}
+        </td>
+        <td width="60%">
+          <b
+            >{% if doc.supplier is not none %} {{ doc.supplier or '' }} {% endif
+            %}</b
+          >
+        </td>
       </tr>
     </table>
   </div>
   <div class="col-xs-6">
-	<table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
-        <td width="40%">{% if doc.po_reference is not none %} PO Number {% endif %}</td>
-        <td width="60%">{% if doc.po_reference is not none %} {{ doc.po_reference or '' }} {% endif %}</td>
+        <td width="40%">
+          {% if doc.po_reference is not none %} PO Number {% endif %}
+        </td>
+        <td width="60%">
+          {% if doc.po_reference is not none %} {{ doc.po_reference or '' }} {%
+          endif %}
+        </td>
       </tr>
     </table>
   </div>
 </div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
-        <td width="40%">{% if doc.supplier_address is not none %} Alamat {% endif %}</td>
-        <td width="60%"><b>{% if doc.supplier_address is not none %} {{ doc.supplier_address or '' }} {% endif %}</b></td>
+        <td width="40%">
+          {% if doc.supplier_address is not none %} Alamat {% endif %}
+        </td>
+        <td width="60%">
+          <b
+            >{% if doc.supplier_address is not none %} {{ doc.supplier_address
+            or '' }} {% endif %}</b
+          >
+        </td>
       </tr>
     </table>
   </div>
   <div class="col-xs-6">
-	<table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
-        <td width="40%">{% if doc.vehicle_no is not none %} Vehicle No {% endif %}</td>
-        <td width="60%">{% if doc.vehicle_no is not none %} {{ doc.vehicle_no or '' }} {% endif %}</td>
+        <td width="40%">
+          {% if doc.vehicle_no is not none %} Vehicle No {% endif %}
+        </td>
+        <td width="60%">
+          {% if doc.vehicle_no is not none %} {{ doc.vehicle_no or '' }} {%
+          endif %}
+        </td>
       </tr>
     </table>
   </div>
 </div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
-        <td width="40%">{% if doc.po_address_display is not none %} Shipping Address {% endif %}</td>
-        <td width="60%"><b>{% if doc.po_address_display is not none %} {{ doc.po_address_display or '' }} {% endif %}</b></td>
+        <td width="40%">
+          {% if doc.po_address_display is not none %} Shipping Address {% endif
+          %}
+        </td>
+        <td width="60%">
+          <b
+            >{% if doc.po_address_display is not none %} {{
+            doc.po_address_display or '' }} {% endif %}</b
+          >
+        </td>
       </tr>
     </table>
   </div>
   <div class="col-xs-6">
-	<table width="100%" style="table-layout: fixed;">
+    <table width="100%" style="table-layout: fixed">
       <tr>
-        <td width="40%">{% if doc.driver_name is not none %} Driver Name {% endif %}</td>
-        <td width="60%">{% if doc.driver_name is not none %} {{ doc.driver_name or '' }} {% endif %}</td>
+        <td width="40%">
+          {% if doc.driver_name is not none %} Driver Name {% endif %}
+        </td>
+        <td width="60%">
+          {% if doc.driver_name is not none %} {{ doc.driver_name or '' }} {%
+          endif %}
+        </td>
       </tr>
     </table>
   </div>
 </div>
 
-{% set disc=namespace(discount=0) %}
-{% set amt=namespace(price_amount=0) %}
-{% set uom=namespace(uom_name="") %}
+{% set disc=namespace(discount=0) %} {% set amt=namespace(price_amount=0) %} {%
+set uom=namespace(uom_name="") %}
 
-<br><table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
-    <tr>
-        <th class="tac" width="5%"><b>No.</b></th>
-        <th class="tac" width="30%"><b>Kode Barang</b></th>
-        <th class="tac" width="25%"><b>Deskripsi</b></th>
-        <th class="tac" width="25%"><b>Notes</b></th>
-        <th class="tac" width="15%"><b>Quantity</b></th>
-        <!--<th class="tac" width="%"><b>Deskripsi</b></th>-->
+<br />
+<table
+  width="100%"
+  style="table-layout: auto"
+  border="1px"
+  bordercolor="#d1d8dd"
+>
+  <tr>
+    <th class="tac" width="5%"><b>No.</b></th>
+    <th class="tac" width="30%"><b>Kode Barang</b></th>
+    <th class="tac" width="25%"><b>Deskripsi</b></th>
+    <th class="tac" width="25%"><b>Notes</b></th>
+    <th class="tac" width="15%"><b>Quantity</b></th>
+    <!--<th class="tac" width="%"><b>Deskripsi</b></th>-->
+  </tr>
 
-    </tr>
-
-{% for row in doc.items %}
-    <tr>
-        <td class="tac" width="5%">{{ row.idx or '' }}</td>
-        <td width="30%">{{ row.item_code or '' }}</td>
-        <td width="25%">{{ row.description or '' }}</td>
-        <td width="25%">{{ row.remarks or '' }}</td>
-        <td class="tac" width="15%"> {{row.qty}}&nbsp; {{ row.uom or 0}}</td>
-		<!--<td width="30%">{{ row.description or '' }}</td>-->
-
-    </tr>
-{% endfor %}
+  {% for row in doc.items %}
+  <tr>
+    <td class="tac" width="5%">{{ row.idx or '' }}</td>
+    <td width="30%">{{ row.item_code or '' }}</td>
+    <td width="25%">{{ row.description or '' }}</td>
+    <td width="25%">{{ row.remarks or '' }}</td>
+    <td class="tac" width="15%">{{row.qty}}&nbsp; {{ row.uom or 0}}</td>
+    <!--<td width="30%">{{ row.description or '' }}</td>-->
+  </tr>
+  {% endfor %}
   <tr>
     <td class="tac" colspan="4">Total Quantity</td>
     <td class="tac">{{ doc.total_qty or '' }}&nbsp;{{uom.uom_name}}</td>
   </tr>
 </table>
-<br>
-<br>
+<br />
+<br />
 <div class="row section-break f_font">
-<div class="col-xs-12">
-<table width="100%" style="table-layout: fixed;">
-<tr><td colspan="12"></td></tr>
+  <div class="col-xs-12">
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td colspan="12"></td>
+      </tr>
 
-<tr><td colspan="12" height="70px"></td></tr>
-{% set username = ""%}
-{% if frappe.session.user != "Administrator" %}
-{% set user = frappe.get_doc('User', frappe.session.user)%}
-{% set username= user.full_name %} {% endif%}
-{% if frappe.session.user == "Administrator"%}
-{% set username= frappe.session.user %} {% endif%}
+      <tr>
+        <td colspan="12" height="70px"></td>
+      </tr>
+      {% set username = ""%} {% if frappe.session.user != "Administrator" %} {%
+      set user = frappe.get_doc('User', frappe.session.user)%} {% set username=
+      user.full_name %} {% endif%} {% if frappe.session.user ==
+      "Administrator"%} {% set username= frappe.session.user %} {% endif%}
 
-<tr>
-  <td colspan="4" class="tac">&nbsp;&nbsp;&nbsp;&nbsp;&nbspTanda Terima</td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac ">Hormat kami</td>
-</tr>
-<tr>
-  <tr>
-  <td colspan="4" class="tac"></td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac "></td>
-</tr>
-<tr>
-  <td colspan="4" class="tac"></td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac "></td>
-</tr>
-<tr>
-  <td colspan="4" class="tac"></td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac "></td>
-</tr>
-<tr>
-  <td colspan="4" class="tac"></td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac "></td>
-</tr>
-<tr>
-  <td colspan="4" class="tac"></td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac "></td>
-</tr>
-<tr>
-  <td colspan="4" class="tac">(&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp)</td>
-  <td colspan="4" class="tac "></td>
-  <td colspan="4" class="tac "></td>
-</tr>
-</table>
-</div>
+      <tr>
+        <td colspan="4" class="tac">
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbspTanda Terima
+        </td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac">Hormat kami</td>
+      </tr>
+      <tr></tr>
+      <tr>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+      </tr>
+      <tr>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+      </tr>
+      <tr>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+      </tr>
+      <tr>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+      </tr>
+      <tr>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+      </tr>
+      <tr>
+        <td colspan="4" class="tac">
+          (&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp)
+        </td>
+        <td colspan="4" class="tac"></td>
+        <td colspan="4" class="tac"></td>
+      </tr>
+    </table>
+  </div>
 </div>
