@@ -523,8 +523,12 @@ def create_and_submit_delivery_note_from_sales_order(
         raise Exception(f'Problem in creating delivery note. Reason: {str(e)}')
 
 
-def create_payment_for_sales_order_from_web(base, payment_data, sales_invoice_data, accounting_dimensions, submit=False):
+def create_payment_for_sales_order_from_web(
+        base, order_data, payment_data, sales_invoice_data, accounting_dimensions, submit=False):
     try:
+        """Auto map paid to with store by Chart of Account Configuration"""
+        payment_data['paid_to'] = get_coa_from_store(store=order_data.get('store'))
+
         payment_url = base + '/api/resource/Payment%20Entry'
         payment_data.update({
             "doctype": 1,
@@ -574,6 +578,13 @@ def auto_map_accounting_dimensions_fields(accounting_dimensions, order_data={}, 
         return accounting_dimensions
     except Exception:
         return accounting_dimensions
+
+
+def get_coa_from_store(store):
+    coa = frappe.db.get_value('COA Mapping Table', store, 'coa')
+    if not coa:
+        raise Exception('COA (Paid to) not found.')
+    return coa
 
 
 def handle_empty_error_message(response, keys, *args, **kwargs):

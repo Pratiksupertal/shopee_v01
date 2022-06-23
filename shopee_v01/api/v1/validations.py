@@ -13,18 +13,18 @@ def validate_data(data):
     except ValueError:
         return "Invalid JSON submitted"
 
-#it is created by pratik/Rakesh as sales order cycle doesn't have the customer data for validation
+# it is created by pratik/Rakesh as sales order cycle doesn't have the customer data for validation
 def data_validation_for_sales_order_cycle(order_data, payment_data):
     if not order_data.get("delivery_date"):
         order_data["delivery_date"] = today()
     if not order_data.get("items"):
         raise Exception("Required data missing : Unable to proceed : Items are required")
+    if not order_data.get("store"):
+        raise Exception("Required data missing : Unable to proceed : Store is required")
     if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
         raise Exception("Required data missing : Unable to proceed : Sales order Number and Source app name both are required")
     if not payment_data.get("paid_from"):
         raise Exception("Required data missing : Unable to proceed : Paid from is required")
-    if not payment_data.get("paid_to"):
-        raise Exception("Required data missing : Unable to proceed : Paid to is required")
     if not payment_data.get("paid_from_account_currency"):
         raise Exception("Required data missing : Unable to proceed : Paid from account currency is required")
     if not payment_data.get("paid_to_account_currency"):
