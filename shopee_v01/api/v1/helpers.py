@@ -581,7 +581,7 @@ def auto_map_accounting_dimensions_fields(accounting_dimensions, order_data={}, 
 
 
 def get_coa_from_store(store):
-    coa = frappe.db.get_value('COA Mapping Table', 'BARATA A.12 CASUAL', 'coa')
+    coa = frappe.db.get_value('COA Mapping Table', store, 'coa')
     if not coa:
         raise Exception('COA (Paid to) not found.')
     return coa
