@@ -524,14 +524,10 @@ def create_and_submit_delivery_note_from_sales_order(
 
 
 def create_payment_for_sales_order_from_web(
-        base, order_data, payment_data, sales_invoice_data, accounting_dimensions, submit=False):
+        base, payment_data, sales_invoice_data, accounting_dimensions, submit=False):
     try:
-        """Auto map paid to with store by Chart of Account Configuration"""
-        payment_data['paid_to'] = get_coa_from_store(store=order_data.get('store'))
-
         payment_url = base + '/api/resource/Payment%20Entry'
         payment_data.update({
-            "doctype": 1,
             "references": [
                 {
                     "parenttype": "Payment Entry",
