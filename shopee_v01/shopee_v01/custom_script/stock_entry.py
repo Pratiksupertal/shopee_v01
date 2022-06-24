@@ -43,15 +43,23 @@ def update_stock_to_halosis(doc):
     import requests
     # Comparing the parent warehouse
     request = []
-    # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00092")
+    # doc = frappe.get_doc("Stock Entry", "MAT-STE-2022-00455")
     config = frappe.get_single("Online Warehouse Configuration")
     for item in doc.items:
+        vendors_list = []
+        brand = frappe.db.get_value("Item", item.item_code, "brand")
+        for data in config.brand_vendor_mapping:
+            if data.brand == brand:
+                vendors_list.append(data.vendor_id)
         request_body = {
             "item_code": item.item_code,
-            "brand": frappe.db.get_value("Item", item.item_code, "brand"),
+            "brand": brand,
+            "vendor_id": vendors_list,
             "qty": int(item.qty),
             "type": "in" if (parent_warehouse(item.t_warehouse)) else ("out" if (parent_warehouse(item.s_warehouse)) else "")
         }
+        # print(request_body)
+        # exit()
         if (request_body["type"] in ["in", "out"]):
             try:
                 request.append(request_body)
