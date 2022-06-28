@@ -46,11 +46,8 @@ def update_stock_to_halosis(doc):
     # doc = frappe.get_doc("Stock Entry", "MAT-STE-2022-00455")
     config = frappe.get_single("Online Warehouse Configuration")
     for item in doc.items:
-        vendors_list = []
         brand = frappe.db.get_value("Item", item.item_code, "brand")
-        for data in config.brand_vendor_mapping:
-            if data.brand == brand:
-                vendors_list.append(data.vendor_id)
+        vendors_list = [data.vendor_id for data in config.brand_vendor_mapping if data.brand == brand]
         request_body = {
             "item_code": item.item_code,
             "brand": brand,
@@ -77,12 +74,13 @@ def update_stock_to_halosis(doc):
                 frappe.log_error(title="Update stock API Login part", message=frappe.get_traceback())
                 frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
     request = json.dumps(request).replace("'", '"')
-    if len(request)>2:
+    if len(request) > 2:
         try:
+            print('\n\n\n\n', request, '\n\n\n\n')
             url = config.base_url + 'update-stock'
             response = requests.post(
                 url.replace("'", '"'),
-                json =json.loads(request),
+                json=json.loads(request),
                 headers={"Authorization": auth_token},)
             frappe.log_error(title="Update stock API update stock part", message=response.text)
 
