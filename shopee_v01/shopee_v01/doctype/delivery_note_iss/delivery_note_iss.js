@@ -168,10 +168,10 @@ frappe.ui.form.on('Delivery Note ISS', {
                         callback: function(res2){
                             console.log(res2.message.length);
                             if (res2 && res2.message){
-                									for (var i = 0; i<res2.message.length; i=i+1) {
-                                      notes = notes + " " + res2.message[i].art_no_size;
-                                      notes = notes + "(" + res2.message[i].art_no_quantity + "),";
-                									}
+                				    for (var i = 0; i<res2.message.length; i=i+1) {
+                                        notes = notes + " " + res2.message[i].art_no_size;
+                                        notes = notes + "(" + res2.message[i].art_no_quantity + "),";
+                					}
                                 }
                             }
                         })
