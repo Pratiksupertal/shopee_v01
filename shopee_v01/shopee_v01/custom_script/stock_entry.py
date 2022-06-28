@@ -9,11 +9,10 @@ def update_finished901itemsummary(doc,method):
         item_availability = frappe.db.sql(sql)
         warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
         warehouse_tuple = tuple(warehouse_tuple)
-        if len(item_availability)>0 :
-            # qty = item.qty if warehouse_tuple[0] == item.t_warehouse
-            if len(warehouse_tuple)>0:
+        if len(item_availability) > 0:
+            if len(warehouse_tuple) > 0:
                 if warehouse_tuple[0] == item.t_warehouse:
-                    qty =  item.qty
+                    qty = item.qty
                 if warehouse_tuple[0] == item.s_warehouse:
                     qty = -item.qty
                 if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
@@ -43,7 +42,6 @@ def update_stock_to_halosis(doc):
     import requests
     # Comparing the parent warehouse
     request = []
-    # doc = frappe.get_doc("Stock Entry", "MAT-STE-2022-00455")
     config = frappe.get_single("Online Warehouse Configuration")
     for item in doc.items:
         brand = frappe.db.get_value("Item", item.item_code, "brand")
@@ -55,8 +53,6 @@ def update_stock_to_halosis(doc):
             "qty": int(item.qty),
             "type": "in" if (parent_warehouse(item.t_warehouse)) else ("out" if (parent_warehouse(item.s_warehouse)) else "")
         }
-        # print(request_body)
-        # exit()
         if (request_body["type"] in ["in", "out"]):
             try:
                 request.append(request_body)
@@ -76,7 +72,6 @@ def update_stock_to_halosis(doc):
     request = json.dumps(request).replace("'", '"')
     if len(request) > 2:
         try:
-            print('\n\n\n\n', request, '\n\n\n\n')
             url = config.base_url + 'update-stock'
             response = requests.post(
                 url.replace("'", '"'),
