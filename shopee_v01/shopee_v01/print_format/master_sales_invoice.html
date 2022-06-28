@@ -86,14 +86,13 @@
 {% set amt=namespace(price_amount=0) %}
 {% set counter = 0 %}
 {% set sales_invoice = None %}
-
 {% set fmt_total = frappe.utils.fmt_money(doc.total_amount,currency="") %}
 
 
   <tr>
 		<td class="tac" width="3%">{{ '1' }}</td>
 		<td width="18%"></td>
-        <td width="36%">{% if doc.remarks is not none %} {{doc.remarks}} {% endif %}</td>
+        <td width="36%">{% if doc.remarks is not none %}{{doc.remarks}}{% endif %}</td>
         <td width="16%">{{ doc.total_qty or '' }}</td>
 		<td width="27%">{{ fmt_total_amount_reference or '' }}</td>
 	</tr>
