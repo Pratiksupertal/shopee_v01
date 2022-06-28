@@ -147,7 +147,8 @@
    "fieldname": "source_app_name",
    "fieldtype": "Link",
    "label": "Source App Name",
-   "options": "Source App Name"
+   "options": "Source App Name",
+   "print_hide": 1
   },
   {
    "fieldname": "dimension_col_break",
@@ -158,43 +159,50 @@
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
-   "options": "Cost Center"
+   "options": "Cost Center",
+   "print_hide": 1
   },
   {
    "fieldname": "brand",
    "fieldtype": "Link",
    "label": "Brand",
-   "options": "Brand"
+   "options": "Brand",
+   "print_hide": 1
   },
   {
    "fieldname": "department_category",
    "fieldtype": "Link",
    "label": "Department Category",
-   "options": "Department Category"
+   "options": "Department Category",
+   "print_hide": 1
   },
   {
    "fieldname": "chain",
    "fieldtype": "Link",
    "label": "Chain",
-   "options": "Chain"
+   "options": "Chain",
+   "print_hide": 1
   },
   {
    "fieldname": "region",
    "fieldtype": "Link",
    "label": "Region",
-   "options": "Region"
+   "options": "Region",
+   "print_hide": 1
   },
   {
    "fieldname": "city",
    "fieldtype": "Link",
    "label": "City",
-   "options": "City"
+   "options": "City",
+   "print_hide": 1
   },
   {
    "fieldname": "store",
    "fieldtype": "Link",
    "label": "Store",
-   "options": "Store"
+   "options": "Store",
+   "print_hide": 1
   },
   {
    "fieldname": "total_amount",
@@ -284,7 +292,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2022-06-08 13:45:42.159048",
+ "modified": "2022-06-23 13:47:10.957425",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Master Sales Invoice",

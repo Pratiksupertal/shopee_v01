@@ -97,7 +97,7 @@ doc_events = {
     "autoname":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
     },
     "Stock Entry":{
-    "on_submit":"shopee_v01.shopee_v01.custom_script.stock_entry.update_finished901itemsummary"
+    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_entry.update_finished901itemsummary","shopee_v01.shopee_v01.custom_script.stock_entry.submit"]
     },
     "Pick List":{
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
@@ -175,6 +175,6 @@ override_whitelisted_methods = {
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
-override_doctype_dashboards = {
-    "Purchase Order": "shopee_v01.shopee_v01.custom_script.custom_dashboard.get_po_dashboard_data"
-}
+# override_doctype_dashboards = {
+# 	"Task": "shopee_v01.task.get_dashboard_data"
+# }
