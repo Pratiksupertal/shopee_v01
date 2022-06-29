@@ -1,0 +1,176 @@
+<div class="print-heading">
+<h2>Master Sales Invoice<br>
+<small>{{ doc.name }}</small>
+</h2><br>
+<h2 style="font-size:10px">
+</div>
+{% set cust_addr=namespace(customer_address="") %}
+{% set cust_address=namespace(address="") %}
+{% set customer_address = frappe.get_all('Sales Invoice', filters={'customer_name': doc.customer}, fields=['customer_address']) %}
+{% for customer_address in customer_address %}
+    {% set cust_addr.customer_address = customer_address.customer_address %}
+{% endfor %}
+{% set address = frappe.get_all('Address', filters={'name': cust_addr.customer_address}, fields=['address_line1','city','state']) %}
+{% for address in address %}
+    {% set cust_address.address = address.address_line1 + ' ' + address.city %}
+    {% if address.state is not none %}
+      {% set cust_address.address = cust_address.address + address.state %}
+    {% endif %}
+{% endfor %}
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%" style="border-left: 1px solid black;border-bottom: 1px solid black; border-top: 1px solid black;"><b>Kepada :</b></td>
+        <td width="60%" style="border-right: 1px solid black;border-top: 1px solid black;"></td>
+      </tr>
+      <tr>
+        <td width="40%" style="border-left: 1px solid black; border-top: 1px solid black;"><b>Customer Name</b></td>
+        <td width="60%" style="border-right: 1px solid black;border-top: 1px solid black;">{{ doc.customer or '' }} </td>
+      </tr>
+      <tr>
+        <td width="40%" style="border-left: 1px solid black;border-bottom: 1px solid black;""><b>{% if cust_address.address is not none %} Alamat {% endif %}</b></td>
+        <td width="60%" style="border-bottom: 1px solid black; border-right: 1px solid black;">{% if cust_address.address is not none %} {{ cust_address.address or '' }} {% endif %}</td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	  <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"><b>Date</b></td>
+        <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('date'), "dd-mm-yyyy") }}</td>
+      </tr>
+      <!--<tr>
+        <td width="40%"><b>Due Date</b></td>
+  		    <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('due_date'), "dd-mm-yyyy") }}</td>
+  	  </tr>-->
+    </table>
+  </div>
+</div>
+
+
+{% set name=doc.name %}
+{% set user_name = frappe.get_all('User', filters={'full_name': username}, fields=['name']) %}
+
+
+{% set payment_term = frappe.get_all('Payment Entry Reference', filters={'parent': doc.name,'parenttype': 'Master Sales Invoice','reference_doctype': 'Sales Invoice'}, fields=['total_amount','outstanding_amount']) %}
+{% set total_amount =  namespace(value=0) %}
+{% set outstanding_amount =  namespace(value=0) %}
+{% set total_amount_reference = namespace(value=0) %}
+{% for payment_term in payment_term %}
+     {% set total_amount_reference.value = total_amount_reference.value + payment_term.total_amount %}
+	 {% set outstanding_amount.value = outstanding_amount.value + payment_term.outstanding_amount %}
+{% endfor %}
+{% set total_amount.value =  total_amount.value +  total_amount_reference.value - (total_amount_reference.value * (doc.discount_percentage/100)) %}
+{% set total_discount = total_amount_reference.value * (doc.discount_percentage/100) %}
+{% set total_ppn = total_amount.value * (doc.tax_percent/100) %}
+{% set total_payment = total_amount.value + total_ppn %}
+{% set fmt_total_amount_reference = frappe.utils.fmt_money(total_amount_reference.value,currency="") %}
+{% set fmt_total_amount = frappe.utils.fmt_money(total_amount.value,currency="") %}
+{% set fmt_total_discount = frappe.utils.fmt_money(total_discount,currency="") %}
+{% set fmt_total_ppn = frappe.utils.fmt_money(total_ppn,currency="") %}
+{% set fmt_total_payment = frappe.utils.fmt_money(total_payment,currency="") %}
+
+<div class="row section-break f_font">
+<div class="col-xs-12" style="overflow-x:auto;">
+<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+    <tr>
+      <th class="tac" width="3%"><b>No.</b></th>
+        <th class="tac" width="18%"><b>Article</b></th>
+        <th class="tac" width="36%"><b>Deskripsi</b></th>
+        <th class="tac" width="16%"><b>Quantity</b></th>
+        <th class="tac" width="27%"><b>Total</b></th>
+    </tr>
+{% set uom=namespace(uom_name="") %}
+{% set disc=namespace(discount=0) %}
+{% set amt=namespace(price_amount=0) %}
+{% set counter = 0 %}
+{% set sales_invoice = None %}
+{% set fmt_total = frappe.utils.fmt_money(doc.total_amount,currency="") %}
+
+
+  <tr>
+		<td class="tac" width="3%">{{ '1' }}</td>
+		<td width="18%"></td>
+        <td width="36%">{% if doc.remarks is not none %}{{doc.remarks}}{% endif %}</td>
+        <td width="16%">{{ doc.total_qty or '' }}</td>
+		<td width="27%">{{ fmt_total_amount_reference or '' }}</td>
+	</tr>
+	<tr>
+		<td class="tac" width="3%">{{ '2' }}</td>
+		<td width="18%"></td>
+        <td width="36%">{{'Discount Margin '}}{{doc.discount_percentage}}{{'%'}}</td>
+        <td width="16%"></td>
+		<td width="27%">{{ fmt_total_discount or '' }}</td>
+	</tr>
+	<tr>
+		<td class="tac" width="3%">{{ '3' }}</td>
+		<td width="18%"></td>
+        <td width="36%">{{'Sub Total '}}</td>
+        <td width="16%"></td>
+		<td width="27%">{{ fmt_total_amount or '' }}</td>
+	</tr>
+	<tr>
+		<td class="tac" colspan="3">Perhatian barang yang dibeli tidak dapat ditukar/dikembalikan</td><td class="tac">{{'PPN ('}}{{doc.tax_percent}}{{'%)'}}</td><td>{{'IDR '}}{{fmt_total_ppn}}</td>
+  </tr>
+  <tr>
+		<td class="tac" colspan="3"></td><td class="tac">{{'Total'}}</td><td>{{'IDR '}}{{fmt_total_payment}}</td>
+	</tr>
+</table><br>
+</div>
+</div>
+
+
+
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
+
+<tr><td colspan="12" height="70px"></td></tr>
+{% set username = ""%}
+{% if frappe.session.user != "Administrator" %}
+{% set user = frappe.get_doc('User', frappe.session.user)%}
+{% set username= user.full_name %} {% endif%}
+{% if frappe.session.user == "Administrator"%}
+{% set username= frappe.session.user %} {% endif%}
+
+<tr>
+  <td colspan="4" class="tac">&nbsp;&nbsp;&nbsp;&nbsp;&nbspTanda Terima</td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac ">Hormat kami</td>
+</tr>
+<tr>
+  <tr>
+  <td colspan="4" class="tac"></td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac "></td>
+</tr>
+<tr>
+  <td colspan="4" class="tac"></td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac "></td>
+</tr>
+<tr>
+  <td colspan="4" class="tac"></td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac "></td>
+</tr>
+<tr>
+  <td colspan="4" class="tac"></td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac "></td>
+</tr>
+<tr>
+  <td colspan="4" class="tac"></td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac "></td>
+</tr>
+<tr>
+  <td colspan="4" class="tac">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp)</td>
+  <td colspan="4" class="tac "></td>
+  <td colspan="4" class="tac "></td>
+</tr>
+</table>
+</div>
+</div>
