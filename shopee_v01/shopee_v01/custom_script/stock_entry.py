@@ -39,42 +39,106 @@ def update_finished901itemsummary(doc,method):
 def submit(doc, method):
     update_stock_to_halosis(doc=doc)
 
+
+def is_type_adjustment(pick_list):
+    """
+    Handling case for warehouse app
+    If any stock entry has pick list and this pick pick list has sales order from `E-Commerce`
+    Then, the halosis stock update type will be `adjustmennnt`
+    
+    Return True if type `adjustment`, False otherwise
+    """
+    if not pick_list:
+        return False
+    try:
+        pick_list_details = frappe.get_doc('Pick List', pick_list)
+        if pick_list_details:
+            locations = pick_list_details.locations
+            if locations:
+                sales_order = locations[0].sales_order
+                if sales_order:
+                    source_app_name = frappe.db.get_value("Sales Order", sales_order, "source_app_name")
+                    if source_app_name:
+                        return source_app_name.lower() in ["ecommerce", "e-commerce"]
+        return False
+    except Exception:
+        return False
+
+
+def get_stock_update_type(adjustment_type, item):
+    in_type = parent_warehouse(item.t_warehouse)
+    out_type = parent_warehouse(item.s_warehouse)
+    if adjustment_type and in_type:
+        return "adjustment", "plus"
+    elif adjustment_type and out_type:
+        return "adjustment", "minus"
+    elif in_type:
+        return "in", "plus"
+    elif out_type:
+        return "out", "minus"
+    return None, None
+
+
+def get_qty(type, cal_type, item):
+    if type in ["in", "out"]:
+        return int(item.qty)
+
+    # Next, handle adjustment type
+    # For (in) type of adjustment: new_actual_qty = actual_qty + item.qty
+    # For (out) type of adjustment: new_actual_qty = actual_qty - item.qty
+    prev_actual_qty = frappe.db.get_list('Bin', fields=['actual_qty'], filters={
+        'item_code': item.item_code,
+        'warehouse': 'Stores - ISS'})
+    if cal_type == "plus":
+        return prev_actual_qty + int(item.qty)
+    elif cal_type == "minus":
+        return prev_actual_qty - int(item.qty)
+    return int(item.qty)
+
+
 def update_stock_to_halosis(doc):
     import requests
     # Comparing the parent warehouse
     request = []
     # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00092")
     config = frappe.get_single("Online Warehouse Configuration")
+
+    adjustment_type = is_type_adjustment(doc.pick_list)
+
     for item in doc.items:
+        type, cal_type = get_stock_update_type(adjustment_type, item)
+        if not type:
+            continue
+
         request_body = {
             "item_code": item.item_code,
             "brand": frappe.db.get_value("Item", item.item_code, "brand"),
-            "qty": int(item.qty),
-            "type": "in" if (parent_warehouse(item.t_warehouse)) else ("out" if (parent_warehouse(item.s_warehouse)) else "")
+            "qty": get_qty(type, cal_type, item),
+            "type": type
         }
-        if (request_body["type"] in ["in", "out"]):
-            try:
-                request.append(request_body)
-                url = config.base_url + 'auth'
-                data = {
-                    "username": config.username,
-                    "password": config.get_password('password')
-                }
-                auth_res = requests.post(url.replace("'", '"'), data=data)
-                auth_res_json = json.loads(auth_res.text)
-                auth_token = "Bearer " + auth_res_json["data"]["token"]
-                print(auth_res_json)
-            except Exception:
-                raise
-                frappe.log_error(title="Update stock API Login part", message=frappe.get_traceback())
-                frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
+        print('\n\n\n', request_body, '\n\n\n')
+        try:
+            request.append(request_body)
+            url = config.base_url + 'auth'
+            data = {
+                "username": config.username,
+                "password": config.get_password('password')
+            }
+            auth_res = requests.post(url.replace("'", '"'), data=data)
+            auth_res_json = json.loads(auth_res.text)
+            auth_token = "Bearer " + auth_res_json["data"]["token"]
+            print(auth_res_json)
+        except Exception:
+            raise
+            frappe.log_error(title="Update stock API Login part", message=frappe.get_traceback())
+            frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
     request = json.dumps(request).replace("'", '"')
-    if len(request)>2:
+    if len(request) > 2:
         try:
             url = config.base_url + 'update-stock'
             response = requests.post(
                 url.replace("'", '"'),
-                json =json.loads(request),
+                json=json.loads(request),
                 headers={"Authorization": auth_token},)
             frappe.log_error(title="Update stock API update stock part", message=response.text)
 
@@ -88,7 +152,7 @@ def update_stock_to_halosis(doc):
 def parent_warehouse(warehouse):
     config = frappe.get_single("Online Warehouse Configuration")
     warehouse_list = [i.warehouse for i in config.online_warehouse]
-    base_parent = [frappe.db.get_value("Warehouse",warehouse,"parent") for warehouse in warehouse_list]
+    base_parent = [frappe.db.get_value("Warehouse", warehouse, "parent") for warehouse in warehouse_list]
     a = frappe.db.get_value("Warehouse", warehouse, "parent")
     if not a:
         return False
