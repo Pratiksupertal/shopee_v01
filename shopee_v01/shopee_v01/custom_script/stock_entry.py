@@ -9,11 +9,10 @@ def update_finished901itemsummary(doc,method):
         item_availability = frappe.db.sql(sql)
         warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
         warehouse_tuple = tuple(warehouse_tuple)
-        if len(item_availability)>0 :
-            # qty = item.qty if warehouse_tuple[0] == item.t_warehouse
-            if len(warehouse_tuple)>0:
+        if len(item_availability) > 0:
+            if len(warehouse_tuple) > 0:
                 if warehouse_tuple[0] == item.t_warehouse:
-                    qty =  item.qty
+                    qty = item.qty
                 if warehouse_tuple[0] == item.s_warehouse:
                     qty = -item.qty
                 if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
@@ -80,39 +79,43 @@ def get_stock_update_type(adjustment_type, item):
 
 
 def get_qty(type, cal_type, item):
-    if type in ["in", "out"]:
-        return int(item.qty)
+    try:
+        if type in ["in", "out"]:
+            return int(item.qty)
 
-    # Next, handle adjustment type
-    # For (in) type of adjustment: new_actual_qty = actual_qty + item.qty
-    # For (out) type of adjustment: new_actual_qty = actual_qty - item.qty
-    prev_actual_qty = frappe.db.get_list('Bin', fields=['actual_qty'], filters={
-        'item_code': item.item_code,
-        'warehouse': 'Stores - ISS'})
-    if cal_type == "plus":
-        return prev_actual_qty + int(item.qty)
-    elif cal_type == "minus":
-        return prev_actual_qty - int(item.qty)
-    return int(item.qty)
+        # Next, handle adjustment type
+        # For (in) type of adjustment: new_actual_qty = actual_qty + item.qty
+        # For (out) type of adjustment: new_actual_qty = actual_qty - item.qty
+        warehouse = item.t_warehouse if cal_type == "plus" else item.s_warehouse
+        actual_qty = frappe.db.get_list('Bin', fields=['actual_qty'], filters={
+            'item_code': item.item_code,
+            'warehouse': warehouse}, as_list=True)[0][0]
+        return actual_qty
+    except Exception:
+        raise
+        frappe.log_error(title="Update stock API Data part", message=frappe.get_traceback())
+        frappe.msgprint(f'Something went wrong! {frappe.get_traceback()}')
 
 
 def update_stock_to_halosis(doc):
     import requests
     # Comparing the parent warehouse
     request = []
-    # doc = frappe.get_doc("Stock Entry","MAT-STE-2022-00092")
     config = frappe.get_single("Online Warehouse Configuration")
 
     adjustment_type = is_type_adjustment(doc.pick_list)
 
     for item in doc.items:
+        brand = frappe.db.get_value("Item", item.item_code, "brand")
+        vendors_list = [data.vendor_id for data in config.brand_vendor_mapping if data.brand == brand]
         type, cal_type = get_stock_update_type(adjustment_type, item)
         if not type:
             continue
 
         request_body = {
             "item_code": item.item_code,
-            "brand": frappe.db.get_value("Item", item.item_code, "brand"),
+            "brand": brand,
+            "vendor_id": vendors_list,
             "qty": get_qty(type, cal_type, item),
             "type": type
         }
