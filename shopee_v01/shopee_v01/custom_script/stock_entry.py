@@ -84,8 +84,6 @@ def get_qty(type, cal_type, item):
             return int(item.qty)
 
         # Next, handle adjustment type
-        # For (in) type of adjustment: new_actual_qty = actual_qty + item.qty
-        # For (out) type of adjustment: new_actual_qty = actual_qty - item.qty
         warehouse = item.t_warehouse if cal_type == "plus" else item.s_warehouse
         actual_qty = frappe.db.get_list('Bin', fields=['actual_qty'], filters={
             'item_code': item.item_code,
