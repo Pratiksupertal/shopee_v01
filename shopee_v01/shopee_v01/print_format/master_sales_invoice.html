@@ -6,15 +6,19 @@
 </div>
 {% set cust_addr=namespace(customer_address="") %}
 {% set cust_address=namespace(address="") %}
-{% set customer_address = frappe.get_all('Sales Invoice', filters={'customer_name': doc.customer}, fields=['customer_address']) %}
+{% set customer_address = frappe.get_all('Sales Invoice', filters={'customer_name': doc.customer}, fields=['customer_address','customer_name']) %}
 {% for customer_address in customer_address %}
-    {% set cust_addr.customer_address = customer_address.customer_address %}
+    {% if customer_address.customer_address is not none %}
+      {% set cust_addr.customer_address = customer_address.customer_address %}
+    {% else %}
+      {% set cust_addr.customer_address = customer_address.customer_name + '-Billing' %}
+    {% endif %}
 {% endfor %}
 {% set address = frappe.get_all('Address', filters={'name': cust_addr.customer_address}, fields=['address_line1','city','state']) %}
 {% for address in address %}
     {% set cust_address.address = address.address_line1 + ' ' + address.city %}
-    {% if address.state is not none %}
-      {% set cust_address.address = cust_address.address + address.state %}
+    {% if address.address_line is not none %}
+      {% set cust_address.address = cust_address.address %}
     {% endif %}
 {% endfor %}
 <div class="row section-break f_font">
