@@ -8,9 +8,9 @@ from shopee_v01.api.v1.helpers import create_payment_for_sales_order_from_web
 from shopee_v01.api.v1.helpers import format_result
 from shopee_v01.api.v1.helpers import handle_empty_error_message
 from shopee_v01.api.v1.helpers import auto_map_accounting_dimensions_fields
+from shopee_v01.api.v1.helpers import get_coa_from_store
 
 from shopee_v01.api.v1.validations import validate_data
-# from shopee_v01.api.v1.validations import data_validation_for_create_sales_order_web
 from shopee_v01.api.v1.validations import data_validation_for_sales_order_cycle
 
 
@@ -55,6 +55,9 @@ def sales_order_cycle():
         data_validation_for_sales_order_cycle(
             order_data=order_data,
             payment_data=payment_data)
+
+        """Auto map paid to with store by Chart of Account Configuration"""
+        payment_data['paid_to'] = get_coa_from_store(store=order_data.get('store'))
 
         base = get_base_url(url=frappe.request.url)
 
@@ -173,6 +176,9 @@ def sales_order_cycle_bulk():
             data_validation_for_sales_order_cycle(
                 order_data=order_data,
                 payment_data=payment_data)
+
+            """Auto map paid to with store by Chart of Account Configuration"""
+            payment_data['paid_to'] = get_coa_from_store(store=order_data.get('store'))
 
             base = get_base_url(url=frappe.request.url)
 
