@@ -146,8 +146,7 @@ def update_stock_to_halosis(doc):
             if response.status_code == 200:
                 frappe.msgprint('Updating to Halosis. Please, check error log for more update.')
             else:
-                raise
-                frappe.msgprint(f'Something went wrong! Please, check error log. {frappe.get_traceback()}')
+                frappe.msgprint(f'Stock updation to halosis is failed for some reasons! Please, check error log. {frappe.get_traceback()}')
         except Exception:
             raise
             frappe.log_error(title="Update stock API Data part", message=frappe.get_traceback())
