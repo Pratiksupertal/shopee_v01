@@ -1,7 +1,7 @@
 {
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2022-01-12 23:31:52.736837",
+ "creation": "2022-04-26 22:21:44.302925",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -13,6 +13,7 @@
   "naming_series",
   "customer",
   "customer_name",
+  "warehouse_head",
   "supplier",
   "column_break1",
   "amended_from",
@@ -155,7 +156,10 @@
   "mwo_email_id",
   "mwo_phone",
   "mwo_name",
-  "mwo_total_qty"
+  "mwo_total_qty",
+  "art_no_size_qty",
+  "art_no_size",
+  "art_no_quantity"
  ],
  "fields": [
   {
@@ -180,6 +184,12 @@
    "label": "Title",
    "no_copy": 1,
    "print_hide": 1
+  },
+  {
+   "fieldname": "accessories_type",
+   "fieldtype": "Select",
+   "label": "Material Type",
+   "options": "AE\nAF\nAMA\nAMB\nBE\nBF\nBMA\nBMB\nWASH"
   },
   {
    "fieldname": "naming_series",
@@ -217,6 +227,11 @@
    "read_only": 1
   },
   {
+   "fieldname": "supplier",
+   "fieldtype": "Data",
+   "label": "Supplier"
+  },
+  {
    "fieldname": "column_break1",
    "fieldtype": "Column Break",
    "oldfieldtype": "Column Break"
@@ -229,7 +244,7 @@
    "no_copy": 1,
    "oldfieldname": "amended_from",
    "oldfieldtype": "Data",
-   "options": "Delivery Note Shopee",
+   "options": "Delivery Note ISS",
    "print_hide": 1,
    "print_width": "150px",
    "read_only": 1,
@@ -338,6 +353,11 @@
    "print_hide": 1,
    "print_width": "100px",
    "width": "100px"
+  },
+  {
+   "fieldname": "supplier_address",
+   "fieldtype": "Data",
+   "label": "Supplier Address"
   },
   {
    "fieldname": "section_break_18",
@@ -552,7 +572,7 @@
    "label": "Items",
    "oldfieldname": "delivery_note_details",
    "oldfieldtype": "Table",
-   "options": "Delivery Note Item",
+   "options": "Delivery Note Item ISS",
    "reqd": 1
   },
   {
@@ -839,7 +859,6 @@
   {
    "fieldname": "grand_total",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Grand Total",
    "oldfieldname": "grand_total_export",
    "oldfieldtype": "Currency",
@@ -1131,7 +1150,6 @@
    "description": "% of materials delivered against this Delivery Note",
    "fieldname": "per_installed",
    "fieldtype": "Percent",
-   "in_list_view": 1,
    "label": "% Installed",
    "no_copy": 1,
    "oldfieldname": "per_installed",
@@ -1246,16 +1264,6 @@
    "print_hide": 1
   },
   {
-   "fieldname": "supplier",
-   "fieldtype": "Data",
-   "label": "Supplier"
-  },
-  {
-   "fieldname": "supplier_address",
-   "fieldtype": "Data",
-   "label": "Supplier Address"
-  },
-  {
    "fieldname": "po_reference",
    "fieldtype": "Data",
    "label": "PO's Reference"
@@ -1313,6 +1321,9 @@
   {
    "fieldname": "mwo_name",
    "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "SPK"
   },
   {
@@ -1321,18 +1332,47 @@
    "label": "Total Quantity"
   },
   {
-   "fieldname": "accessories_type",
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Amended From",
+   "no_copy": 1,
+   "oldfieldname": "amended_from",
+   "oldfieldtype": "Data",
+   "options": "Delivery Note ISS",
+   "print_hide": 1,
+   "print_width": "150px",
+   "read_only": 1,
+   "width": "150px"
+  },
+  {
+   "fieldname": "warehouse_head",
    "fieldtype": "Select",
-   "label": "Material Type",
-   "options": "AE\nAF\nAMA\nAMB\nBE\nBF\nBMA\nBMB\nWASH"
+   "label": "Warehouse Head",
+   "options": "Hendra\nAditya\nSusilo"
+  },
+  {
+   "fieldname": "art_no_size_qty",
+   "fieldtype": "Data",
+   "label": "Art No Size Quantity"
+  },
+  {
+   "fieldname": "art_no_size",
+   "fieldtype": "Data",
+   "label": "Art No size"
+  },
+  {
+   "fieldname": "art_no_quantity",
+   "fieldtype": "Data",
+   "label": "Art No Quantity"
   }
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2022-03-04 20:10:59.594762",
+ "modified": "2022-05-11 13:24:08.727339",
  "modified_by": "Administrator",
  "module": "Shopee V01",
- "name": "Delivery Note Shopee",
+ "name": "Delivery Note ISS",
  "owner": "Administrator",
  "permissions": [
   {

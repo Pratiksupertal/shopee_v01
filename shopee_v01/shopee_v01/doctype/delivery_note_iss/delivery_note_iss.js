@@ -1,4 +1,4 @@
-frappe.ui.form.on('Delivery Note Shopee', {
+frappe.ui.form.on('Delivery Note ISS', {
   	// refresh: function(frm) {
     refresh(frm) {
             frm.add_custom_button(__('Purchase Order'),
@@ -34,7 +34,7 @@ frappe.ui.form.on('Delivery Note Shopee', {
                   for (var ia = 0; ia < selections.length; ia=ia+1) {
                     console.log(selections);
                       frappe.call({
-                          method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_purchase_order",
+                          method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_purchase_order",
                           args: {
                               name: selections[ia]
                           },
@@ -69,7 +69,7 @@ frappe.ui.form.on('Delivery Note Shopee', {
                   for (var ia = 0; ia < selections.length; ia=ia+1) {
                     console.log(selections);
                       frappe.call({
-                          method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_purchase_order",
+                          method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_purchase_order",
                           args: {
                               name: selections[ia]
                           },
@@ -117,11 +117,12 @@ frappe.ui.form.on('Delivery Note Shopee', {
                 }else{
                     var tot_qty = 0;
 				            var tot_amount = 0;
+                    var notes = "Size/Qty : ";
                     for (var ia = 0; ia < selections.length; ia=ia+1) {
                       console.log(selections);
                       console.log(frm.doc.accessories_type);
                         frappe.call({
-                            method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_CMT",
+                            method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_CMT",
                             args: {
                                 name: selections[ia],
                                 accessories_type:frm.doc.accessories_type
@@ -159,11 +160,26 @@ frappe.ui.form.on('Delivery Note Shopee', {
                     }
 
                     for (var ia = 0; ia < selections.length; ia=ia+1) {
-                    console.log(selections);
-                    console.log("Total Qty di sini 2:");
-                    console.log(tot_qty);
                     frappe.call({
-                        method: "shopee_v01.shopee_v01.doctype.delivery_note_shopee.delivery_note_shopee.get_item_CMT_Address_Supplier",
+                        method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_CMT_Quantity_Size",
+                        args: {
+                            name: selections[ia]
+                        },
+                        callback: function(res2){
+                            console.log(res2.message.length);
+                            if (res2 && res2.message){
+                				    for (var i = 0; i<res2.message.length; i=i+1) {
+                                        notes = notes + " " + res2.message[i].art_no_size;
+                                        notes = notes + "(" + res2.message[i].art_no_quantity + "),";
+                					}
+                                }
+                            }
+                        })
+                    }
+
+                    for (var ia = 0; ia < selections.length; ia=ia+1) {
+                    frappe.call({
+                        method: "shopee_v01.shopee_v01.doctype.delivery_note_iss.delivery_note_iss.get_item_CMT_Address_Supplier",
                         args: {
                             name: selections[ia]
                         },
@@ -172,11 +188,9 @@ frappe.ui.form.on('Delivery Note Shopee', {
                             console.log(res2.message.length);
                             if (res2 && res2.message){
                                 for (var i = 0; i<res2.message.length; i=i+1) {
-									                  console.log(res2.message[i].supplier);
-                                    console.log(res2.message[i].supplier_address);
                                     console.log("Total Qty di sini 3:");
                                     console.log(tot_qty);
-                                    frm.set_value({mwo_name: res2.message[i].name,supplier: res2.message[i].supplier, supplier_address: res2.message[i].supplier_address,company: res2.message[i].company,po_address_display: res2.message[i].address_display,po_contact_person: res2.message[i].contact_person,total: tot_amount,grand_total: tot_amount,total_qty: tot_qty,rounded_total: tot_amount});
+                                    frm.set_value({mwo_name: res2.message[i].name,supplier: res2.message[i].supplier, supplier_address: res2.message[i].supplier_address,company: res2.message[i].company,po_address_display: res2.message[i].address_display,po_contact_person: res2.message[i].contact_person,total: tot_amount,grand_total: tot_amount,total_qty: tot_qty,rounded_total: tot_amount,art_no_size_qty: notes});
                                     frm.refresh();
                                     }
                                 }

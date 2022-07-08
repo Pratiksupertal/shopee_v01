@@ -9,7 +9,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, get_datetime, getdate, date_diff, cint, nowdate, get_link_to_form
 # import frappe
 
-class DeliveryNoteShopee(Document):
+class DeliveryNoteISS(Document):
 	pass
 
 @frappe.whitelist()
@@ -31,4 +31,8 @@ def get_item_CMT(name,accessories_type):
 
 @frappe.whitelist()
 def get_item_CMT_Address_Supplier(name):
-    return frappe.db.sql("select distinct mwo.supplier,po.supplier_address,po.company,po.address_display,po.contact_person,mwo.name from `tabMain Work Order` mwo left join `tabPurchase Order` po on mwo.supplier = po.supplier where mwo.name = %s", (name), as_dict=True)
+    return frappe.db.sql("select distinct mwo.supplier,po.supplier_address,po.company,po.address_display,po.contact_person,mwo.name,woid.qty art_no_qty,it.invent_size_id art_no_size from `tabMain Work Order` mwo left join `tabPurchase Order` po on mwo.supplier = po.supplier left join `tabWork Order Item Details` woid on mwo.name = woid.parent left join `tabItem` it on woid.art_no = it.item_code where mwo.name = %s", (name), as_dict=True)
+
+@frappe.whitelist()
+def get_item_CMT_Quantity_Size(name):
+    return frappe.db.sql("select woid.qty art_no_quantity,it.invent_size_id art_no_size from `tabMain Work Order` mwo left join `tabWork Order Item Details` woid on mwo.name = woid.parent left join `tabItem` it on woid.art_no = it.item_code where mwo.name = %s", (name), as_dict=True)
