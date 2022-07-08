@@ -11,7 +11,20 @@ def login():
     """
     modified by: Amirul Islam (9 May, 2022)
     allowed_roles: ["System Manager", "Warehouse Login"]
+
+    modified by: Amirul Islam (7 July, 2022)
+    previously: user can log in using email only
+    now: user can log in username as well
     """
+
+    def get_user_doc(data):
+        if frappe.db.exists('User', {'email': data['usr']}):
+            return frappe.get_doc('User', {'email': data['usr']})
+        elif frappe.db.exists('User', {'username': data['usr']}):
+            return frappe.get_doc('User', {'username': data['usr']})
+        else:
+            raise Exception('Email and username both not found.')
+
     try:
         data = validate_data(frappe.request.data)
         base = get_base_url(url=frappe.request.url)
@@ -23,7 +36,7 @@ def login():
             raise Exception('Entered credentials are invalid!')
 
         # part 2: generate keys
-        user_data = frappe.get_doc('User', {'email': data['usr']})
+        user_data = get_user_doc(data)
         url = base + '/api/method/shopee_v01.shopee_v01.custom_script.user.generate_keys?user=' + user_data.name
         res_api_secret = requests.get(url.replace("'", '"'), cookies=res.cookies)
         if res_api_secret.status_code != 200:
