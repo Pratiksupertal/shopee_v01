@@ -4,10 +4,15 @@
 <!--<h2 style="font-size:12px"><b>Sales Order Number</b></h2>-->
 {% set str=namespace(against_sales_order="") %}
 {% for row in doc.items %}
-   {% set str.sales_order= row.against_sales_order%}
+    {% set str.against_sales_order= row.against_sales_order%}
 {% endfor %}
-<h2 style="font-size:12px">{{ str.sales_order }}
-<h2>
+<h2 style="font-size:12px">{% if str.against_sales_order is not none %} {{ str.against_sales_order }} {% endif %}
+{% if doc.pick_list is not none %}
+  {% set so = frappe.get_all('Pick List Item', filters={'parent': doc.pick_list}, fields=['sales_order']) %}
+  {% for so in so %}
+      <h2 style="font-size:10px">{{ so.sales_order or "" }}</h2>
+  {% endfor %}
+{% endif %}
 </div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
@@ -43,6 +48,7 @@
 
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
+{% set total_weight=namespace(total=0) %}
 <br><table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
     <tr>
         <th class="tac" width="6%"><b>Sr.</b></th>
@@ -55,12 +61,13 @@
 {% for row in doc.items %}
 
 <tr>
+    {% set total_weight.total = row.qty * row.weight_per_unit %}
         <td class="tac" width="6%">{{ row.idx or '' }}</td>
         <td width="18%">{{ row.item_code or '' }}</td>
         <td width="18%">{{ row.description or '' }}</td>
         <td class="tac" width="15%"> {{ row.get_formatted("qty") or 0}}&nbsp; {{row.uom}}</td>
         <td class="tac" width="15%">{{ row.weight_per_unit }}</td>
-        <td class="tac" width="10%">{{ row.total_weight }}</td>
+        <td class="tac" width="10%">{{ total_weight.total }}</td>
 
     </tr>
     {% set discount = row.discount_amount %}
@@ -71,4 +78,31 @@
     <td width="10%" style ="text-align:center">{{ doc.total_qty or '' }}</td>
     <td></td><td></td>
   </tr>
-</table><br>
+</table>
+{% set username = ""%}
+{% if frappe.session.user != "Administrator" %}
+{% set user = frappe.get_doc('User', frappe.session.user)%}
+{% set username= user.full_name %} {% endif%}
+{% if frappe.session.user == "Administrator"%}
+{% set username= frappe.session.user %} {% endif%}
+
+<div class="row section-break f_font">
+<div class="col-xs-12">
+<br><br><br><br><br><br><br>
+<table width="100%" style="table-layout: fixed;">
+<tr><td colspan="12"></td></tr>
+<tr>
+<td colspan="3" class="tac " style=""> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.modified_by }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td colspan="3" class="tac "></td>
+<td colspan="3" class="tac ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{'Hendra'}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td colspan="3" class="tac "></td>
+</tr>
+<tr>
+<td colspan="3" class="tac " style="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dibuat oleh</td>
+<td colspan="3" class="tac ">Ekspedisi</td>
+<td colspan="3" class="tac ">Kepala Gudang</td>
+<td colspan="3" class="tac ">Diterima oleh</td>
+</tr>
+</table>
+</div>
+</div>
