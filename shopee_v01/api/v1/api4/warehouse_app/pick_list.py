@@ -423,7 +423,7 @@ def filter_picklist_from_material_request():
                 "material_request": material_request,
                 "target_warehouse": target_warehouse[0]['warehouse'],
                 "transaction_date": mr_data[0],
-                "schedule_date": mr_data[1],
+                "required_date": mr_data[1],
                 "total_product": len(items),
                 "total_qty": sum_qty,
                 "total_qty_received": sum_qty-sum_picked_qty,
@@ -450,4 +450,85 @@ def filter_picklist_from_material_request():
             success=False,
             status_code=400,
             message=str(e)
+        )
+
+
+@frappe.whitelist()
+def picklist_details_for_material_request():
+    try:
+        pick_list = get_last_parameter(
+            url=frappe.request.url,
+            link='picklist_details_for_warehouse_app'
+        )
+
+        picklist_details = frappe.db.get_value(
+            'Pick List',
+            pick_list,
+            ['name', 'material_request', 'docstatus', 'purpose', 'creation',
+             'modified', 'picker', 'start_time', 'end_time'],
+            as_dict=1
+        )
+
+        if not picklist_details:
+            raise Exception('Invalid pick list name')
+
+        mr_data = frappe.db.get_value(
+            'Material Request',
+            picklist_details.material_request,
+            ['transaction_date', 'schedule_date', 'owner']
+        )
+
+        target_warehouse = frappe.db.get_list(
+            'Material Request Item',
+            filters={
+                'parent': picklist_details.material_request
+            },
+            fields=['warehouse'])
+
+        picklist_details.transaction_date = mr_data[0]
+        picklist_details.required_date = mr_data[1]
+        picklist_details.target_warehouse = target_warehouse[0]['warehouse']
+        picklist_details.mr_created_by = frappe.db.get_value(
+                    'User', mr_data[2], 'full_name'
+                )
+
+        items = frappe.db.get_list(
+            'Pick List Item',
+            filters={
+                'parent': pick_list,
+                'parentfield': 'locations'
+            },
+            fields=[
+                'item_code', 'item_name', 'warehouse', 'qty', 'picked_qty',
+                'uom'
+            ],
+            order_by='warehouse'
+        )
+
+        picklist_details.picker_name = frappe.db.get_value(
+            'User', picklist_details.picker, 'full_name'
+        )
+
+        for it in items:
+            it.picked_qty = it.qty - it.picked_qty
+            bar_code = get_item_bar_code(it.item_code)
+            it["item_bar_code_value"] = None if not bar_code else cleanhtml(bar_code)
+
+        picklist_details.items = items
+
+        return format_result(
+            result={
+                'pick_list': picklist_details
+            },
+            success=True,
+            message='Data Created',
+            status_code=200
+        )
+    except Exception as e:
+        return format_result(
+            result=None,
+            success=False,
+            status_code=400,
+            message=str(e),
+            exception=str(e)
         )

@@ -8,6 +8,7 @@
 
 from shopee_v01.api.v1.api4.warehouse_app.pick_list import filter_picklist
 from shopee_v01.api.v1.api4.warehouse_app.pick_list import filter_picklist_from_material_request
+from shopee_v01.api.v1.api4.warehouse_app.pick_list import picklist_details_for_material_request
 from shopee_v01.api.v1.api4.warehouse_app.pick_list import picklist_details_for_warehouse_app
 from shopee_v01.api.v1.api4.warehouse_app.pick_list import assign_picker
 from shopee_v01.api.v1.api4.warehouse_app.pick_list import save_picklist_and_create_stockentry
