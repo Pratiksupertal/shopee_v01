@@ -44,7 +44,7 @@ def is_type_adjustment(pick_list):
     Handling case for warehouse app
     If any stock entry has pick list and this pick pick list has sales order from `E-Commerce`
     Then, the halosis stock update type will be `adjustmennnt`
-    
+
     Return True if type `adjustment`, False otherwise
     """
     if not pick_list:
