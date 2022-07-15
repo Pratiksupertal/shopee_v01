@@ -112,3 +112,72 @@ def filter_stock_entry_for_material_request():
             status_code=400,
             message=str(e)
         )
+
+
+@frappe.whitelist()
+def stock_entry_details_for_warehouse_app():
+    try:
+        stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_warehouse_app')
+
+        """GET Stock Entry Details"""
+
+        stock_entry_details = frappe.db.get_value(
+            'Stock Entry',
+            stock_entry,
+            ['name', 'docstatus', 'purpose', 'creation', 'modified', 'pick_list'],
+            as_dict=1
+        )
+
+        if not stock_entry_details:
+            raise Exception('Invalid stock entry name')
+
+        """GET Material Request, Transaction Date, Required Date, Material Request created by"""
+        pl_data = frappe.db.get_value(
+            'Pick List', stock_entry_details.get('pick_list'), ['customer', 'picker', 'material_request']
+        )
+
+        material_request = None
+        if pl_data:
+            material_request = pl_data[2]
+
+        if not material_request:
+            raise Exception('No Material Request found associated with this stock entry')
+
+        stock_entry_details.material_request = material_request
+
+        mr_data = frappe.db.get_value(
+            'Material Request',
+            material_request,
+            ['name', 'transaction_date', 'schedule_date', 'owner']
+        )
+        if mr_data:
+            stock_entry_details['material_request'] = mr_data[0]
+            stock_entry_details['transaction_date'] = mr_data[1]
+            stock_entry_details['required_date'] = mr_data[2]
+            stock_entry_details['mr_created_by'] = frappe.db.get_value('User', mr_data[3], 'full_name')
+
+        """GET ITEMS"""
+        items = frappe.db.get_list(
+            'Stock Entry Detail',
+            filters={
+                'parent': stock_entry
+            },
+            fields=[
+                'item_code', 'item_name', 'qty', 'transfer_qty', 'uom', 's_warehouse', 't_warehouse'
+            ]
+        )
+        stock_entry_details.items = items
+        return format_result(
+            result=stock_entry_details,
+            success=True,
+            message='Data Found',
+            status_code=200
+        )
+    except Exception as e:
+        return format_result(
+            result=None,
+            success=False,
+            status_code=400,
+            message=str(e),
+            exception=str(e)
+        )
