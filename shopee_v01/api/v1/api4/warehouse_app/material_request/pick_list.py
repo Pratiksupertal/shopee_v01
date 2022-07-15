@@ -32,19 +32,23 @@ def filter_picklist_from_material_request():
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         material_request = parse_qs(urlparse(url).query).get('material_request')
 
+        filters = {}
+
         if docstatus:
             docstatus = docstatus[0]
+            filters['docstatus'] = docstatus
         if material_request:
             material_request = material_request[0]
+            filters['material_request'] = material_request
+        else:
+            filters['material_request'] = ['like', '%-MR-%']
 
         filtered_picklist = frappe.db.get_list(
             'Pick List',
-            filters={
-                'docstatus': docstatus,
-                'material_request': material_request
-            },
-            fields=['name', 'customer', 'picker', 'start_time']
+            filters=filters,
+            fields=['name', 'customer', 'picker', 'start_time', 'material_request']
         )
+
         result = []
         for pl in filtered_picklist:
             items = frappe.db.get_list(
@@ -55,6 +59,7 @@ def filter_picklist_from_material_request():
                 },
                 fields=['qty', 'picked_qty']
             )
+            print('\n\n\n', items, '\n\n\n')
             sum_qty = sum([it.get('qty') if it.get('qty') not in ['', None] else 0 for it in items])
             sum_picked_qty = sum([it.get('picked_qty') if it.get('picked_qty') not in ['', None] else 0 for it in items])
 
@@ -63,9 +68,11 @@ def filter_picklist_from_material_request():
 
             mr_data = frappe.db.get_value(
                 'Material Request',
-                material_request,
+                pl.get('material_request'),
                 ['transaction_date', 'schedule_date', 'owner']
             )
+            if not mr_data:
+                continue
 
             target_warehouse = frappe.db.get_list(
                 'Material Request Item',
