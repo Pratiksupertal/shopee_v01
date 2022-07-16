@@ -110,7 +110,7 @@ doc_events = {
     "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     },
     "Stock Reconciliation":{
-    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_entry.update_finished_901_item_qty_summary_stock_rec"]
+    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_reconciliation.update_finished_901_item_qty_summary_stock_rec"]
     }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"
