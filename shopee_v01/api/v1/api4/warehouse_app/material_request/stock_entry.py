@@ -115,9 +115,9 @@ def filter_stock_entry_for_material_request():
 
 
 @frappe.whitelist()
-def stock_entry_details_for_warehouse_app():
+def stock_entry_details_for_material_request():
     try:
-        stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_warehouse_app')
+        stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_material_request')
 
         """GET Stock Entry Details"""
 
