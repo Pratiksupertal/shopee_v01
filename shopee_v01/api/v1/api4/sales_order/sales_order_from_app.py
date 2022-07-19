@@ -40,12 +40,6 @@ def create_sales_order():
         order_data = data.get("order_data")
         accounting_dimensions = data.get("accounting_dimensions", {})
 
-        """
-        1. If Delivery Date is not given, will update TODAY as delivery date
-        2. External SO Number and Source App Name fields mendatory
-        """
-        if not order_data.get("delivery_date"):
-            order_data["delivery_date"] = today()
         if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
             raise Exception("Sales order Number and Source app name both are required")
 

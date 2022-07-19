@@ -465,6 +465,13 @@ def create_and_submit_sales_order(base, order_data, submit=False):
         url = base + '/api/resource/Sales%20Order'
         if submit:
             order_data['docstatus'] = 1
+        """
+        1. If Delivery Date is not given, will update transaction date as delivery date
+        2. External SO Number and Source App Name fields mendatory
+        """
+        if 'delivery_date' not in order_data:
+            order_data["delivery_date"] = order_data.get('transaction_date')
+
         sales_order = requests.post(url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         }, data=json.dumps(order_data))
