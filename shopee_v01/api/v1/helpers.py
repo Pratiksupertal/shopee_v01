@@ -473,7 +473,7 @@ def create_and_submit_sales_order(base, order_data, submit=False):
         raise Exception(f'Problem in creating sales order. Reason: {str(e)}')
 
 
-def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False) -> any:
+def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False, transaction_date=None) -> any:
     try:
         invoice_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice'
         invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
@@ -483,6 +483,9 @@ def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounti
 
         if submit:
             sales_invoice_data['docstatus'] = 1
+        if transaction_date:
+            sales_invoice_data['set_posting_time'] = 1
+            sales_invoice_data['posting_date'] = transaction_date
         sales_invoice_data.update(accounting_dimensions)
 
         invoice_url_2 = base + '/api/resource/Sales%20Invoice'
@@ -500,7 +503,7 @@ def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounti
 
 
 def create_and_submit_delivery_note_from_sales_order(
-        base, source_name, submit=False) -> any:
+        base, source_name, submit=False, transaction_date=None) -> any:
     try:
         dn_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
         dn_res_api_response = requests.post(dn_url.replace("'", '"'), headers={
@@ -509,6 +512,9 @@ def create_and_submit_delivery_note_from_sales_order(
         dn_data = dn_res_api_response.json().get("message")
         if submit:
             dn_data['docstatus'] = 1
+        if transaction_date:
+            dn_data['set_posting_time'] = 1
+            dn_data['posting_date'] = transaction_date
         dn_url_2 = base + '/api/resource/Delivery%20Note'
         dn_res_api_response_2 = requests.post(dn_url_2.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]

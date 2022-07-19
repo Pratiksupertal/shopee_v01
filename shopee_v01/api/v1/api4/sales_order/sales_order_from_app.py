@@ -80,7 +80,8 @@ def create_sales_order():
             delivery_note = create_and_submit_delivery_note_from_sales_order(
                 base=base,
                 source_name=so_name,
-                submit=True
+                submit=True,
+                transaction_date=order_data.get('transaction_date')
             )
             res['delivery_note'] = delivery_note.get('name')
 
@@ -89,7 +90,8 @@ def create_sales_order():
                 base=base,
                 source_name=so_name,
                 accounting_dimensions=accounting_dimensions,
-                submit=True
+                submit=True,
+                transaction_date=order_data.get('transaction_date')
             )
             res['sales_invoice'] = sales_invoice.get('name')
 
