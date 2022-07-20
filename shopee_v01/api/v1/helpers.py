@@ -303,11 +303,12 @@ def picklist_item(data):
 
 
 def create_new_stock_entry_for_single_item(data, item):
-    picklist_details = frappe.db.get_value('Pick List', data.get('pick_list'), ['company', 'purpose'])
+    picklist_details = frappe.db.get_value('Pick List', data.get('pick_list'), ['company', 'purpose', 'note'])
 
     new_doc_stock_entry = frappe.new_doc('Stock Entry')
     new_doc_stock_entry.company = picklist_details[0]
     new_doc_stock_entry.purpose = picklist_details[1]
+    new_doc_stock_entry.remarks = picklist_details[2]
 
     new_doc_stock_entry.pick_list = data.get('pick_list')
 
@@ -334,7 +335,7 @@ def pick_list_details_with_items(pick_list):
     pick_list_details = frappe.db.get_value(
         'Pick List',
         pick_list,
-        ['company', 'purpose'],
+        ['company', 'purpose', 'note'],
         as_dict=1
     )
 
@@ -391,6 +392,7 @@ def create_and_submit_stock_entry_submit_picklist_and_create_stockentry(data, pi
     new_doc_stock_entry = frappe.new_doc('Stock Entry')
     new_doc_stock_entry.company = pick_list_details.get('company')
     new_doc_stock_entry.purpose = pick_list_details.get('purpose')
+    new_doc_stock_entry.remarks = pick_list_details.get('note')
 
     new_doc_stock_entry.pick_list = data.get('pick_list')
 

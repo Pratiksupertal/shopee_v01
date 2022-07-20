@@ -23,3 +23,7 @@ from shopee_v01.api.v1.api4.warehouse_app.delivery_note import create_delivery_n
 """import all apis from manufacturing"""
 
 from shopee_v01.api.v1.api4.warehouse_app.manufacturing import *
+
+"""import all apis from material_request"""
+
+from shopee_v01.api.v1.api4.warehouse_app.material_request import *
