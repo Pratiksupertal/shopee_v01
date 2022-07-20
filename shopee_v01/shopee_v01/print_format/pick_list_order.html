@@ -96,8 +96,8 @@
           <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
           <td class="tac" width="30%" >{{ row.item_code or ''}}</td>
           <td class="tac" width="37%" >{{ row.warehouse or '' }}</td>
-          <td class="tac" width="15%" >{{ row.qty or '' | int }}</td>
-          <td class="tac" width="15%" >{{ row.picked_qty or '' | int }}</td>
+          <td class="tac" width="15%" >{{ row.qty or 0 }}</td>
+          <td class="tac" width="15%" >{{ row.picked_qty or 0 | int }}</td>
         </tr>
       {% endfor %}
     </table>
