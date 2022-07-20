@@ -1,14 +1,8 @@
 import frappe
-import json
-import requests
 from urllib.parse import urlparse, parse_qs
 
 from shopee_v01.api.v1.helpers import format_result
-from shopee_v01.api.v1.helpers import get_base_url
 from shopee_v01.api.v1.helpers import get_last_parameter
-from shopee_v01.api.v1.helpers import check_delivery_note_status
-from shopee_v01.api.v1.validations import validate_data
-from shopee_v01.api.v1.validations import data_validation_for_create_receive_at_warehouse
 
 
 @frappe.whitelist()

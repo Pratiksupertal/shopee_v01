@@ -5,18 +5,6 @@ from shopee_v01.api.v1.helpers import format_result
 from shopee_v01.api.v1.helpers import get_last_parameter
 from shopee_v01.api.v1.helpers import get_item_bar_code
 from shopee_v01.api.v1.helpers import cleanhtml
-from shopee_v01.api.v1.helpers import picklist_item
-from shopee_v01.api.v1.helpers import create_new_stock_entry_for_single_item
-from shopee_v01.api.v1.helpers import pick_list_details_with_items
-from shopee_v01.api.v1.helpers import check_any_item_picked
-from shopee_v01.api.v1.helpers import correct_picked_qty_for_submit_pick_list
-from shopee_v01.api.v1.helpers import update_endtime_and_submit_pick_list
-from shopee_v01.api.v1.helpers import create_and_submit_stock_entry_submit_picklist_and_create_stockentry
-
-from shopee_v01.api.v1.validations import validate_data
-from shopee_v01.api.v1.validations import data_validation_for_assign_picker
-from shopee_v01.api.v1.validations import data_validation_for_save_picklist_and_create_stockentry
-from shopee_v01.api.v1.validations import data_validation_for_submit_picklist_and_create_stockentry
 
 
 @frappe.whitelist()
@@ -59,7 +47,6 @@ def filter_picklist_from_material_request():
                 },
                 fields=['qty', 'picked_qty']
             )
-            print('\n\n\n', items, '\n\n\n')
             sum_qty = sum([it.get('qty') if it.get('qty') not in ['', None] else 0 for it in items])
             sum_picked_qty = sum([it.get('picked_qty') if it.get('picked_qty') not in ['', None] else 0 for it in items])
 
@@ -83,7 +70,7 @@ def filter_picklist_from_material_request():
 
             result.append({
                 "name": pl.get("name"),
-                "material_request": material_request,
+                "material_request": pl.get('material_request'),
                 "target_warehouse": target_warehouse[0]['warehouse'],
                 "transaction_date": mr_data[0],
                 "required_date": mr_data[1],
@@ -152,8 +139,8 @@ def picklist_details_for_material_request():
         picklist_details.required_date = mr_data[1]
         picklist_details.target_warehouse = target_warehouse[0]['warehouse']
         picklist_details.mr_created_by = frappe.db.get_value(
-                    'User', mr_data[2], 'full_name'
-                )
+            'User', mr_data[2], 'full_name'
+        )
 
         items = frappe.db.get_list(
             'Pick List Item',
