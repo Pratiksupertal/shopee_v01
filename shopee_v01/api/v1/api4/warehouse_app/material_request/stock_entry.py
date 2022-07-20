@@ -10,22 +10,32 @@ def filter_stock_entry_for_material_request():
     """Filter Stock Entry
 
     Filter includes
+        - docstatus (0/1/2)
         - stock entry type
+        - Pick List
     """
     try:
         url = frappe.request.url
+        docstatus = parse_qs(urlparse(url).query).get('docstatus')
+        pick_list = parse_qs(urlparse(url).query).get('pick_list')
         stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')
+        if docstatus:
+            docstatus = docstatus[0]
+        if pick_list:
+            pick_list = pick_list[0]
         if stock_entry_type is not None:
             stock_entry_type = stock_entry_type[0]
 
         """filter by
-        1. stock entry type as per request
-        2. not fully transferred (status in Draft or Goods In Transit)
-        3. picklist be there
+        1. docstatus
+        2. stock entry type as per request
+        3. not fully transferred (status in Draft or Goods In Transit)
+        4. picklist be there
         """
         filtered_se = frappe.db.get_list(
             'Stock Entry',
             filters={
+                'docstatus': docstatus,
                 'stock_entry_type': stock_entry_type,
                 'per_transferred': ('!=', int(100)),
                 'pick_list': ('not in', (None, ''))
@@ -38,8 +48,12 @@ def filter_stock_entry_for_material_request():
         """find and add other necessary fields"""
         for se in filtered_se:
             pl_data = frappe.db.get_value(
-                'Pick List', se.get('pick_list'), ['customer', 'picker', 'material_request']
+                'Pick List', se.get('pick_list'), ['customer', 'picker', 'material_request', 'name']
             )
+
+            if pick_list is not None:
+                if pl_data[3] != pick_list:
+                    continue
 
             if pl_data[2]:
                 mr_data = frappe.db.get_value(
