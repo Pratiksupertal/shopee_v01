@@ -19,12 +19,20 @@ def filter_stock_entry_for_material_request():
         docstatus = parse_qs(urlparse(url).query).get('docstatus')
         pick_list = parse_qs(urlparse(url).query).get('pick_list')
         stock_entry_type = parse_qs(urlparse(url).query).get('stock_entry_type')
+
+        filters = {}
+
         if docstatus:
             docstatus = docstatus[0]
+            filters['docstatus'] = docstatus
         if pick_list:
             pick_list = pick_list[0]
         if stock_entry_type is not None:
             stock_entry_type = stock_entry_type[0]
+            filters['stock_entry_type'] = stock_entry_type
+
+        filters['per_transferred'] = ('!=', int(100))
+        filters['pick_list'] = ('not in', (None, ''))
 
         """filter by
         1. docstatus
@@ -34,12 +42,7 @@ def filter_stock_entry_for_material_request():
         """
         filtered_se = frappe.db.get_list(
             'Stock Entry',
-            filters={
-                'docstatus': docstatus,
-                'stock_entry_type': stock_entry_type,
-                'per_transferred': ('!=', int(100)),
-                'pick_list': ('not in', (None, ''))
-            },
+            filters=filters,
             fields=['name', 'pick_list']
         )
 
@@ -85,13 +88,14 @@ def filter_stock_entry_for_material_request():
                 fields=['qty']
             )
 
-            target_warehouse = frappe.db.get_list(
+            warehouses = frappe.db.get_list(
                 'Stock Entry Detail',
                 filters={
                     'parent': se.get('name')
                 },
-                fields=['t_warehouse'])
-            se['target_warehouse'] = target_warehouse[0]['t_warehouse']
+                fields=['t_warehouse', 's_warehouse'])
+            se['source_warehouse'] = warehouses[0]['s_warehouse']
+            se['target_warehouse'] = warehouses[0]['t_warehouse']
 
             if len(items_pl) < 1:
                 continue
