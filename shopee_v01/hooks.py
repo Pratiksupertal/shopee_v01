@@ -97,7 +97,8 @@ doc_events = {
     "autoname":"shopee_v01.shopee_v01.custom_script.purchase_order.autoname"
     },
     "Stock Entry":{
-    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_entry.update_finished901itemsummary","shopee_v01.shopee_v01.custom_script.stock_entry.submit"]
+    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_entry.finished901ItemQtySummary","shopee_v01.shopee_v01.custom_script.stock_entry.submit"],
+    "on_cancel": "shopee_v01.shopee_v01.custom_script.stock_entry.cancel_update"
     },
     "Pick List":{
     "validate":"shopee_v01.shopee_v01.custom_script.pick_list.validate"
@@ -110,7 +111,7 @@ doc_events = {
     "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     },
     "Stock Reconciliation":{
-    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_entry.update_finished_901_item_qty_summary_stock_rec"]
+    "on_submit":["shopee_v01.shopee_v01.custom_script.stock_reconciliation.update_finished_901_item_qty_summary_stock_rec"]
     }
     # "Item Group":{
     # "autoname":"shopee_v01.shopee_v01.custom_script.item_group.autoname"

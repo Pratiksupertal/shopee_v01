@@ -1,7 +1,7 @@
 import frappe, json
 group_warehouse, node_warehouse = [], []
 
-def update_finished901itemsummary(doc,method):
+def update_finished901itemsummary(doc,action):
     warehouse_tuple = []
     warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
     for item in doc.items:
@@ -12,9 +12,9 @@ def update_finished901itemsummary(doc,method):
         if len(item_availability) > 0:
             if len(warehouse_tuple) > 0:
                 if warehouse_tuple[0] == item.t_warehouse:
-                    qty = item.qty
+                    qty = item.qty if action == "update" else -item.qty
                 if warehouse_tuple[0] == item.s_warehouse:
-                    qty = -item.qty
+                    qty = -item.qty if action == "cancel" else item.qty
                 if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
                     qty = 0
                 if qty != 0:
@@ -34,6 +34,13 @@ def update_finished901itemsummary(doc,method):
             sql = "insert into `tabTotal Item count in Warehouse` (name,idx,creation,modified,modified_time,modified_by,owner,parent,parentfield,parenttype,item_code,item_name,available_items,warehouse) values ('{0}',{4},now(),now(),now(),'{3}','{3}','Finished901ItemQtySummary','total_item_count_in_warehouse','Finished901ItemQtySummary','{0}','{5}',{1},'{2}')".format(item.item_code,balance_qty,item.t_warehouse,frappe.session.user,idx,item.item_name)
             query = frappe.db.sql(sql)
 
+def finished901ItemQtySummary(doc,method):
+    """Stock Entry Items belongs to Finished warehouse then item count will be updated."""
+    update_finished901itemsummary(doc,action="update")
+
+def cancel_update(doc,method):
+    """Stock Entry Items belongs to Finished warehouse then item count will be reversed."""
+    update_finished901itemsummary(doc,action="cancel")
 
 def submit(doc, method):
     update_stock_to_halosis(doc=doc)
