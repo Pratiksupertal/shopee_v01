@@ -472,8 +472,6 @@ def create_and_submit_sales_order(base, order_data, submit=False):
         2. External SO Number and Source App Name fields mendatory
         """
         if 'delivery_date' not in order_data:
-            print('\n\ndd\n', order_data.get('transaction_date'), '\n\n')
-            print(order_data)
             order_data["delivery_date"] = order_data.get('transaction_date')
 
         sales_order = requests.post(url.replace("'", '"'), headers={
