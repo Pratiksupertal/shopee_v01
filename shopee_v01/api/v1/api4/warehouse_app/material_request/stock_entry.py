@@ -334,6 +334,7 @@ def submit_send_to_shop_for_material_request():
         if stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
         stock_entry_data = submit_stock_entry_send_to_shop(stock_entry_doc)
+        trigger_send_to_shop_spg(stock_entry_data)
 
         return format_result(
             result=stock_entry_data,
@@ -349,3 +350,59 @@ def submit_send_to_shop_for_material_request():
             message=str(e),
             exception=str(e)
         )
+
+
+def trigger_send_to_shop_spg(stock_entry_data):
+    import requests
+    config = frappe.get_single("Warehouse App Settings")
+    request_body = {
+        "source_warehouse": stock_entry_data["t_warehouse"],
+        "destination_warehouse": stock_entry_data["delivery_warehouse"],
+        "transfer_date": stock_entry_data["transaction_date"],
+        "external_number": stock_entry_data["name"],
+        "material_request_number": stock_entry_data["material_request"],
+    }
+    lists = []
+    for item in stock_entry_data["items"]:
+        current_item = {
+            "product_name": item["item_name"],
+            "product_code": item["item_code"],
+            "variant_name": item["attribute_value"],
+            "quantity": item["qty"],
+            "price": item["basic_rate"]
+        }
+        lists.append(current_item)
+
+    request_body["lists"] = lists
+    print('\n\n\n', request_body, '\n\n\n')
+    try:
+        url = config.spg_base_url + 'request-token'
+        data = {
+            "username": config.username,
+            "password": config.password
+        }
+        auth_res = requests.post(url.replace("'", '"'), data=data)
+        auth_res_json = json.loads(auth_res.text)
+        auth_token = "Bearer " + auth_res_json["data"]["token"]
+        print(auth_res_json)
+    except Exception:
+        frappe.log_error(title="Trigger Send to Shop API Login part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in Triggering API. {frappe.get_traceback()}')
+
+    request = json.dumps(request_body).replace("'", '"')
+
+    try:
+        url = config.spg_base_url + 'transfer-request/external/create'
+        response = requests.post(
+            url.replace("'", '"'),
+            json=json.loads(request),
+            headers={"Authorization": auth_token})
+        frappe.log_error(title="Trigger Send to Shop API.", message=response.text)
+
+        if response.status_code == 200:
+            frappe.msgprint('API triggered. Please, check error log for more update.')
+        else:
+            frappe.msgprint(f'API trigger has failed for some reason! Please, check error log. {frappe.get_traceback()}')
+    except Exception:
+        frappe.log_error(title="API trigger Data part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in API trigger. {frappe.get_traceback()}')
