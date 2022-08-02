@@ -170,6 +170,8 @@ def stock_entry_details_for_material_request():
             ['name', 'transaction_date', 'schedule_date', 'owner']
         )
         if mr_data:
+            stock_entry_details['delivery_warehouse'] = frappe.db.get_value("Material Request Item",
+                                                                            {'parent': mr_data[0]}, 'warehouse')
             stock_entry_details['material_request'] = mr_data[0]
             stock_entry_details['transaction_date'] = mr_data[1]
             stock_entry_details['required_date'] = mr_data[2]
