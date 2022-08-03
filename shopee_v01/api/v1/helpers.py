@@ -622,55 +622,46 @@ def get_user_mapped_warehouses(user=frappe.session.user):
 
 def submit_stock_entry_send_to_shop(stock_entry_doc):
     items = frappe.db.get_list('Stock Entry Detail', filters={'parent': stock_entry_doc.get("name")},
-                               fields=['item_code', 'item_name', 'item_group', 'qty', 'basic_rate', 's_warehouse',
-                                       't_warehouse'])
+                               fields=['item_name', 'qty', 'basic_rate', 's_warehouse'])
 
-    total = 0
-    s_warehouse, t_warehouse = None, None
+    s_warehouse = None
+    lists = []
     for item in items:
-        item['attribute_value'] = frappe.db.get_value('Item Variant Attribute', {'parent': item['item_name']},
-                                                      'attribute_value')
-        item['invent_size_id'] = frappe.db.get_value('Item', {'name': item['item_name']}, 'invent_size_id')
+        current_item = {
+            "product_name": item["item_name"],
+            "variant_name": frappe.db.get_value('Item Variant Attribute', {'parent': item['item_name']},
+                                                'attribute_value'),
+            "quantity": item["qty"],
+            "price": item["basic_rate"]
+        }
         s_warehouse = item['s_warehouse']
-        t_warehouse = item['t_warehouse']
-        total += item['qty']
+        lists.append(current_item)
 
-    stock_entry_data = {}
-    stock_entry_data["name"] = stock_entry_doc.name
-    stock_entry_data["s_warehouse"] = s_warehouse
-    stock_entry_data["t_warehouse"] = t_warehouse
-    stock_entry_data["stock_entry_type"] = stock_entry_doc.get("stock_entry_type")
-    stock_entry_data["outgoing_stock_entry"] = stock_entry_doc.get("outgoing_stock_entry")
-    stock_entry_data["pick_list"] = stock_entry_doc.get("pick_list")
-    stock_entry_data["company"] = stock_entry_doc.get("company")
-
-    """GET Material Request, Transaction Date, Required Date, Material Request created by"""
+    """GET Material Request, Transaction Date."""
     pl_data = frappe.db.get_value(
-        'Pick List', stock_entry_doc.get("pick_list"), ['customer', 'picker', 'material_request']
+        'Pick List', stock_entry_doc.get("pick_list"), ['material_request']
     )
 
     material_request = None
     if pl_data:
-        stock_entry_data["picker"] = pl_data[1]
-        stock_entry_data["picker_name"] = frappe.db.get_value('User', pl_data[1], 'full_name')
-        material_request = pl_data[2]
+        material_request = pl_data
 
     if not material_request:
         raise Exception('No Material Request found associated with this stock entry')
 
-    stock_entry_data["material_request"] = material_request
-
     mr_data = frappe.db.get_value(
         'Material Request',
         material_request,
-        ['name', 'transaction_date', 'schedule_date', 'owner']
+        ['name', 'transaction_date']
     )
-    if mr_data:
-        stock_entry_data['delivery_warehouse'] = frappe.db.get_value("Material Request Item", {'parent': mr_data[0]}
-                                                                     , 'warehouse')
-        stock_entry_data['material_request'] = mr_data[0]
-        stock_entry_data['transaction_date'] = mr_data[1]
-        stock_entry_data['required_date'] = mr_data[2]
-        stock_entry_data['mr_created_by'] = frappe.db.get_value('User', mr_data[3], 'full_name')
-    stock_entry_data['items'] = items
+
+    stock_entry_data = {
+        "source_warehouse": s_warehouse,
+        "destination_warehouse": frappe.db.get_value("Material Request Item", {'parent': mr_data[0]}, 'warehouse'),
+        "transfer_date": mr_data[1],
+        "external_number": stock_entry_doc.name,
+        "material_request_number": mr_data[0],
+        "lists": lists
+    }
+
     return stock_entry_data
