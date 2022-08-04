@@ -170,8 +170,6 @@ def stock_entry_details_for_material_request():
             ['name', 'transaction_date', 'schedule_date', 'owner']
         )
         if mr_data:
-            stock_entry_details['delivery_warehouse'] = frappe.db.get_value("Material Request Item",
-                                                                            {'parent': mr_data[0]}, 'warehouse')
             stock_entry_details['material_request'] = mr_data[0]
             stock_entry_details['transaction_date'] = mr_data[1]
             stock_entry_details['required_date'] = mr_data[2]
@@ -340,7 +338,7 @@ def submit_send_to_shop_for_material_request():
             result=stock_entry_data,
             success=True,
             status_code=200,
-            message='Send to Shop Stock Entry is Submitted'
+            message=f'Send to Shop Stock Entry [{stock_entry_doc.name}] is Submitted'
         )
     except Exception as e:
         return format_result(
