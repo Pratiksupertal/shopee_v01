@@ -162,3 +162,18 @@ def data_validation_for_stock_entry_receive_at_warehouse(data):
             raise Exception("Required data missing (Target Warehouse is required)")
         if not item.get("qty"):
             raise Exception("Required data missing (Qty is required)")
+
+
+def data_validation_for_stock_entry_send_to_shop(data):
+    if not data.get("outgoing_stock_entry"):
+        raise Exception("Required data missing : Outgoing Stock Entry name is required")
+    if not data.get("stock_entry_type"):
+        raise Exception("Required data missing : Stock Entry Type name is required")
+    if not data.get("s_warehouse"):
+        raise Exception("Required data missing : Source Warehouse is required")
+    if not data.get("t_warehouse"):
+        raise Exception("Required data missing : Target Warehouse is required")
+
+    outgoing_stock_entry = frappe.get_list("Stock Entry", {"outgoing_stock_entry": data.get("outgoing_stock_entry")})
+    if len(outgoing_stock_entry) > 0:
+        raise Exception('Send to Shop is already done for this Stock entry')

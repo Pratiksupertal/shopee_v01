@@ -618,3 +618,50 @@ def get_user_mapped_warehouses(user=frappe.session.user):
         .format(user))
     user_warehouses = [warehouse[0] for warehouse in user_warehouses]
     return user_warehouses
+
+
+def submit_stock_entry_send_to_shop(stock_entry_doc):
+    items = frappe.db.get_list('Stock Entry Detail', filters={'parent': stock_entry_doc.get("name")},
+                               fields=['item_name', 'qty', 'basic_rate', 's_warehouse'])
+
+    s_warehouse = None
+    lists = []
+    for item in items:
+        current_item = {
+            "product_name": item["item_name"],
+            "variant_name": frappe.db.get_value('Item Variant Attribute', {'parent': item['item_name']},
+                                                'attribute_value'),
+            "quantity": item["qty"],
+            "price": item["basic_rate"]
+        }
+        s_warehouse = item['s_warehouse']
+        lists.append(current_item)
+
+    """GET Material Request, Transaction Date."""
+    pl_data = frappe.db.get_value(
+        'Pick List', stock_entry_doc.get("pick_list"), ['material_request']
+    )
+
+    material_request = None
+    if pl_data:
+        material_request = pl_data
+
+    if not material_request:
+        raise Exception('No Material Request found associated with this stock entry')
+
+    mr_data = frappe.db.get_value(
+        'Material Request',
+        material_request,
+        ['name', 'transaction_date']
+    )
+
+    stock_entry_data = {
+        "source_warehouse": s_warehouse,
+        "destination_warehouse": frappe.db.get_value("Material Request Item", {'parent': mr_data[0]}, 'warehouse'),
+        "transfer_date": mr_data[1],
+        "external_number": stock_entry_doc.name,
+        "material_request_number": mr_data[0],
+        "lists": lists
+    }
+
+    return stock_entry_data
