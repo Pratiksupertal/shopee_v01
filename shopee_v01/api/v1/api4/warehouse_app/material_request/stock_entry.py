@@ -353,25 +353,7 @@ def submit_send_to_shop_for_material_request():
 def trigger_send_to_shop_spg(stock_entry_data):
     import requests
     config = frappe.get_single("Warehouse App Settings")
-    request_body = {
-        "source_warehouse": stock_entry_data["t_warehouse"],
-        "destination_warehouse": stock_entry_data["delivery_warehouse"],
-        "transfer_date": stock_entry_data["transaction_date"],
-        "external_number": stock_entry_data["name"],
-        "material_request_number": stock_entry_data["material_request"],
-    }
-    lists = []
-    for item in stock_entry_data["items"]:
-        current_item = {
-            "product_name": item["item_name"],
-            "product_code": item["item_code"],
-            "variant_name": item["attribute_value"],
-            "quantity": item["qty"],
-            "price": item["basic_rate"]
-        }
-        lists.append(current_item)
-
-    request_body["lists"] = lists
+    request_body = stock_entry_data
     print('\n\n\n', request_body, '\n\n\n')
     try:
         url = config.spg_base_url + 'request-token'
@@ -386,6 +368,7 @@ def trigger_send_to_shop_spg(stock_entry_data):
     except Exception:
         frappe.log_error(title="Trigger Send to Shop API Login part", message=frappe.get_traceback())
         frappe.msgprint(f'Problem in Triggering API. {frappe.get_traceback()}')
+        return
 
     request = json.dumps(request_body).replace("'", '"')
 
