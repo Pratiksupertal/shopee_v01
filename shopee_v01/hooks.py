@@ -37,7 +37,9 @@ doctype_js = {
                 "Payment Entry": "shopee_v01/custom_script/payment_entry.js"
              }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
-doctype_list_js = {"Purchase Order" : "shopee_v01/custom_script/purchase_order_list.js"}
+doctype_list_js = {"Purchase Order" : "shopee_v01/custom_script/purchase_order_list.js",
+                    "Delivery Note" : "shopee_v01/custom_script/delivery_note_list.js"
+                  }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
