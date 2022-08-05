@@ -350,34 +350,36 @@ def submit_send_to_shop_for_material_request():
         )
 
 
-def trigger_send_to_shop_spg(stock_entry_data):
+def trigger_send_to_shop_spg(request_body):
     import requests
     config = frappe.get_single("Warehouse App Settings")
-    request_body = stock_entry_data
     print('\n\n\n', request_body, '\n\n\n')
     try:
         url = config.spg_base_url + 'request-token'
         data = {
             "username": config.username,
-            "password": config.password
+            "password": config.get_password('password')
         }
         auth_res = requests.post(url.replace("'", '"'), data=data)
-        auth_res_json = json.loads(auth_res.text)
-        auth_token = "Bearer " + auth_res_json["data"]["token"]
-        print(auth_res_json)
+        if auth_res.status_code not in [200, 201]:
+            raise Exception()
+        auth_res_json = auth_res.json()
+        auth_token = auth_res_json.get('data').get("token")
     except Exception:
         frappe.log_error(title="Trigger Send to Shop API Login part", message=frappe.get_traceback())
         frappe.msgprint(f'Problem in Triggering API. {frappe.get_traceback()}')
         return
 
+    if request_body.get('transfer_date'):
+        request_body['transfer_date'] = request_body['transfer_date'].strftime("%Y-%m-%d")
     request = json.dumps(request_body).replace("'", '"')
 
     try:
         url = config.spg_base_url + 'transfer-request/external/create'
         response = requests.post(
             url.replace("'", '"'),
-            json=json.loads(request),
-            headers={"Authorization": auth_token})
+            headers={"Authorization": "Bearer " + auth_token},
+            json=json.loads(request))
         frappe.log_error(title="Trigger Send to Shop API.", message=response.text)
 
         if response.status_code == 200:
