@@ -539,7 +539,7 @@ def create_and_submit_delivery_note_from_sales_order(
 
 
 def create_payment_for_sales_order_from_web(
-        base, payment_data, sales_invoice_data, accounting_dimensions, submit=False):
+        base, payment_data, sales_invoice_data, accounting_dimensions, submit=False, transaction_date=None):
     try:
         payment_url = base + '/api/resource/Payment%20Entry'
         payment_data.update({
@@ -562,6 +562,9 @@ def create_payment_for_sales_order_from_web(
         payment_data.update(accounting_dimensions)
         if submit:
             payment_data.update({"docstatus": 1})
+        if transaction_date:
+            payment_data['set_posting_time'] = 1
+            payment_data['posting_date'] = transaction_date
         payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
             "Authorization": frappe.request.headers["Authorization"]
         }, data=json.dumps(payment_data))

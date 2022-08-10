@@ -79,7 +79,8 @@ def sales_order_cycle():
         delivery_note = create_and_submit_delivery_note_from_sales_order(
             base=base,
             source_name=so_name,
-            submit=True
+            submit=True,
+            transaction_date=order_data.get('transaction_date')
         )
         response['delivery_note'] = delivery_note.get('name')
 
@@ -88,7 +89,8 @@ def sales_order_cycle():
             base=base,
             source_name=so_name,
             accounting_dimensions=accounting_dimensions,
-            submit=True
+            submit=True,
+            transaction_date=order_data.get('transaction_date')
         )
         response['sales_invoice'] = sales_invoice.get('name')
 
@@ -98,7 +100,8 @@ def sales_order_cycle():
             payment_data=payment_data,
             sales_invoice_data=sales_invoice,
             accounting_dimensions=accounting_dimensions,
-            submit=True
+            submit=True,
+            transaction_date=order_data.get('transaction_date')
         )
         response['payment_entry'] = payment_entry.get("name")
 
@@ -200,7 +203,8 @@ def sales_order_cycle_bulk():
             delivery_note = create_and_submit_delivery_note_from_sales_order(
                 base=base,
                 source_name=so_name,
-                submit=True
+                submit=True,
+                transaction_date=order_data.get('transaction_date')
             )
             response['delivery_note'] = delivery_note.get('name')
 
@@ -209,7 +213,8 @@ def sales_order_cycle_bulk():
                 base=base,
                 source_name=so_name,
                 accounting_dimensions=accounting_dimensions,
-                submit=True
+                submit=True,
+                transaction_date=order_data.get('transaction_date')
             )
             response['sales_invoice'] = sales_invoice.get('name')
 
@@ -219,7 +224,8 @@ def sales_order_cycle_bulk():
                 payment_data=payment_data,
                 sales_invoice_data=sales_invoice,
                 accounting_dimensions=accounting_dimensions,
-                submit=True
+                submit=True,
+                transaction_date=order_data.get('transaction_date')
             )
             response['payment_entry'] = payment_entry.get("name")
 
