@@ -15,98 +15,98 @@ def get_columns(filters):
 
     columns =[
         {
-            "label": _("Product Name"),
+            "label": _("PRODUCT_NAME"),
             "fieldname": "item_name",
             "fieldtype": "Data",
             "options": "",
             "width": 160
         },
 		{
-            "label": _("Product Code"),
+            "label": _("PRODUCT_CODE"),
             "fieldname": "product_code",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Product Image"),
-            "fieldname": "upload",
+            "label": _("(bisa kosong)\nPRODUCT_IMAGE"),
+            "fieldname": "image",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Unit"),
+            "label": _("kalo mau lebih dari 1 dikasih koma ()\nUNIT"),
             "fieldname": "stock_uom",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Brand Code"),
+            "label": _("BRAND_CODE"),
             "fieldname": "brand_code",
             "fieldtype": "Data",
             "options": "",
             "width": 50
         },
 		{
-            "label": _("Brand Name"),
+            "label": _("BRAND_NAME"),
             "fieldname": "brand",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Division Code"),
+            "label": _("DIVISION_CODE"),
             "fieldname": "division_group",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Division"),
+            "label": _("DIVISION"),
             "fieldname": "division_group_description",
             "fieldtype": "Data",
             "options": "",
             "width": 120
         },
 		{
-            "label": _("Product Price"),
+            "label": _("PRODUCT_PRICE"),
             "fieldname": "valuation_rate",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Varient Code"),
+            "label": _("(format [code] - [name])\nVARIANT_CODE"),
             "fieldname": "item_bar_code",
             "fieldtype": "Data",
             "options": "",
             "width": 100
         },
 		{
-            "label": _("Varient Size Group"),
+            "label": _("VARIANT_GROUP_SIZE"),
             "fieldname": "size_group",
             "fieldtype": "Data",
             "options": "",
             "width": 50
         },
 		{
-            "label": _("Varient"),
+            "label": _("VARIANT"),
             "fieldname": "invent_size_id",
             "fieldtype": "Data",
             "options": "",
             "width": 50
         },
 		{
-            "label": _("Varient Price"),
+            "label": _("VARIANT_PRICE"),
             "fieldname": "valuation_rate",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Product Status"),
+            "label": _("PRODUCT_STATUS"),
             "fieldname": "status_code",
             "fieldtype": "Data",
             "options": "",
@@ -118,7 +118,7 @@ def get_columns(filters):
 
 def get_entries(filters):
 	entries = frappe.db.sql("""
-	select item_name,product_code,upload,stock_uom,b.brand_code,i.brand,division_group,division_group_description, valuation_rate,item_bar_code, size_group, invent_size_id, valuation_rate,status_code from tabItem as i LEFT JOIN `tabBrand` as b on i.brand = b.brand ;
+	select item_name,product_code,image,stock_uom,b.brand_code,i.brand,division_group,division_group_description, valuation_rate,item_bar_code, size_group, invent_size_id, valuation_rate,status_code from tabItem as i LEFT JOIN `tabBrand` as b on i.brand = b.brand ;
 	""")
 	return entries
 
