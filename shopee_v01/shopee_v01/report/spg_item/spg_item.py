@@ -9,15 +9,13 @@ def execute(filters=None):
 	columns, data = [], []
 	columns = get_columns(filters)
 	data = get_entries(filters)
-	print("===columns======",columns)
-	print("\n==data=====",data)
 	return columns, data
 
 def get_columns(filters):
 
     columns =[
         {
-            "label": _("Item Name"),
+            "label": _("Product Name"),
             "fieldname": "item_name",
             "fieldtype": "Data",
             "options": "",
@@ -25,7 +23,7 @@ def get_columns(filters):
         },
 		{
             "label": _("Product Code"),
-            "fieldname": "item_code",
+            "fieldname": "product_code",
             "fieldtype": "Data",
             "options": "",
             "width": 80
@@ -38,7 +36,7 @@ def get_columns(filters):
             "width": 80
         },
 		{
-            "label": _("UoM"),
+            "label": _("Unit"),
             "fieldname": "stock_uom",
             "fieldtype": "Data",
             "options": "",
@@ -46,69 +44,69 @@ def get_columns(filters):
         },
 		{
             "label": _("Brand Code"),
-            "fieldname": "brand",
+            "fieldname": "brand_code",
             "fieldtype": "Data",
             "options": "",
             "width": 50
         },
 		{
-            "label": _("Brand"),
+            "label": _("Brand Name"),
             "fieldname": "brand",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Division Group"),
+            "label": _("Division Code"),
             "fieldname": "division_group",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Division Group Description"),
+            "label": _("Division"),
             "fieldname": "division_group_description",
             "fieldtype": "Data",
             "options": "",
             "width": 120
         },
 		{
-            "label": _("Selling Rate"),
+            "label": _("Product Price"),
             "fieldname": "valuation_rate",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Barcode"),
+            "label": _("Varient Code"),
             "fieldname": "item_bar_code",
             "fieldtype": "Data",
             "options": "",
             "width": 100
         },
 		{
-            "label": _("Size Group"),
+            "label": _("Varient Size Group"),
             "fieldname": "size_group",
             "fieldtype": "Data",
             "options": "",
             "width": 50
         },
 		{
-            "label": _("Attribute Size"),
+            "label": _("Varient"),
             "fieldname": "invent_size_id",
             "fieldtype": "Data",
             "options": "",
             "width": 50
         },
 		{
-            "label": _("Selling Rate"),
+            "label": _("Varient Price"),
             "fieldname": "valuation_rate",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("Status Code"),
+            "label": _("Product Status"),
             "fieldname": "status_code",
             "fieldtype": "Data",
             "options": "",
@@ -119,20 +117,11 @@ def get_columns(filters):
     return columns
 
 def get_entries(filters):
-	conditions = get_conditions(filters)
-	print("====== conditions ======")
 	entries = frappe.db.sql("""
-	select item_name,item_code,'',stock_uom,'',brand,division_group,division_group_description, valuation_rate,item_bar_code, size_group, invent_size_id, valuation_rate,status_code from tabItem
+	select item_name,product_code,upload,stock_uom,b.brand_code,i.brand,division_group,division_group_description, valuation_rate,item_bar_code, size_group, invent_size_id, valuation_rate,status_code from tabItem as i LEFT JOIN `tabBrand` as b on i.brand = b.brand ;
 	""")
 	return entries
 
 def get_conditions(filters):
-	print("====filters \n=======")
 	conditions = ""
-	if filters.get("item_name"):
-		conditions += " and b.item_name = '{0}'".format(filters.get("item_name"))
-	if filters.get("city"):
-		conditions += " and ad.city = '{0}'".format(filters.get("city"))
-	if filters.get("state"):
-		conditions += " and ad.state = '{0}'".format(filters.get("state"))
 	return conditions
