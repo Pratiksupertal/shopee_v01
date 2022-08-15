@@ -353,7 +353,6 @@ def submit_send_to_shop_for_material_request():
 def trigger_send_to_shop_spg(request_body):
     import requests
     config = frappe.get_single("Warehouse App Settings")
-    print('\n\n\n', request_body, '\n\n\n')
     try:
         url = config.spg_base_url + 'request-token'
         data = {
