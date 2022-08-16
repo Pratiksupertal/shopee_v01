@@ -15,7 +15,7 @@ def get_columns(filters):
 
     columns =[
 		{
-            "label": _("SrNo."),
+            "label": _("No"),
             "fieldname": "srno",
             "fieldtype": "Data",
             "options": "",
