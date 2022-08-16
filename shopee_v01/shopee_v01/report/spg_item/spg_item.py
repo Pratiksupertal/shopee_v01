@@ -29,14 +29,14 @@ def get_columns(filters):
             "width": 80
         },
 		{
-            "label": _("(bisa kosong)\nPRODUCT_IMAGE"),
+            "label": _("PRODUCT_IMAGE"),
             "fieldname": "image",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("kalo mau lebih dari 1 dikasih koma ()\nUNIT"),
+            "label": _("UNIT"),
             "fieldname": "stock_uom",
             "fieldtype": "Data",
             "options": "",
@@ -78,7 +78,7 @@ def get_columns(filters):
             "width": 80
         },
 		{
-            "label": _("(format [code] - [name])\nVARIANT_CODE"),
+            "label": _("VARIANT_CODE"),
             "fieldname": "item_bar_code",
             "fieldtype": "Data",
             "options": "",
