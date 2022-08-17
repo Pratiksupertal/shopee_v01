@@ -678,3 +678,37 @@ def submit_stock_entry_send_to_shop(stock_entry_doc):
     }
 
     return stock_entry_data
+
+
+def create_new_stock_entry_from_outgoing_stock_entry(data):
+    outgoing_stock_entry_doc = frappe.get_doc("Stock Entry", data.get("outgoing_stock_entry"))
+    new_doc = frappe.new_doc('Stock Entry')
+    new_doc.outgoing_stock_entry = data.get("outgoing_stock_entry")
+    new_doc.stock_entry_type = data.get("stock_entry_type")
+    new_doc.company = outgoing_stock_entry_doc.get("company")
+    new_doc.pick_list = outgoing_stock_entry_doc.get("pick_list")
+    new_doc.remarks = outgoing_stock_entry_doc.get("remarks")
+
+    items = frappe.db.get_list('Stock Entry Detail', filters={'parent': outgoing_stock_entry_doc.get("name")},
+                               fields=['item_code', 'item_group', 'qty', 't_warehouse'])
+    total = 0
+    if data.get("stock_entry_type") != 'Receive at Warehouse':
+        for item in items:
+            new_doc.append("items", {
+                "item_code": item['item_code'],
+                "s_warehouse": data.get("s_warehouse"),
+                "t_warehouse": data.get("t_warehouse"),
+                "qty": str(item['qty'])
+            })
+            total += item['qty']
+    else:
+        for item in items:
+            new_doc.append("items", {
+                "item_code": item['item_code'],
+                "s_warehouse": item['t_warehouse'],
+                "t_warehouse": data.get("t_warehouse"),
+                "qty": str(item['qty'])
+            })
+            total += item['qty']
+    new_doc.save()
+    return new_doc

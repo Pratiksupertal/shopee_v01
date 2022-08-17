@@ -7,6 +7,7 @@ from shopee_v01.api.v1.helpers import format_result
 from shopee_v01.api.v1.helpers import get_last_parameter
 from shopee_v01.api.v1.helpers import get_base_url
 from shopee_v01.api.v1.helpers import submit_stock_entry_send_to_shop
+from shopee_v01.api.v1.helpers import create_new_stock_entry_from_outgoing_stock_entry
 from shopee_v01.api.v1.validations import validate_data
 from shopee_v01.api.v1.validations import data_validation_for_create_receive_at_warehouse
 from shopee_v01.api.v1.validations import data_validation_for_stock_entry_send_to_shop
@@ -210,36 +211,15 @@ def create_receive_at_warehouse_for_material_request():
         data = validate_data(frappe.request.data)
         data_validation_for_create_receive_at_warehouse(data=data)
 
-        base = get_base_url(url=frappe.request.url)
+        if data.get("stock_entry_type") != "Receive at Warehouse":
+            raise Exception("Stock Entry Type is not Receive at Warehouse.")
+        outgoing_stock_entry_doc = frappe.get_doc("Stock Entry", data.get("outgoing_stock_entry"))
+        if outgoing_stock_entry_doc.stock_entry_type != "Send to Warehouse":
+            raise Exception("Outgoing Stock Entry Type is not Send to Warehouse.")
 
-        send_to_ste = base + '/api/method/erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry'
-        stock_entry = requests.post(
-            send_to_ste.replace("'", '"'),
-            headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },
-            data={"source_name": data.get("outgoing_stock_entry")}
-        )
-
-        if stock_entry.status_code != 200:
-            raise Exception('Please, check the outgoing stock entry status.')
-
-        stock_entry_data = stock_entry.json().get("message")
-        stock_entry_data["to_warehouse"] = data.get("t_warehouse")
-        stock_entry_data["stock_entry_type"] = data.get("stock_entry_type")
-        stock_entry_data["docstatus"] = 0
-
-        receive_ste_url = base + '/api/resource/Stock%20Entry'
-        receive_ste_url_api_response = requests.post(
-            receive_ste_url.replace("'", '"'),
-            headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },
-            data=json.dumps(stock_entry_data)
-        )
-        result = {
-            "name": receive_ste_url_api_response.json().get("data").get("name")
-        }
+        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
+        result = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type,
+                  "docstatus": new_doc.docstatus}
         return format_result(
             result=result,
             success=True,
@@ -268,31 +248,12 @@ def create_send_to_shop_for_material_request():
         if outgoing_stock_entry_doc.stock_entry_type != "Receive at Warehouse":
             raise Exception("Outgoing Stock Entry Type is not Receive at Warehouse.")
 
-        outgoing_stock_entry_doc.save()
+        frappe.db.set_value("Stock Entry", outgoing_stock_entry_doc.outgoing_stock_entry, 'per_transferred', 100)
         outgoing_stock_entry_doc.submit()
         if outgoing_stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Receive at Warehouse not submitted.")
 
-        new_doc = frappe.new_doc('Stock Entry')
-        new_doc.outgoing_stock_entry = data.get("outgoing_stock_entry")
-        new_doc.stock_entry_type = data.get("stock_entry_type")
-        new_doc.company = outgoing_stock_entry_doc.get("company")
-        new_doc.pick_list = outgoing_stock_entry_doc.get("pick_list")
-        new_doc.remarks = outgoing_stock_entry_doc.get("remarks")
-
-        items = frappe.db.get_list('Stock Entry Detail', filters={'parent': outgoing_stock_entry_doc.get("name")},
-                                   fields=['item_code', 'item_group', 'qty'])
-        total = 0
-        for item in items:
-            new_doc.append("items", {
-                "item_code": item['item_code'],
-                "t_warehouse": data.get("t_warehouse"),
-                "s_warehouse": data.get("s_warehouse"),
-                "qty": str(item['qty'])
-                })
-            total += item['qty']
-        new_doc.save()
-
+        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
         stock_entry_data = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type,
                             "docstatus": new_doc.docstatus}
 
