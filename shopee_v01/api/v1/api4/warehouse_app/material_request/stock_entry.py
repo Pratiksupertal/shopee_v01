@@ -137,6 +137,7 @@ def filter_stock_entry_for_material_request():
 def stock_entry_details_for_material_request():
     try:
         stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_material_request')
+        stock_entry_doc = frappe.get_doc("Stock Entry", stock_entry)
 
         """GET Stock Entry Details"""
 
@@ -170,10 +171,19 @@ def stock_entry_details_for_material_request():
             ['name', 'transaction_date', 'schedule_date', 'owner']
         )
         if mr_data:
+            stock_entry_details['delivery_warehouse'] = frappe.db.get_value("Material Request Item",
+                                                                            {'parent': mr_data[0]}, 'warehouse')
             stock_entry_details['material_request'] = mr_data[0]
             stock_entry_details['transaction_date'] = mr_data[1]
             stock_entry_details['required_date'] = mr_data[2]
             stock_entry_details['mr_created_by'] = frappe.db.get_value('User', mr_data[3], 'full_name')
+
+        if stock_entry_doc.stock_entry_type == "Receive at Warehouse":
+            stock_entry_details['received_by'] = frappe.db.get_value('User', stock_entry_doc.owner, 'full_name')
+        elif stock_entry_doc.stock_entry_type == "Send to Shop":
+            outgoing_se_owner = frappe.db.get_value('Stock Entry', stock_entry_doc.outgoing_stock_entry, ['owner'])
+            stock_entry_details['received_by'] = frappe.db.get_value('User', outgoing_se_owner, 'full_name')
+            stock_entry_details['packed_by'] = frappe.db.get_value('User', stock_entry_doc.owner, 'full_name')
 
         """GET ITEMS"""
         items = frappe.db.get_list(
