@@ -376,6 +376,9 @@ def submit_send_to_shop_for_material_request():
 
 
 def trigger_send_to_shop_spg(request_body):
+    """This method triggers Send to Shop Stock Entry at SPG end when Stock Entry Send to Shop
+    is submitted at ERP end. The prerequisite data for making API request is fetched from
+    Warehouse App Settings."""
     import requests
     config = frappe.get_single("Warehouse App Settings")
     try:
