@@ -138,6 +138,7 @@ def stock_entry_details_for_material_request():
     """ This method displays the detailed view of fields and values of the Stock Entry."""
     try:
         stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_material_request')
+        stock_entry_doc = frappe.get_doc("Stock Entry", stock_entry)
 
         """GET Stock Entry Details"""
 
@@ -171,10 +172,19 @@ def stock_entry_details_for_material_request():
             ['name', 'transaction_date', 'schedule_date', 'owner']
         )
         if mr_data:
+            stock_entry_details['delivery_warehouse'] = frappe.db.get_value("Material Request Item",
+                                                                            {'parent': mr_data[0]}, 'warehouse')
             stock_entry_details['material_request'] = mr_data[0]
             stock_entry_details['transaction_date'] = mr_data[1]
             stock_entry_details['required_date'] = mr_data[2]
             stock_entry_details['mr_created_by'] = frappe.db.get_value('User', mr_data[3], 'full_name')
+
+        if stock_entry_doc.stock_entry_type == "Receive at Warehouse":
+            stock_entry_details['received_by'] = frappe.db.get_value('User', stock_entry_doc.owner, 'full_name')
+        elif stock_entry_doc.stock_entry_type == "Send to Shop":
+            outgoing_se_owner = frappe.db.get_value('Stock Entry', stock_entry_doc.outgoing_stock_entry, ['owner'])
+            stock_entry_details['received_by'] = frappe.db.get_value('User', outgoing_se_owner, 'full_name')
+            stock_entry_details['packed_by'] = frappe.db.get_value('User', stock_entry_doc.owner, 'full_name')
 
         """GET ITEMS"""
         items = frappe.db.get_list(
@@ -347,6 +357,7 @@ def submit_send_to_shop_for_material_request():
 
         """Trigger SPG API function segment."""
         stock_entry_data = submit_stock_entry_send_to_shop(stock_entry_doc)
+        trigger_send_to_shop_spg(stock_entry_data)
 
         return format_result(
             result=stock_entry_data,
@@ -362,3 +373,43 @@ def submit_send_to_shop_for_material_request():
             message=str(e),
             exception=str(e)
         )
+
+
+def trigger_send_to_shop_spg(request_body):
+    import requests
+    config = frappe.get_single("Warehouse App Settings")
+    try:
+        url = config.spg_base_url + 'request-token'
+        data = {
+            "username": config.username,
+            "password": config.get_password('password')
+        }
+        auth_res = requests.post(url.replace("'", '"'), data=data)
+        if auth_res.status_code not in [200, 201]:
+            raise Exception()
+        auth_res_json = auth_res.json()
+        auth_token = auth_res_json.get('data').get("token")
+    except Exception:
+        frappe.log_error(title="Trigger Send to Shop API Login part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in Triggering API. {frappe.get_traceback()}')
+        return
+
+    if request_body.get('transfer_date'):
+        request_body['transfer_date'] = request_body['transfer_date'].strftime("%Y-%m-%d")
+    request = json.dumps(request_body).replace("'", '"')
+
+    try:
+        url = config.spg_base_url + 'transfer-request/external/create'
+        response = requests.post(
+            url.replace("'", '"'),
+            headers={"Authorization": "Bearer " + auth_token},
+            json=json.loads(request))
+        frappe.log_error(title="Trigger Send to Shop API.", message=response.text)
+
+        if response.status_code == 200:
+            frappe.msgprint('API triggered. Please, check error log for more update.')
+        else:
+            frappe.msgprint(f'API trigger has failed for some reason! Please, check error log. {frappe.get_traceback()}')
+    except Exception:
+        frappe.log_error(title="API trigger Data part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in API trigger. {frappe.get_traceback()}')
