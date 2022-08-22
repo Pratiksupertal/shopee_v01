@@ -228,13 +228,15 @@ def create_receive_at_warehouse_for_material_request():
             raise Exception("Outgoing Stock Entry Type is not Send to Warehouse.")
 
         new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
-        result = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type,
-                  "docstatus": new_doc.docstatus}
+        if not new_doc:
+            raise Exception("Problem occurred in creating new Stock Entry.")
+
+        result = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type}
         return format_result(
             result=result,
             success=True,
             status_code=200,
-            message='Received Warehouse Stock Entry is created'
+            message='Received at Warehouse Stock Entry is created'
         )
     except Exception as e:
         return format_result(
@@ -258,14 +260,15 @@ def create_send_to_shop_for_material_request():
         if outgoing_stock_entry_doc.stock_entry_type != "Receive at Warehouse":
             raise Exception("Outgoing Stock Entry Type is not Receive at Warehouse.")
 
-        frappe.db.set_value("Stock Entry", outgoing_stock_entry_doc.outgoing_stock_entry, 'per_transferred', 100)
         outgoing_stock_entry_doc.submit()
         if outgoing_stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Receive at Warehouse not submitted.")
+        frappe.db.set_value("Stock Entry", outgoing_stock_entry_doc.outgoing_stock_entry, 'per_transferred', 100)
 
         new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
-        stock_entry_data = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type,
-                            "docstatus": new_doc.docstatus}
+        if not new_doc:
+            raise Exception("Problem occurred in creating new Stock Entry.")
+        stock_entry_data = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type}
 
         message = f"Receive at Warehouse Stock Entry [ {outgoing_stock_entry_doc.name} ] submitted," \
                   f" Send to Shop Stock Entry [ {new_doc.name} ] is created"
@@ -296,6 +299,8 @@ def submit_send_to_shop_for_material_request():
             pass
         if stock_entry_doc.stock_entry_type != "Send to Shop":
             raise Exception("Stock Entry Type is not Send to Shop.")
+        if stock_entry_doc.docstatus == 1:
+            raise Exception("Stock Entry already submitted.")
 
         stock_entry_doc.save()
         stock_entry_doc.submit()
@@ -359,3 +364,40 @@ def trigger_send_to_shop_spg(request_body):
     except Exception:
         frappe.log_error(title="API trigger Data part", message=frappe.get_traceback())
         frappe.msgprint(f'Problem in API trigger. {frappe.get_traceback()}')
+
+
+@frappe.whitelist()
+def create_receive_at_shop_for_material_request():
+    try:
+        data = validate_data(frappe.request.data)
+        data_validation_for_create_receive_at_warehouse(data=data)
+        if data.get("stock_entry_type") != "Receive at Shop":
+            raise Exception("Stock Entry Type is not Receive at Shop.")
+        outgoing_stock_entry_doc = frappe.get_doc("Stock Entry", data.get("outgoing_stock_entry"))
+        if outgoing_stock_entry_doc.stock_entry_type != "Send to Shop":
+            raise Exception("Outgoing Stock Entry Type is not Send to Shop.")
+        outgoing_stock_entry_doc.submit()
+        if outgoing_stock_entry_doc.docstatus != 1:
+            raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
+
+        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
+        if not new_doc:
+            raise Exception("Problem occurred in creating new Stock Entry.")
+
+        frappe.db.set_value("Stock Entry", new_doc.name, 'docstatus', 1)
+        frappe.db.set_value("Stock Entry", outgoing_stock_entry_doc.name, 'per_transferred', 100)
+        result = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type}
+        return format_result(
+            result=result,
+            success=True,
+            status_code=200,
+            message='Received at Shop Stock Entry is created'
+        )
+    except Exception as e:
+        return format_result(
+            result=None,
+            success=False,
+            status_code=400,
+            message=str(e),
+            exception=str(e)
+        )

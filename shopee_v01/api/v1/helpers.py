@@ -692,7 +692,7 @@ def create_new_stock_entry_from_outgoing_stock_entry(data):
     items = frappe.db.get_list('Stock Entry Detail', filters={'parent': outgoing_stock_entry_doc.get("name")},
                                fields=['item_code', 'item_group', 'qty', 't_warehouse'])
     total = 0
-    if data.get("stock_entry_type") != 'Receive at Warehouse':
+    if data.get("stock_entry_type") != 'Receive at Warehouse' and data.get("stock_entry_type") != 'Receive at Shop':
         for item in items:
             new_doc.append("items", {
                 "item_code": item['item_code'],
