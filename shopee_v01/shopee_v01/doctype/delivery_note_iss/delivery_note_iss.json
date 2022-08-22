@@ -16,7 +16,6 @@
   "warehouse_head",
   "supplier",
   "column_break1",
-  "amended_from",
   "company",
   "posting_date",
   "posting_time",
@@ -159,7 +158,8 @@
   "mwo_total_qty",
   "art_no_size_qty",
   "art_no_size",
-  "art_no_quantity"
+  "art_no_quantity",
+  "amended_from"
  ],
  "fields": [
   {
@@ -1369,7 +1369,7 @@
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2022-05-11 13:24:08.727339",
+ "modified": "2022-07-21 13:30:52.062347",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Delivery Note ISS",

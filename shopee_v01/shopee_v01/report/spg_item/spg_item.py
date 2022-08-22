@@ -14,7 +14,14 @@ def execute(filters=None):
 def get_columns(filters):
 
     columns =[
-        {
+		{
+            "label": _("NO"),
+            "fieldname": "srno",
+            "fieldtype": "Data",
+            "options": "",
+            "width": 60
+        },
+		{
             "label": _("PRODUCT_NAME"),
             "fieldname": "item_name",
             "fieldtype": "Data",
@@ -29,14 +36,14 @@ def get_columns(filters):
             "width": 80
         },
 		{
-            "label": _("(bisa kosong)\nPRODUCT_IMAGE"),
+            "label": _("PRODUCT_IMAGE"),
             "fieldname": "image",
             "fieldtype": "Data",
             "options": "",
             "width": 80
         },
 		{
-            "label": _("kalo mau lebih dari 1 dikasih koma ()\nUNIT"),
+            "label": _("UNIT"),
             "fieldname": "stock_uom",
             "fieldtype": "Data",
             "options": "",
@@ -78,7 +85,7 @@ def get_columns(filters):
             "width": 80
         },
 		{
-            "label": _("(format [code] - [name])\nVARIANT_CODE"),
+            "label": _("VARIANT_CODE"),
             "fieldname": "item_bar_code",
             "fieldtype": "Data",
             "options": "",
@@ -118,7 +125,7 @@ def get_columns(filters):
 
 def get_entries(filters):
 	entries = frappe.db.sql("""
-	select item_name,product_code,image,stock_uom,b.brand_code,i.brand,division_group,division_group_description, valuation_rate,item_bar_code, size_group, invent_size_id, valuation_rate,status_code from tabItem as i LEFT JOIN `tabBrand` as b on i.brand = b.brand ;
+	select ROW_NUMBER()  OVER (ORDER BY  item_name) As SrNo ,item_name,product_code,image,stock_uom,b.brand_code,i.brand,division_group,division_group_description, valuation_rate,item_bar_code, size_group, invent_size_id, valuation_rate,status_code from tabItem as i LEFT JOIN `tabBrand` as b on i.brand = b.brand ;
 	""")
 	return entries
 

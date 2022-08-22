@@ -342,6 +342,7 @@ def submit_send_to_shop_for_material_request():
         if stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
         stock_entry_data = submit_stock_entry_send_to_shop(stock_entry_doc)
+        trigger_send_to_shop_spg(stock_entry_data)
 
         return format_result(
             result=stock_entry_data,
@@ -357,3 +358,43 @@ def submit_send_to_shop_for_material_request():
             message=str(e),
             exception=str(e)
         )
+
+
+def trigger_send_to_shop_spg(request_body):
+    import requests
+    config = frappe.get_single("Warehouse App Settings")
+    try:
+        url = config.spg_base_url + 'request-token'
+        data = {
+            "username": config.username,
+            "password": config.get_password('password')
+        }
+        auth_res = requests.post(url.replace("'", '"'), data=data)
+        if auth_res.status_code not in [200, 201]:
+            raise Exception()
+        auth_res_json = auth_res.json()
+        auth_token = auth_res_json.get('data').get("token")
+    except Exception:
+        frappe.log_error(title="Trigger Send to Shop API Login part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in Triggering API. {frappe.get_traceback()}')
+        return
+
+    if request_body.get('transfer_date'):
+        request_body['transfer_date'] = request_body['transfer_date'].strftime("%Y-%m-%d")
+    request = json.dumps(request_body).replace("'", '"')
+
+    try:
+        url = config.spg_base_url + 'transfer-request/external/create'
+        response = requests.post(
+            url.replace("'", '"'),
+            headers={"Authorization": "Bearer " + auth_token},
+            json=json.loads(request))
+        frappe.log_error(title="Trigger Send to Shop API.", message=response.text)
+
+        if response.status_code == 200:
+            frappe.msgprint('API triggered. Please, check error log for more update.')
+        else:
+            frappe.msgprint(f'API trigger has failed for some reason! Please, check error log. {frappe.get_traceback()}')
+    except Exception:
+        frappe.log_error(title="API trigger Data part", message=frappe.get_traceback())
+        frappe.msgprint(f'Problem in API trigger. {frappe.get_traceback()}')
