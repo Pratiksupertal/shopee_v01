@@ -109,6 +109,9 @@ doc_events = {
     "validate":"shopee_v01.shopee_v01.custom_script.sales_invoice.validate",
     "on_submit":"shopee_v01.shopee_v01.custom_script.sales_invoice.make_customer_gl_entry"
     },
+    "Sales Order":{
+    "on_cancel":"shopee_v01.shopee_v01.custom_script.sales_order.cancel_update"
+    },
     "Item":{
     "validate":"shopee_v01.shopee_v01.custom_script.item.validate"
     },

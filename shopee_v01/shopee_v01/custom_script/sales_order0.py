@@ -25,10 +25,10 @@ def size_filter(item_code,qty):
     FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
     logging.basicConfig(format=FORMAT)
     logging.warning('Checking checking nilai Qty %s',qty)
-    qty_MRI = get_value_of_quantity_of_Material_Request_Item(item_code)
-    qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
+    qty_MRI = get_value_of_quantity_of_Material_Request_item(item_code)
+    qty_SOI = get_value_of_quantity_of_Sales_Order_item(item_code)
     #reserved_qty2 = get_value_of_actual_available_quantity(item_code) - 1
-    reserved_qty2 = doc2[0] - qty_MRI - qty_SOI - 1 - get_reserved_qty4(item_code)
+    reserved_qty2 = doc2[0] - qty_MRI - qty_SOI - 1
     return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
 
 @frappe.whitelist()
