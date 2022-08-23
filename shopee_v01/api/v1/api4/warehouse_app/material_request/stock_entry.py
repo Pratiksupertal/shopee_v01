@@ -16,7 +16,7 @@ from shopee_v01.api.v1.validations import data_validation_for_stock_entry_send_t
 def filter_stock_entry_for_material_request():
     """Filter Stock Entry
 
-    Filter includes
+    Filter parameters includes
         - docstatus (0/1/2)
         - stock entry type
         - Pick List
@@ -135,6 +135,7 @@ def filter_stock_entry_for_material_request():
 
 @frappe.whitelist()
 def stock_entry_details_for_material_request():
+    """ This method displays the detailed view of fields and values of the Stock Entry."""
     try:
         stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_material_request')
         stock_entry_doc = frappe.get_doc("Stock Entry", stock_entry)
@@ -216,6 +217,8 @@ def stock_entry_details_for_material_request():
 
 @frappe.whitelist()
 def create_receive_at_warehouse_for_material_request():
+    """This method creates Stock Entry with stock_entry_type => Receive at Warehouse as draft from
+    Stock Entry with stock_entry_type => Send to Warehouse."""
     try:
         data = validate_data(frappe.request.data)
         data_validation_for_create_receive_at_warehouse(data=data)
@@ -268,12 +271,18 @@ def create_receive_at_warehouse_for_material_request():
 
 @frappe.whitelist()
 def create_send_to_shop_for_material_request():
+    """This method first submits Stock Entry with stock_entry_type => Receive at Warehouse.
+    Then it creates Stock Entry with stock_entry_type => Send to Shop as draft from
+    Stock Entry with stock_entry_type => Receive at Warehouse."""
     try:
+        """Data validation segment."""
         data = validate_data(frappe.request.data)
         data_validation_for_stock_entry_send_to_shop(data=data)
 
         if data.get("stock_entry_type") != "Send to Shop":
             raise Exception("Stock Entry Type is not Send to Shop.")
+
+        """Submit outgoing_stock_entry segment."""
         outgoing_stock_entry_doc = frappe.get_doc("Stock Entry", data.get("outgoing_stock_entry"))
         if outgoing_stock_entry_doc.stock_entry_type != "Receive at Warehouse":
             raise Exception("Outgoing Stock Entry Type is not Receive at Warehouse.")
@@ -283,6 +292,7 @@ def create_send_to_shop_for_material_request():
         if outgoing_stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Receive at Warehouse not submitted.")
 
+        """Create new Stock Entry with stock_entry_type => Send to Shop as draft."""
         new_doc = frappe.new_doc('Stock Entry')
         new_doc.outgoing_stock_entry = data.get("outgoing_stock_entry")
         new_doc.stock_entry_type = data.get("stock_entry_type")
@@ -327,20 +337,25 @@ def create_send_to_shop_for_material_request():
 
 @frappe.whitelist()
 def submit_send_to_shop_for_material_request():
+    """This method first submits Stock Entry with stock_entry_type => Send to Shop.
+    Then it triggers trigger_send_to_shop_spg function which sends request at SPG end."""
     try:
+        """Data validation segment."""
         data = validate_data(frappe.request.data)
-
         stock_entry_doc = frappe.get_doc("Stock Entry", data.get("stock_entry"))
         if not stock_entry_doc:
             pass
         if stock_entry_doc.stock_entry_type != "Send to Shop":
             raise Exception("Stock Entry Type is not Send to Shop.")
 
+        """Submit Stock Entry segment."""
         stock_entry_doc.save()
         stock_entry_doc.submit()
 
         if stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
+
+        """Trigger SPG API function segment."""
         stock_entry_data = submit_stock_entry_send_to_shop(stock_entry_doc)
         trigger_send_to_shop_spg(stock_entry_data)
 
@@ -361,6 +376,9 @@ def submit_send_to_shop_for_material_request():
 
 
 def trigger_send_to_shop_spg(request_body):
+    """This method triggers Send to Shop Stock Entry at SPG end when Stock Entry Send to Shop
+    is submitted at ERP end. The prerequisite data for making API request is fetched from
+    Warehouse App Settings."""
     import requests
     config = frappe.get_single("Warehouse App Settings")
     try:
