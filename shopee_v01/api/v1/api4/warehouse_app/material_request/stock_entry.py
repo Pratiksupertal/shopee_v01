@@ -58,6 +58,11 @@ def filter_stock_entry_for_material_request():
 
         """find and add other necessary fields"""
         for se in filtered_se:
+            se_created_from_current_se = frappe.db.get_list('Stock Entry', filters={'outgoing_stock_entry': se.name},
+                                                            fields=['name'])
+            if len(se_created_from_current_se) > 0:
+                continue
+
             pl_data = frappe.db.get_value(
                 'Pick List', se.get('pick_list'), ['customer', 'picker', 'material_request', 'name']
             )
