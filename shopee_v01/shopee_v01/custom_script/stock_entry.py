@@ -153,13 +153,12 @@ def update_stock_to_halosis(doc):
 
 def parent_warehouse(warehouse, warehouse_list):
     base_parent = [frappe.db.get_value("Warehouse", warehouse, "parent") for warehouse in warehouse_list]
-    a = frappe.db.get_value("Warehouse", warehouse, "parent")
-    if not a:
+    parent = frappe.db.get_value("Warehouse", warehouse, "parent")
+    if not parent:
         return False
-    elif a in warehouse_list:  # parent matched
+    elif parent in warehouse_list:  # parent matched
         return True
-    elif a in base_parent:
+    elif parent in base_parent:
         return False
     else:
-        b = parent_warehouse(a, warehouse_list)
-        return b
+        return parent_warehouse(parent, warehouse_list)
