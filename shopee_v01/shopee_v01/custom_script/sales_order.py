@@ -156,7 +156,7 @@ def update_cancel_material_request(doc,action):
 def get_value_of_quantity_of_Material_Request_Item(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     warehouse = "Delivery Area - ISS"
-    sql = "select sum(qty) qty from `tabMaterial Request Item` where item_code = '{0}' and substring(warehouse,1,3) = '{1}'".format(item_code,'901')
+    sql = "select sum(qty) qty from `tabMaterial Request Item` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
     FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
     logging.basicConfig(format=FORMAT)
