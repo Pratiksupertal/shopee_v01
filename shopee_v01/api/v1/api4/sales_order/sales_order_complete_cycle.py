@@ -1,3 +1,5 @@
+import time
+
 import frappe
 
 from shopee_v01.api.v1.helpers import get_base_url
@@ -59,25 +61,16 @@ def sales_order_cycle():
         """Auto map paid to with store by Chart of Account Configuration"""
         payment_data['paid_to'] = get_coa_from_store(store=order_data.get('store'))
 
-        base = get_base_url(url=frappe.request.url)
-
         """step 1: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
-            base=base,
             order_data=order_data,
             submit=True
         )
-
-        if sales_order.status_code != 200:
-            raise Exception('Sales order not created. Please, provide valid data.')
-
-        sales_order = sales_order.json().get('data')
-        so_name = sales_order.get("name")
-        response['sales_order'] = so_name
+        response['sales_order'] = sales_order.get('name')
+        so_name = sales_order.name
 
         """step 2: create and submit delivery_note"""
         delivery_note = create_and_submit_delivery_note_from_sales_order(
-            base=base,
             source_name=so_name,
             submit=True,
             transaction_date=order_data.get('transaction_date')
@@ -86,7 +79,6 @@ def sales_order_cycle():
 
         """step 3: create and submit sales invoice"""
         sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-            base=base,
             source_name=so_name,
             accounting_dimensions=accounting_dimensions,
             submit=True,
@@ -96,9 +88,8 @@ def sales_order_cycle():
 
         """step 4: create and submit payment entry"""
         payment_entry = create_payment_for_sales_order_from_web(
-            base=base,
             payment_data=payment_data,
-            sales_invoice_data=sales_invoice,
+            sales_invoice=sales_invoice,
             accounting_dimensions=accounting_dimensions,
             submit=True,
             transaction_date=order_data.get('transaction_date')
@@ -183,25 +174,16 @@ def sales_order_cycle_bulk():
             """Auto map paid to with store by Chart of Account Configuration"""
             payment_data['paid_to'] = get_coa_from_store(store=order_data.get('store'))
 
-            base = get_base_url(url=frappe.request.url)
-
             """step 1: create and submit sales order"""
             sales_order = create_and_submit_sales_order(
-                base=base,
                 order_data=order_data,
                 submit=True
             )
-
-            if sales_order.status_code != 200:
-                raise Exception('Sales order not created. Please, provide valid data.')
-
-            sales_order = sales_order.json().get('data')
             so_name = sales_order.get("name")
             response['sales_order'] = so_name
 
             """step 2: create and submit delivery_note"""
             delivery_note = create_and_submit_delivery_note_from_sales_order(
-                base=base,
                 source_name=so_name,
                 submit=True,
                 transaction_date=order_data.get('transaction_date')
@@ -210,7 +192,6 @@ def sales_order_cycle_bulk():
 
             """step 3: create and submit sales invoice"""
             sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-                base=base,
                 source_name=so_name,
                 accounting_dimensions=accounting_dimensions,
                 submit=True,
@@ -220,9 +201,8 @@ def sales_order_cycle_bulk():
 
             """step 4: create and submit payment entry"""
             payment_entry = create_payment_for_sales_order_from_web(
-                base=base,
                 payment_data=payment_data,
-                sales_invoice_data=sales_invoice,
+                sales_invoice=sales_invoice,
                 accounting_dimensions=accounting_dimensions,
                 submit=True,
                 transaction_date=order_data.get('transaction_date')

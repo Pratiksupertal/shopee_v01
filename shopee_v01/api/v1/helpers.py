@@ -9,6 +9,7 @@ import os
 import barcode
 from urllib.parse import urlparse, unquote
 from erpnext.stock.doctype.pick_list.pick_list import get_available_item_locations, get_items_with_location_and_quantity
+from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice, make_delivery_note
 
 
 import re
@@ -462,115 +463,117 @@ def create_and_save_customer(base, customer_data, submit=False):
         raise Exception(f'Problem in creating Customer. Reason: {str(e)}')
 
 
-def create_and_submit_sales_order(base, order_data, submit=False):
+def create_and_submit_sales_order(order_data, submit=False):
     try:
-        url = base + '/api/resource/Sales%20Order'
-        if submit:
-            order_data['docstatus'] = 1
-        """
-        1. If Delivery Date is not given, will update transaction date as delivery date
-        2. External SO Number and Source App Name fields mendatory
-        """
-        if 'delivery_date' not in order_data:
-            order_data["delivery_date"] = order_data.get('transaction_date')
-
-        sales_order = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data=json.dumps(order_data))
+        sales_order = frappe.new_doc("Sales Order")
+        sales_order.customer = order_data.get("customer")
+        sales_order.order_type = "Sales"
+        sales_order.delivery_date = frappe.utils.getdate()
+        sales_order.external_so_number = order_data.get("external_so_number")
+        sales_order.source_app_name = order_data.get("source_app_name")
+        sales_order.chain = order_data.get("chain")
+        sales_order.store = order_data.get("store")
+        sales_order.transaction_date = order_data.get("transaction_date")
+        for item in order_data.get("items"):
+            sales_order.append("items", {
+                "item_code": item['item_code'],
+                "qty": str(item['qty']),
+                "rate": item['rate'],
+                'warehouse': item['warehouse']
+                })
+        for tax in order_data.get("taxes"):
+            sales_order.append("taxes", {
+                "charge_type": tax['charge_type'],
+                "account_head": tax['account_head'],
+                "tax_amount": tax['tax_amount'],
+                'description': tax['description']
+                })
+        sales_order.save()
+        sales_order.submit()
         return sales_order
     except Exception as e:
         raise Exception(f'Problem in creating sales order. Reason: {str(e)}')
 
 
-def create_and_submit_sales_invoice_from_sales_order(base, source_name, accounting_dimensions, submit=False, transaction_date=None) -> any:
+def create_and_submit_sales_invoice_from_sales_order(
+        source_name, accounting_dimensions, submit=False, transaction_date=None) -> any:
     try:
-        invoice_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice'
-        invoice_res_api_response = requests.post(invoice_url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data={"source_name": source_name})
-        sales_invoice_data = invoice_res_api_response.json().get("message")
+        sales_invoice_data = make_sales_invoice(source_name=source_name)
+        new_sales_invoice = frappe.new_doc("Sales Invoice")
+        new_sales_invoice = sales_invoice_data
 
-        if submit:
-            sales_invoice_data['docstatus'] = 1
         if transaction_date:
-            sales_invoice_data['set_posting_time'] = 1
-            sales_invoice_data['posting_date'] = transaction_date
-        sales_invoice_data.update(accounting_dimensions)
+            sales_invoice_data.set_posting_time = 1
+            sales_invoice_data.posting_date = transaction_date
+        new_sales_invoice.update(accounting_dimensions)
+        new_sales_invoice.save()
+        if submit:
+            new_sales_invoice.submit()
 
-        invoice_url_2 = base + '/api/resource/Sales%20Invoice'
-        invoice_res_api_response_2 = requests.post(invoice_url_2.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data=json.dumps(sales_invoice_data))
-
-        if invoice_res_api_response_2.status_code != 200:
-            raise Exception('Please, provide valid information for accounting dimensions.')
-
-        sales_invoice_data_2 = invoice_res_api_response_2.json().get("data")
-        return sales_invoice_data_2
+        return new_sales_invoice
     except Exception as e:
         raise Exception(f'Problem in creating sales invoice. Reason: {str(e)}')
 
 
-def create_and_submit_delivery_note_from_sales_order(
-        base, source_name, submit=False, transaction_date=None) -> any:
+def create_and_submit_delivery_note_from_sales_order(source_name, submit=False, transaction_date=None) -> any:
     try:
-        dn_url = base + '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note'
-        dn_res_api_response = requests.post(dn_url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data={"source_name": source_name})
-        dn_data = dn_res_api_response.json().get("message")
-        if submit:
-            dn_data['docstatus'] = 1
+        dn_data = make_delivery_note(source_name=source_name)
+        new_delivery_note = frappe.new_doc("Delivery Note")
+        new_delivery_note = dn_data
+
         if transaction_date:
-            dn_data['set_posting_time'] = 1
-            dn_data['posting_date'] = transaction_date
-        dn_url_2 = base + '/api/resource/Delivery%20Note'
-        dn_res_api_response_2 = requests.post(dn_url_2.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data=json.dumps(dn_data))
+            dn_data.set_posting_time = 1
+            dn_data.posting_date = transaction_date
+        new_delivery_note.save()
+        if submit:
+            new_delivery_note.submit()
 
-        if dn_res_api_response_2.status_code != 200:
-            raise Exception('Please, check the item availability in the warehouse.')
-
-        dn_data_2 = dn_res_api_response_2.json().get("data")
-        return dn_data_2
+        return new_delivery_note
     except Exception as e:
         raise Exception(f'Problem in creating delivery note. Reason: {str(e)}')
 
 
 def create_payment_for_sales_order_from_web(
-        base, payment_data, sales_invoice_data, accounting_dimensions, submit=False, transaction_date=None):
+        payment_data, sales_invoice, accounting_dimensions, submit=False, transaction_date=None):
     try:
-        payment_url = base + '/api/resource/Payment%20Entry'
-        payment_data.update({
-            "references": [
-                {
-                    "parenttype": "Payment Entry",
-                    "reference_doctype": "Sales Invoice",
-                    "reference_name": sales_invoice_data.get("name"),
-                    "due_date": None,
-                    "bill_no": None,
-                    "payment_term": None,
-                    "total_amount": sales_invoice_data.get("grand_total"),
-                    "outstanding_amount": sales_invoice_data.get("grand_total"),
-                    "allocated_amount": sales_invoice_data.get("grand_total"),
-                    "exchange_rate": 0,
-                    "doctype": "Payment Entry Reference"
-                }
-            ]
+        payment_entry = frappe.new_doc("Payment Entry")
+        payment_entry.payment_type = "Receive"
+        payment_entry.company = sales_invoice.company
+        payment_entry.mode_of_payment = payment_data['mode_of_payment']
+        payment_entry.posting_date = frappe.utils.getdate()
+        payment_entry.party = payment_data['party']
+        payment_entry.party_type = payment_data['party_type']
+        payment_entry.paid_amount = payment_data['paid_amount']
+        payment_entry.received_amount = payment_data['received_amount']
+        payment_entry.paid_to = payment_data['paid_to']
+        payment_entry.paid_from = payment_data['paid_from']
+        payment_entry.paid_from_account_currency = payment_data['paid_from_account_currency']
+        payment_entry.paid_to_account_currency = payment_data['paid_to_account_currency']
+        payment_entry.reference_no = payment_data['reference_no']
+        payment_entry.reference_date = payment_data['reference_date']
+
+        payment_entry.append("references", {
+            "parenttype": "Payment Entry",
+            "reference_doctype": "Sales Invoice",
+            "reference_name": sales_invoice.name,
+            "due_date": None,
+            "bill_no": None,
+            "payment_term": None,
+            "total_amount": sales_invoice.grand_total,
+            "outstanding_amount": sales_invoice.grand_total,
+            "allocated_amount": sales_invoice.grand_total,
+            "exchange_rate": 0,
+            "doctype": "Payment Entry Reference"
         })
-        payment_data.update(accounting_dimensions)
-        if submit:
-            payment_data.update({"docstatus": 1})
+        payment_entry.update(accounting_dimensions)
+
         if transaction_date:
-            payment_data['set_posting_time'] = 1
-            payment_data['posting_date'] = transaction_date
-        payment_res_api_response = requests.post(payment_url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data=json.dumps(payment_data))
-        if payment_res_api_response.status_code != 200:
-            raise Exception('Please, provide valid payment information.')
-        return payment_res_api_response.json().get("data")
+            payment_entry.set_posting_time = 1
+            payment_entry.posting_date = transaction_date
+        payment_entry.save()
+        if submit:
+            payment_entry.submit()
+        return payment_entry
     except Exception as e:
         raise Exception(f'Problem in creating payment entry. Reason: {str(e)}')
 
