@@ -66,8 +66,8 @@ def sales_order_cycle():
             order_data=order_data,
             submit=True
         )
-        response['sales_order'] = sales_order.get('name')
         so_name = sales_order.name
+        response['sales_order'] = so_name
 
         """step 2: create and submit delivery_note"""
         delivery_note = create_and_submit_delivery_note_from_sales_order(
