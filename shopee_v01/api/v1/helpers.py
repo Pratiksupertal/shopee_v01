@@ -481,14 +481,14 @@ def create_and_submit_sales_order(order_data, submit=False):
                 "rate": item['rate'],
                 'warehouse': item['warehouse']
                 })
-        if 'taxes' in order_data:
-            for tax in order_data.get("taxes"):
-                sales_order.append("taxes", {
-                    "charge_type": tax['charge_type'],
-                    "account_head": tax['account_head'],
-                    "tax_amount": tax['tax_amount'],
-                    'description': tax['description']
-                    })
+
+        for tax in order_data.get("taxes"):
+            sales_order.append("taxes", {
+                "charge_type": tax['charge_type'],
+                "account_head": tax['account_head'],
+                "tax_amount": tax['tax_amount'],
+                'description': tax['description']
+                })
         sales_order.save()
         sales_order.submit()
         return sales_order
