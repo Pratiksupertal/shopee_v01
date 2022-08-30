@@ -7,6 +7,7 @@ from shopee_v01.api.v1.helpers import format_result
 from shopee_v01.api.v1.helpers import get_last_parameter
 from shopee_v01.api.v1.helpers import get_base_url
 from shopee_v01.api.v1.helpers import submit_stock_entry_send_to_shop
+from shopee_v01.api.v1.helpers import create_new_stock_entry_from_outgoing_stock_entry
 from shopee_v01.api.v1.validations import validate_data
 from shopee_v01.api.v1.validations import data_validation_for_create_receive_at_warehouse
 from shopee_v01.api.v1.validations import data_validation_for_stock_entry_send_to_shop
@@ -16,7 +17,7 @@ from shopee_v01.api.v1.validations import data_validation_for_stock_entry_send_t
 def filter_stock_entry_for_material_request():
     """Filter Stock Entry
 
-    Filter includes
+    Filter parameters includes
         - docstatus (0/1/2)
         - stock entry type
         - Pick List
@@ -57,6 +58,11 @@ def filter_stock_entry_for_material_request():
 
         """find and add other necessary fields"""
         for se in filtered_se:
+            se_created_from_current_se = frappe.db.get_list('Stock Entry', filters={'outgoing_stock_entry': se.name},
+                                                            fields=['name'])
+            if len(se_created_from_current_se) > 0:
+                continue
+
             pl_data = frappe.db.get_value(
                 'Pick List', se.get('pick_list'), ['customer', 'picker', 'material_request', 'name']
             )
@@ -135,6 +141,7 @@ def filter_stock_entry_for_material_request():
 
 @frappe.whitelist()
 def stock_entry_details_for_material_request():
+    """ This method displays the detailed view of fields and values of the Stock Entry."""
     try:
         stock_entry = get_last_parameter(frappe.request.url, 'stock_entry_details_for_material_request')
         stock_entry_doc = frappe.get_doc("Stock Entry", stock_entry)
@@ -216,45 +223,30 @@ def stock_entry_details_for_material_request():
 
 @frappe.whitelist()
 def create_receive_at_warehouse_for_material_request():
+    """This method creates Stock Entry with stock_entry_type => Receive at Warehouse as draft from
+    Stock Entry with stock_entry_type => Send to Warehouse."""
     try:
+        """Data validation segment."""
         data = validate_data(frappe.request.data)
         data_validation_for_create_receive_at_warehouse(data=data)
 
-        base = get_base_url(url=frappe.request.url)
+        if data.get("stock_entry_type") != "Receive at Warehouse":
+            raise Exception("Stock Entry Type is not Receive at Warehouse.")
+        outgoing_stock_entry_doc = frappe.get_doc("Stock Entry", data.get("outgoing_stock_entry"))
+        if outgoing_stock_entry_doc.stock_entry_type != "Send to Warehouse":
+            raise Exception("Outgoing Stock Entry Type is not Send to Warehouse.")
 
-        send_to_ste = base + '/api/method/erpnext.stock.doctype.stock_entry.stock_entry.make_stock_in_entry'
-        stock_entry = requests.post(
-            send_to_ste.replace("'", '"'),
-            headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },
-            data={"source_name": data.get("outgoing_stock_entry")}
-        )
+        """Create new Stock Entry with stock_entry_type => Receive at Warehouse as draft."""
+        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
+        if not new_doc:
+            raise Exception("Problem occurred in creating new Stock Entry.")
 
-        if stock_entry.status_code != 200:
-            raise Exception('Please, check the outgoing stock entry status.')
-
-        stock_entry_data = stock_entry.json().get("message")
-        stock_entry_data["to_warehouse"] = data.get("t_warehouse")
-        stock_entry_data["stock_entry_type"] = data.get("stock_entry_type")
-        stock_entry_data["docstatus"] = 0
-
-        receive_ste_url = base + '/api/resource/Stock%20Entry'
-        receive_ste_url_api_response = requests.post(
-            receive_ste_url.replace("'", '"'),
-            headers={
-                "Authorization": frappe.request.headers["Authorization"]
-            },
-            data=json.dumps(stock_entry_data)
-        )
-        result = {
-            "name": receive_ste_url_api_response.json().get("data").get("name")
-        }
+        result = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type}
         return format_result(
             result=result,
             success=True,
             status_code=200,
-            message='Received Warehouse Stock Entry is created'
+            message='Received at Warehouse Stock Entry is created'
         )
     except Exception as e:
         return format_result(
@@ -268,7 +260,11 @@ def create_receive_at_warehouse_for_material_request():
 
 @frappe.whitelist()
 def create_send_to_shop_for_material_request():
+    """This method first submits Stock Entry with stock_entry_type => Receive at Warehouse.
+    Then it creates Stock Entry with stock_entry_type => Send to Shop as draft from
+    Stock Entry with stock_entry_type => Receive at Warehouse."""
     try:
+        """Data validation segment."""
         data = validate_data(frappe.request.data)
         data_validation_for_stock_entry_send_to_shop(data=data)
 
@@ -278,33 +274,17 @@ def create_send_to_shop_for_material_request():
         if outgoing_stock_entry_doc.stock_entry_type != "Receive at Warehouse":
             raise Exception("Outgoing Stock Entry Type is not Receive at Warehouse.")
 
-        outgoing_stock_entry_doc.save()
+        """Submit outgoing_stock_entry segment."""
         outgoing_stock_entry_doc.submit()
         if outgoing_stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Receive at Warehouse not submitted.")
+        frappe.db.set_value("Stock Entry", outgoing_stock_entry_doc.outgoing_stock_entry, 'per_transferred', 100)
 
-        new_doc = frappe.new_doc('Stock Entry')
-        new_doc.outgoing_stock_entry = data.get("outgoing_stock_entry")
-        new_doc.stock_entry_type = data.get("stock_entry_type")
-        new_doc.company = outgoing_stock_entry_doc.get("company")
-        new_doc.pick_list = outgoing_stock_entry_doc.get("pick_list")
-        new_doc.remarks = outgoing_stock_entry_doc.get("remarks")
-
-        items = frappe.db.get_list('Stock Entry Detail', filters={'parent': outgoing_stock_entry_doc.get("name")},
-                                   fields=['item_code', 'item_group', 'qty'])
-        total = 0
-        for item in items:
-            new_doc.append("items", {
-                "item_code": item['item_code'],
-                "t_warehouse": data.get("t_warehouse"),
-                "s_warehouse": data.get("s_warehouse"),
-                "qty": str(item['qty'])
-                })
-            total += item['qty']
-        new_doc.save()
-
-        stock_entry_data = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type,
-                            "docstatus": new_doc.docstatus}
+        """Create new Stock Entry with stock_entry_type => Send to Shop as draft."""
+        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
+        if not new_doc:
+            raise Exception("Problem occurred in creating new Stock Entry.")
+        stock_entry_data = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type}
 
         message = f"Receive at Warehouse Stock Entry [ {outgoing_stock_entry_doc.name} ] submitted," \
                   f" Send to Shop Stock Entry [ {new_doc.name} ] is created"
@@ -327,7 +307,10 @@ def create_send_to_shop_for_material_request():
 
 @frappe.whitelist()
 def submit_send_to_shop_for_material_request():
+    """This method first submits Stock Entry with stock_entry_type => Send to Shop.
+    Then it triggers trigger_send_to_shop_spg function which sends request at SPG end."""
     try:
+        """Data validation segment."""
         data = validate_data(frappe.request.data)
 
         stock_entry_doc = frappe.get_doc("Stock Entry", data.get("stock_entry"))
@@ -335,12 +318,17 @@ def submit_send_to_shop_for_material_request():
             pass
         if stock_entry_doc.stock_entry_type != "Send to Shop":
             raise Exception("Stock Entry Type is not Send to Shop.")
+        if stock_entry_doc.docstatus == 1:
+            raise Exception("Stock Entry already submitted.")
 
+        """Submit Stock Entry segment."""
         stock_entry_doc.save()
         stock_entry_doc.submit()
 
         if stock_entry_doc.docstatus != 1:
             raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
+
+        """Trigger SPG API function segment."""
         stock_entry_data = submit_stock_entry_send_to_shop(stock_entry_doc)
         trigger_send_to_shop_spg(stock_entry_data)
 
@@ -361,6 +349,9 @@ def submit_send_to_shop_for_material_request():
 
 
 def trigger_send_to_shop_spg(request_body):
+    """This method triggers Send to Shop Stock Entry at SPG end when Stock Entry Send to Shop
+    is submitted at ERP end. The prerequisite data for making API request is fetched from
+    Warehouse App Settings."""
     import requests
     config = frappe.get_single("Warehouse App Settings")
     try:
@@ -398,3 +389,48 @@ def trigger_send_to_shop_spg(request_body):
     except Exception:
         frappe.log_error(title="API trigger Data part", message=frappe.get_traceback())
         frappe.msgprint(f'Problem in API trigger. {frappe.get_traceback()}')
+
+
+@frappe.whitelist()
+def create_receive_at_shop_for_material_request():
+    """This method creates and submits Stock Entry with stock_entry_type => Receive at Shop from
+    Stock Entry with stock_entry_type => Send to Shop."""
+    try:
+        """Data validation segment."""
+        data = validate_data(frappe.request.data)
+        data_validation_for_create_receive_at_warehouse(data=data)
+        if data.get("stock_entry_type") != "Receive at Shop":
+            raise Exception("Stock Entry Type is not Receive at Shop.")
+        outgoing_stock_entry_doc = frappe.get_doc("Stock Entry", data.get("outgoing_stock_entry"))
+        if outgoing_stock_entry_doc.stock_entry_type != "Send to Shop":
+            raise Exception("Outgoing Stock Entry Type is not Send to Shop.")
+        if outgoing_stock_entry_doc.docstatus != 1:
+            raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
+
+        """Create new Stock Entry with stock_entry_type => Receive at Shop"""
+        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
+        if not new_doc:
+            raise Exception("Problem occurred in creating new Stock Entry.")
+
+        """Submit Stock Entry segment."""
+        frappe.db.set_value("Stock Entry", new_doc.name, 'docstatus', 1)
+        frappe.db.set_value("Stock Entry", outgoing_stock_entry_doc.name, 'per_transferred', 100)
+
+        "Material Request status change from pending to transferred."
+        mr = frappe.db.get_value('Pick List', new_doc.get('pick_list'), 'material_request')
+        frappe.db.set_value("Material Request", mr, 'per_ordered', 100)
+        result = {"stock_entry": new_doc.name, "stock_entry_type": new_doc.stock_entry_type}
+        return format_result(
+            result=result,
+            success=True,
+            status_code=200,
+            message='Received at Shop Stock Entry is created'
+        )
+    except Exception as e:
+        return format_result(
+            result=None,
+            success=False,
+            status_code=400,
+            message=str(e),
+            exception=str(e)
+        )

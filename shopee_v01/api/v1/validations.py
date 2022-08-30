@@ -99,7 +99,10 @@ def data_validation_for_create_receive_at_warehouse(data):
 
     outgoing_stock_entry = frappe.get_list("Stock Entry", {"outgoing_stock_entry": data.get("outgoing_stock_entry")})
     if len(outgoing_stock_entry) > 0:
-        raise Exception('Received at warehouse is already done for this Stock entry')
+        if data.get("stock_entry_type") == "Receive at Shop":
+            raise Exception('Received at Shop is already done for this Stock entry')
+        else:
+            raise Exception('Received at Warehouse is already done for this Stock entry')
 
 
 def data_validation_for_save_picklist_and_create_stockentry(data):
