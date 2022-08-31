@@ -54,25 +54,18 @@ def create_sales_order():
             add_brand=True
         )
 
-        base = get_base_url(url=frappe.request.url)
-
         """step 1: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
-            base=base,
             order_data=order_data,
             submit=True
         )
 
-        if sales_order.status_code == 200:
-            sales_order = sales_order.json().get('data')
+        if sales_order:
             so_name = sales_order.get("name")
-            print(so_name)
-
             res['sales_order'] = so_name
 
             """step 2: create and submit delivery note"""
             delivery_note = create_and_submit_delivery_note_from_sales_order(
-                base=base,
                 source_name=so_name,
                 submit=True,
                 transaction_date=order_data.get('transaction_date')
@@ -81,7 +74,6 @@ def create_sales_order():
 
             """step 3: create and submit sales invoice"""
             sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-                base=base,
                 source_name=so_name,
                 accounting_dimensions=accounting_dimensions,
                 submit=True,
@@ -175,24 +167,18 @@ def create_sales_order_all():
 
             res['external_so_number'] = order_data.get('external_so_number')
 
-            base = get_base_url(url=frappe.request.url)
-
             """step 1: create and submit sales order"""
             sales_order = create_and_submit_sales_order(
-                base=base,
                 order_data=order_data,
                 submit=True
             )
-            print(sales_order.text)
 
-            if sales_order.status_code == 200:
-                sales_order = sales_order.json().get('data')
+            if sales_order:
                 so_name = sales_order.get("name")
                 res['sales_order'] = so_name
 
                 """step 2: create and submit delivery note"""
                 delivery_note = create_and_submit_delivery_note_from_sales_order(
-                    base=base,
                     source_name=so_name,
                     submit=True,
                     transaction_date=order_data.get('transaction_date')
@@ -201,7 +187,6 @@ def create_sales_order_all():
 
                 """step 3: create and submit sales invoice"""
                 sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-                    base=base,
                     source_name=so_name,
                     accounting_dimensions=accounting_dimensions,
                     submit=True,

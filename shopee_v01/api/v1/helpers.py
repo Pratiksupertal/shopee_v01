@@ -449,15 +449,33 @@ def get_item_bar_code(item_code):
         return None
 
 
-def create_and_save_customer(base, customer_data, submit=False):
+def create_and_save_customer(customer_data, submit=False):
     try:
-        url = base + '/api/resource/Customer'
-        customer_res = requests.post(url.replace("'", '"'), headers={
-            "Authorization": frappe.request.headers["Authorization"]
-        }, data=json.dumps(customer_data))
-        if customer_res.status_code != 200:
-            raise Exception()
-        customer = customer_res.json().get("data")
+        customer = frappe.new_doc("Customer")
+        customer.customer_name = customer_data.get("customer_name")
+        customer.customer_group = customer_data.get("customer_group")
+        customer.customer_type = customer_data.get("customer_type")
+        customer.email_id = customer_data.get("email_id")
+        customer.mobile_no = customer_data.get("mobile_no")
+        customer.territory = customer_data.get("territory")
+        customer.save()
+
+        address = frappe.new_doc("Address")
+        address.address_title = customer.customer_name
+        address.address_line1 = customer_data.get("address_line1")
+        address.city = customer_data.get("city")
+        address.country = customer_data.get("country")
+        address.pincode = customer_data.get("pincode")
+        address.address_type = customer_data.get("address_type")
+        address.append("links", {
+            "link_doctype": "Customer",
+            "link_name": customer.name,
+            "link_title": customer.name
+        })
+
+        address.save()
+        customer.address_html = address
+        customer.save()
         return customer
     except Exception as e:
         raise Exception(f'Problem in creating Customer. Reason: {str(e)}')
@@ -468,7 +486,6 @@ def create_and_submit_sales_order(order_data, submit=False):
         sales_order = frappe.new_doc("Sales Order")
         sales_order.customer = order_data.get("customer")
         sales_order.order_type = "Sales"
-        sales_order.delivery_date = frappe.utils.getdate()
         sales_order.external_so_number = order_data.get("external_so_number")
         sales_order.source_app_name = order_data.get("source_app_name")
         sales_order.chain = order_data.get("chain")
