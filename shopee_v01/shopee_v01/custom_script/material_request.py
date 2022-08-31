@@ -51,24 +51,6 @@ def update_cancel_material_request(doc,action):
 def get_summary_sales_order(doc):
     return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Order Item` where parent = %s group by parent,item_name""",(doc.name),as_dict=True)
 
-def get_reserved_qty2(item_code, warehouse):
-    """warehouse is hard coded as per Mr. Albert's instructions"""
-    reserved_qty = frappe.db.sql("""
-		select
-			sum(reserved_qty) as reserved_qty
-		from `tabBin` where item_code = %s and SUBSTRING(warehouse,1,3) =%s""", (item_code, '901'))
-    return flt(reserved_qty[0][0]) if reserved_qty else 0
-
-def get_reserved_qty3(item_code, warehouse, schedule_date, actual_available_qty,qty):
-    """warehouse is hard coded as per Mr. Albert's instructions"""
-    sql = "select actual_available_qty from `tabMaterial Request Item` where item_code = '{0}' and warehouse = '{1}' and schedule_date = '{2}' and actual_available_qty = {3}".format(item_code,warehouse,schedule_date,actual_available_qty)
-    reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    reserved_qty4 = str(reserved_qty)
-    logging.warning('Checking for Query %s',reserved_qty4)
-    return flt(reserved_qty[0][0]) if reserved_qty else 0
-
 def get_reserved_qty4(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     warehouse = "Delivery Area - ISS"
