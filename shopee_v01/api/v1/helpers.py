@@ -473,6 +473,7 @@ def create_and_submit_sales_order(order_data, submit=False):
         sales_order.source_app_name = order_data.get("source_app_name")
         sales_order.chain = order_data.get("chain")
         sales_order.store = order_data.get("store")
+        sales_order.delivery_date = order_data.get("delivery_date")
         sales_order.transaction_date = order_data.get("transaction_date")
         for item in order_data.get("items"):
             sales_order.append("items", {
