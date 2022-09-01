@@ -25,12 +25,14 @@
   }
 </style>
 <div class="print-heading">
+    <img src="/files/Kop Surat.jpg" alt="" width="700" height="120">
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js"></script>
 
   <svg
     class="barcode"
-    jsbarcode-fontsize="10"
-    jsbarcode-height="40"
+    jsbarcode-fontsize="8"
+    jsbarcode-height="16"
+    jsbarcode-width="1"
     jsbarcode-value="{{doc.name}}"/>
   {% set username = ""%}
   {% if frappe.session.user != "Administrator" %}
@@ -131,14 +133,14 @@
         <td class="tac" width="10%">{{ row.idx or '' }}</td>
         {% set uom.uom_name= row.uom %}
         {% set fmt_qty =frappe.utils.fmt_money(row.qty,currency="") %}
-        {% set price_tag =row.price_list_rate * row.qty %}
+        {% set price_tag =row.amount %}
         {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
         {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
           <td width="32%">
             {{ row.item_code or '' }} <br />
             {{ row.item_name}} <br />{{ row.description or '' }}
           </td>
-          {% set fmt_price_list_rate = frappe.utils.fmt_money(row.price_list_rate,currency="") %}
+          {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
 
           <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
           <td class="tac" width="18%"><img src="{{ row.image }}" /></td>
