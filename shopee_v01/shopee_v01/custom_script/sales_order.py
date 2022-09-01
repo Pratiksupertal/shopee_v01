@@ -29,12 +29,6 @@ def size_filter(item_code,qty):
     qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
 
     #reserved_qty2 = get_value_of_actual_available_quantity(item_code) - 1
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking checking nilai qtyMRI %s',str(qty_MRI))
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking checking nilai qty_SOI %s',str(qty_SOI))
     reserved_qty2 = doc2[0] - qty_MRI - qty_SOI - 1 - get_reserved_qty4(item_code)
     return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
 
@@ -120,12 +114,6 @@ def get_reserved_qty2(item_code):
 		from `tabBin` where item_code = %s and SUBSTRING(warehouse,1,3) =%s""", (item_code, '901'))
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
-def get_reserved_qty3(item_code, parent, actual_available_qty,qty):
-    """warehouse is hard coded as per Mr. Albert's instructions"""
-    sql = "select actual_qty from `tabSales Order Item` where item_code = '{0}' and parent = '{1}' and actual_available_qty = {2}".format(item_code,parent,actual_available_qty)
-    reserved_qty = frappe.db.sql(sql)
-    return flt(reserved_qty[0][0]) if reserved_qty else 0
-
 def get_reserved_qty4(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     warehouse = "Delivery Area - ISS"
@@ -138,9 +126,6 @@ def get_value_of_actual_available_quantity(item_code):
     warehouse = "Delivery Area - ISS"
     sql = "select actual_available_qty,schedule_date from `tabMaterial Request Item` where item_code = '{0}' order by creation desc limit 1".format(item_code)
     reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking for Query %s',sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
 def cancel_update(doc,method):
@@ -158,9 +143,6 @@ def get_value_of_quantity_of_Material_Request_Item(item_code):
     warehouse = "Delivery Area - ISS"
     sql = "select sum(qty) qty from `tabMaterial Request Item` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking for Query %s',sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
 def get_value_of_quantity_of_Sales_Order_Item(item_code):
@@ -168,7 +150,4 @@ def get_value_of_quantity_of_Sales_Order_Item(item_code):
     warehouse = "Delivery Area - ISS"
     sql = "select sum(qty) qty from `tabSales Order Item` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking for Query %s',sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
