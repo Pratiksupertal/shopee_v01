@@ -508,7 +508,9 @@ def create_and_submit_sales_order(order_data, submit=False):
                 'description': tax['description']
                 })
         sales_order.save()
-        sales_order.submit()
+        if submit:
+            sales_order.submit()
+
         return sales_order
     except Exception as e:
         raise Exception(f'Problem in creating sales order. Reason: {str(e)}')
