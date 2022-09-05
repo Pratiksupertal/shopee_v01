@@ -1,4 +1,11 @@
 frappe.ui.form.on('Item', {
+  onload: function(frm) {
+    if(frm.doc.has_variants==1) {
+		  frm.add_custom_button(__('Update API'), function () {
+        console.log("Update API")
+			});
+    }
+	},
   item_group:function(frm){
     frappe.call({
       method: "shopee_v01.shopee_v01.custom_script.item.categories",
