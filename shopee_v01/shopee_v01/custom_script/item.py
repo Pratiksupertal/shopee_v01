@@ -227,3 +227,33 @@ def add_warehouse(f_path=None):
     doc.save()
 
     # -----------------------------------
+def create_template_payload():
+    print("========== create payload function called ==========")
+    template = "FSH.650.K393.819.C-S/S"
+    request_body,variant_detail, variants = {},{}, []
+    product_name = frappe.db.get_values("Item", {"item_code": 'FSH.650.K393.819.C-S/S'}, ["item_name","description","brand","image","item_category"],as_dict=1)
+    variant_list = frappe.get_list("Item",filters={"variant_of":template},fields=['name'])
+    for variant in variant_list:
+        variant_details = frappe.get_doc("Item",variant)
+        variant_detail= {
+        "variant_type" : [attr.attribute for attr in variant_details.attributes],
+        "variant_value":[attr.attribute_value for attr in variant_details.attributes],
+        "product_code" : variant_details.item_code,
+        "product_price":
+            {
+                "price":frappe.db.get_value("Item Price",{"item_code":variant_details.item_code,"price_list":"Standard Selling"},"price_list_rate"),
+                "special_price" :
+                    {
+                        "value" : None ,
+                        "start_date":"2022-08-26",
+                        "end_date":"2022-09-30"
+                    }
+            },
+        "product_quantity":[]
+        }
+        print("\n\n-----------\n\n")
+        print(variant_detail)
+
+    print("==============\n\nProduct name : ",product_name)
+    print("\n\n=================\n\n variant list : ")
+    print(variant_list)
