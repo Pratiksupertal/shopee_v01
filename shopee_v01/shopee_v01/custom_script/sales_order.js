@@ -4,8 +4,7 @@ frappe.ui.form.on('Sales Order Item', {
         frappe.call({
            method: "shopee_v01.shopee_v01.custom_script.sales_order.size_filter",
            args: {
-             item_code: row.item_code,
-             qty: row.qty
+             item_code: row.item_code
            },
            callback: function(r) {
                 var resp = r.message

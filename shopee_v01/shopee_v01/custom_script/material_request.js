@@ -22,9 +22,7 @@ frappe.ui.form.on('Material Request Item', {
         frappe.call({
            method: "shopee_v01.shopee_v01.custom_script.material_request.size_filter",
            args: {
-             item_code: row.item_code,
-             warehouse: row.warehouse,
-             qty: row.qty
+             item_code: row.item_code
            },
            callback: function(r) {
                 var resp = r.message

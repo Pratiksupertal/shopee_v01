@@ -16,21 +16,30 @@ def size_filter2(item_code):
     return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty
 
 @frappe.whitelist()
-def size_filter(item_code,qty):
-    doc1 = frappe.get_doc('Item', item_code)
-    price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
-    doc2 = frappe.get_doc('Finished901ItemQtySummary')
-    doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_code]
-    #reserved_qty2 = get_reserved_qty2(item_code)+int(qty)+get_reserved_qty4(item_code)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking checking nilai Qty %s',qty)
-    qty_MRI = get_value_of_quantity_of_Material_Request_Item(item_code)
-    qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
-
-    #reserved_qty2 = get_value_of_actual_available_quantity(item_code) - 1
-    reserved_qty2 = doc2[0] - qty_MRI - qty_SOI - 1 - get_reserved_qty4(item_code)
-    return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
+def size_filter(item_code="x"):
+    if item_code == 'x':
+        item_codex = "CTS.222.C3039.39"
+        doc1 = frappe.get_doc('Item', item_codex)
+        price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_codex})
+        doc2 = frappe.get_doc('Finished901ItemQtySummary')
+        doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_codex]
+        #reserved_qty2 = get_reserved_qty2(item_code)+int(qty)+get_reserved_qty4(item_code)
+        qty_MRI = get_value_of_quantity_of_Material_Request_Item(item_code)
+        qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
+        #reserved_qty2 = get_value_of_actual_available_quantity(item_code) - 1
+        reserved_qty2 = doc2[0] - qty_MRI - qty_SOI - 1 - get_reserved_qty4(item_code)
+        return doc1.invent_size_id,price_list.price_list_rate,'', reserved_qty2
+    else:
+        doc1 = frappe.get_doc('Item', item_code)
+        price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
+        doc2 = frappe.get_doc('Finished901ItemQtySummary')
+        doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_code]
+        #reserved_qty2 = get_reserved_qty2(item_code)+int(qty)+get_reserved_qty4(item_code)
+        qty_MRI = get_value_of_quantity_of_Material_Request_Item(item_code)
+        qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
+        #reserved_qty2 = get_value_of_actual_available_quantity(item_code) - 1
+        reserved_qty2 = doc2[0] - qty_MRI - qty_SOI - 1 - get_reserved_qty4(item_code)
+        return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
 
 @frappe.whitelist()
 def actual_qty_delivery_date(item_code,parent,actual_available_qty,qty):

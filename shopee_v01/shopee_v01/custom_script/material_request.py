@@ -8,13 +8,22 @@ import logging
 
 
 @frappe.whitelist()
-def size_filter(item_code,warehouse,qty):
-    doc1 = frappe.get_doc('Item', item_code)
-    price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
-    doc2 = frappe.get_doc('Finished901ItemQtySummary')
-    doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_code]
-    reserved_qty2 = int(qty)+get_reserved_qty4(item_code)+get_value_of_quantity_of_Material_Request_Item(item_code)+get_value_of_quantity_of_Sales_Order_Item(item_code)
-    return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
+def size_filter(item_code="x"):
+    if item_code == 'x':
+        item_codex = "CTS.222.C3039.39"
+        doc1 = frappe.get_doc('Item', item_codex)
+        price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_codex})
+        doc2 = frappe.get_doc('Finished901ItemQtySummary')
+        doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_codex]
+        reserved_qty2 = 1+get_reserved_qty4(item_code)+get_value_of_quantity_of_Material_Request_Item(item_code)+get_value_of_quantity_of_Sales_Order_Item(item_code)
+        return doc1.invent_size_id,price_list.price_list_rate,'', reserved_qty2
+    else:
+        doc1 = frappe.get_doc('Item', item_code)
+        price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
+        doc2 = frappe.get_doc('Finished901ItemQtySummary')
+        doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_code]
+        reserved_qty2 = 1+get_reserved_qty4(item_code)+get_value_of_quantity_of_Material_Request_Item(item_code)+get_value_of_quantity_of_Sales_Order_Item(item_code)
+        return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
 
 @frappe.whitelist()
 def actual_available_qty_schedule_date(item_code,warehouse,schedule_date,actual_available_qty,qty):
