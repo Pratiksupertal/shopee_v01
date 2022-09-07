@@ -373,6 +373,7 @@ def trigger_send_to_shop_spg(request_body):
     if request_body.get('transfer_date'):
         request_body['transfer_date'] = request_body['transfer_date'].strftime("%Y-%m-%d")
     request = json.dumps(request_body).replace("'", '"')
+    frappe.log_error(title="Request for API trigger.", message=request)
 
     try:
         url = config.spg_base_url + 'transfer-request/external/create'
