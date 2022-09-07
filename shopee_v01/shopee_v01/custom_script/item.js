@@ -2,7 +2,22 @@ frappe.ui.form.on('Item', {
   onload: function(frm) {
     if(frm.doc.has_variants==1) {
 		  frm.add_custom_button(__('Update API'), function () {
-        console.log("Update API")
+        console.log("Clicking Works")
+        frappe.call({
+          method: "shopee_v01.shopee_v01.custom_script.item.create_template_payload",
+          args: {
+                  "template" : frm.doc.item_code,
+                },
+          callback: function(r) {
+               var resp = r.message
+               if(resp == "True"){
+                frappe.msgprint(__("Halosis API update successfull"))
+               }
+               else{
+                frappe.msgprint(__("No Variant Available"))
+               }
+              }
+           });
 			});
     }
 	},

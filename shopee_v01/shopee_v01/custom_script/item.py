@@ -1,3 +1,4 @@
+from re import template
 import frappe
 from frappe.model.document import Document
 from six import string_types
@@ -5,31 +6,31 @@ import json, copy
 from frappe.utils import cstr, flt
 
 def validate(doc,method):
-    try:
-        if not doc.upload and not doc.has_variants:
-            if doc.get("__islocal"):
-                sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
-                pre_barcode = frappe.db.sql(sql,as_dict=True)
-                barcode = int(pre_barcode[0].barcode)+1 if len(pre_barcode)>0 else 1000001
-                if len(pre_barcode)>0:
-                    barcode = barcode_design(barcode)
-                    doc.append("barcodes",{
-                    "barcode":str(barcode)
-                    })
-                else:
-                    doc.append("barcodes",{
-                    "barcode":"1000001"
-                    })
-                doc.item_bar_code = doc.barcodes[0].barcode
-    except :
-        raise
+	try:
+		if not doc.upload and not doc.has_variants:
+			if doc.get("__islocal"):
+				sql = "select barcode from `tabItem Barcode` order by creation desc limit 1".format(doc.item_code)
+				pre_barcode = frappe.db.sql(sql,as_dict=True)
+				barcode = int(pre_barcode[0].barcode)+1 if len(pre_barcode)>0 else 1000001
+				if len(pre_barcode)>0:
+					barcode = barcode_design(barcode)
+					doc.append("barcodes",{
+					"barcode":str(barcode)
+					})
+				else:
+					doc.append("barcodes",{
+					"barcode":"1000001"
+					})
+				doc.item_bar_code = doc.barcodes[0].barcode
+	except :
+		raise
 
 def barcode_design(barcode):
-    if not frappe.db.exists('Item Barcode',{'barcode':barcode}):
-        return barcode
-    else:
-        barcode = barcode_design(barcode+1)
-        return barcode
+	if not frappe.db.exists('Item Barcode',{'barcode':barcode}):
+		return barcode
+	else:
+		barcode = barcode_design(barcode+1)
+		return barcode
 
 @frappe.whitelist()
 def enqueue_multiple_variant_creation(item, args):
@@ -119,48 +120,48 @@ def generate_keyed_value_combinations(args):
 
 @frappe.whitelist()
 def create_variant(item, args):
-    if isinstance(args, string_types):
-        args = json.loads(args)
-    template = frappe.get_doc("Item", item)
-    variant = frappe.new_doc("Item")
-    variant.variant_based_on = 'Item Attribute'
-    variant_attributes = []
-    for d in template.attributes:
-        variant_attributes.append({
+	if isinstance(args, string_types):
+		args = json.loads(args)
+	template = frappe.get_doc("Item", item)
+	variant = frappe.new_doc("Item")
+	variant.variant_based_on = 'Item Attribute'
+	variant_attributes = []
+	for d in template.attributes:
+		variant_attributes.append({
 			"attribute": d.attribute,
 			"attribute_value": args.get(d.attribute)
 		})
-    variant.set("attributes", variant_attributes)
-    custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group","valuation_rate","inveinvent_size_id","size_index","warranty_period","model","price","standard_rate","color","status_code"]
-    temp = template.__dict__
-    for i in custom_fields:
-        if template.get(i):
-            value = temp[i]
-            variant.set(i,value)
-    copy_attributes_to_variant(template, variant)
-    make_variant_item_code(template.item_code, template.item_name, variant)
-    return variant
+	variant.set("attributes", variant_attributes)
+	custom_fields = ["gender","cut","rise","season","collar","waist","product_status","sleeve","wash","item_section","cuff_","fabric","pocket","fit","design","stitches","main_color","division_group","retail_group","item_category","size_group","valuation_rate","inveinvent_size_id","size_index","warranty_period","model","price","standard_rate","color","status_code"]
+	temp = template.__dict__
+	for i in custom_fields:
+		if template.get(i):
+			value = temp[i]
+			variant.set(i,value)
+	copy_attributes_to_variant(template, variant)
+	make_variant_item_code(template.item_code, template.item_name, variant)
+	return variant
 
 def make_variant_item_code(template_item_code, template_item_name, variant):
-    """Uses template's item code and abbreviations to make variant's item code"""
-    if variant.item_code:
-        return
-    abbreviations = []
-    for attr in variant.attributes:
-        item_attribute = frappe.db.sql("""select i.numeric_values, v.abbr
+	"""Uses template's item code and abbreviations to make variant's item code"""
+	if variant.item_code:
+		return
+	abbreviations = []
+	for attr in variant.attributes:
+		item_attribute = frappe.db.sql("""select i.numeric_values, v.abbr
 			from `tabItem Attribute` i left join `tabItem Attribute Value` v
 				on (i.name=v.parent)
 			where i.name=%(attribute)s and (v.attribute_value=%(attribute_value)s or i.numeric_values = 1)""", {
 				"attribute": attr.attribute,
 				"attribute_value": attr.attribute_value
 			}, as_dict=True)
-        if not item_attribute:
-            continue
-        abbr_or_value = cstr(attr.attribute_value) if item_attribute[0].numeric_values else item_attribute[0].abbr
-        abbreviations.append(abbr_or_value)
-    if abbreviations:
-        variant.item_code = "{0}-{1}".format(template_item_code, "-".join(abbreviations))
-        variant.item_name = "{0}".format(template_item_name)
+		if not item_attribute:
+			continue
+		abbr_or_value = cstr(attr.attribute_value) if item_attribute[0].numeric_values else item_attribute[0].abbr
+		abbreviations.append(abbr_or_value)
+	if abbreviations:
+		variant.item_code = "{0}-{1}".format(template_item_code, "-".join(abbreviations))
+		variant.item_name = "{0}".format(template_item_name)
 
 
 def copy_attributes_to_variant(item, variant):
@@ -201,59 +202,89 @@ def copy_attributes_to_variant(item, variant):
 
 @frappe.whitelist()
 def categories(doctype,value,field):
-    return frappe.db.get_value(doctype,value,field)
+	return frappe.db.get_value(doctype,value,field)
 
 @frappe.whitelist()
 def barcode(code):
-    return str(code)
+	return str(code)
 
 
 @frappe.whitelist()
 def add_warehouse(f_path=None):
-    import sys
-    import os
-    doc = frappe.get_single("Finished901ItemQtySummary")
-    import csv
-    path = os.path.join(os.path.dirname(__file__), f_path)
-    file = open(path,"r")
-    csvreader = csv.reader(file)
-    header = []
-    rows = []
-    header = next(csvreader)
-    for row in csvreader:
-        rows.append(row)
-        doc.append("child_warehouse",{"warehouse":row[0]})
-    file.close()
-    doc.save()
+	import sys
+	import os
+	doc = frappe.get_single("Finished901ItemQtySummary")
+	import csv
+	path = os.path.join(os.path.dirname(__file__), f_path)
+	file = open(path,"r")
+	csvreader = csv.reader(file)
+	header = []
+	rows = []
+	header = next(csvreader)
+	for row in csvreader:
+		rows.append(row)
+		doc.append("child_warehouse",{"warehouse":row[0]})
+	file.close()
+	doc.save()
 
-    # -----------------------------------
-def create_template_payload():
-    print("========== create payload function called ==========")
-    template = "FSH.650.K393.819.C-S/S"
-    request_body,variant_detail, variants = {},{}, []
-    product_name = frappe.db.get_values("Item", {"item_code": 'FSH.650.K393.819.C-S/S'}, ["item_name","description","brand","image","item_category"],as_dict=1)
-    variant_list = frappe.get_list("Item",filters={"variant_of":template},fields=['name'])
-    for variant in variant_list:
-        variant_details = frappe.get_doc("Item",variant)
-        variant_detail= {
-        "variant_type" : [attr.attribute for attr in variant_details.attributes],
-        "variant_value":[attr.attribute_value for attr in variant_details.attributes],
-        "product_code" : variant_details.item_code,
-        "product_price":
-            {
-                "price":frappe.db.get_value("Item Price",{"item_code":variant_details.item_code,"price_list":"Standard Selling"},"price_list_rate"),
-                "special_price" :
-                    {
-                        "value" : None ,
-                        "start_date":"2022-08-26",
-                        "end_date":"2022-09-30"
-                    }
-            },
-        "product_quantity":[]
-        }
-        print("\n\n-----------\n\n")
-        print(variant_detail)
+def get_product_warehouse_qty(item_code):
+	warehouse_qy_list = frappe.db.sql("""
+			SELECT
+				ledger.warehouse,
+				sum(ledger.actual_qty) as actual_qty
+			FROM
+				`tabBin` AS ledger
+			INNER JOIN `tabItem` AS item
+				ON ledger.item_code = item.item_code
+			INNER JOIN `tabWarehouse` warehouse
+				ON warehouse.name = ledger.warehouse
+			WHERE
+				item.item_code = "%s" GROUP BY ledger.warehouse, item.item_code;"""% (item_code))
+	print(type(warehouse_qy_list))
+	if(warehouse_qy_list):
+		return warehouse_qy_list
+	else:
+		default_warehouse = frappe.db.sql("""Select default_warehouse, 0 from `tabItem Default` where parent = "%s" """% (item_code))
+		return default_warehouse
+	
 
-    print("==============\n\nProduct name : ",product_name)
-    print("\n\n=================\n\n variant list : ")
-    print(variant_list)
+
+
+	# -----------------------------------
+@frappe.whitelist()	
+def create_template_payload(template):
+	print(template)
+	print("========== create payload function called ==========")
+	# template = "FSH.650.K393.819.C-S/S"
+	request_body,variant_detail, variants = {},{}, []
+	product_name = frappe.db.get_values("Item", {"item_code": template}, ["item_name","description","brand","image","item_category"],as_dict=1)
+	variant_list = frappe.get_list("Item",filters={"variant_of":template},fields=['name'])
+	if len(variant_list) < 1:
+		return False
+	for variant in variant_list:
+		variant_details = frappe.get_doc("Item",variant)
+		variant_detail= {
+		"variant_type" : [attr.attribute for attr in variant_details.attributes],
+		"variant_value":[attr.attribute_value for attr in variant_details.attributes],
+		"product_code" : variant_details.item_code,
+		"product_price":
+			{
+				"price":frappe.db.get_value("Item Price",{"item_code":variant_details.item_code,"price_list":"Standard Selling"},"price_list_rate"),
+				"special_price" :
+					{
+						"value" : None ,
+						"start_date":"2022-08-26",
+						"end_date":"2022-09-30"
+					}
+			},
+		"product_quantity": get_product_warehouse_qty(variant_details.item_code)
+		}
+	print("\n\n-----------\n\n")
+	print("Variant Detail")
+	print(variant_detail)
+
+	print("==============\n\nProduct name : ",product_name)
+	print("\n\n=================\n\n variant list : ")
+	print(variant_list)
+
+	return True
