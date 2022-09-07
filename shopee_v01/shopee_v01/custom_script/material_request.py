@@ -26,7 +26,7 @@ def size_filter(item_code="x"):
         return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty2
 
 @frappe.whitelist()
-def actual_available_qty_schedule_date(item_code,warehouse,schedule_date,actual_available_qty,qty):
+def actual_available_qty_schedule_date(item_code,qty):
     reserved_qty3 = 0
     doc1 = frappe.get_doc('Item', item_code)
     doc2 = frappe.get_doc('Finished901ItemQtySummary')

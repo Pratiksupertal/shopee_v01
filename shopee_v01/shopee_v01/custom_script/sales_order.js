@@ -21,8 +21,6 @@ frappe.ui.form.on('Sales Order Item', {
            method: "shopee_v01.shopee_v01.custom_script.sales_order.actual_qty_delivery_date",
            args: {
              item_code: row.item_code,
-             parent: row.parent,
-             actual_available_qty: row.actual_available_qty,
              qty: row.qty
            },
            callback: function(r) {

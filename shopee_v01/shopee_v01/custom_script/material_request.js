@@ -38,9 +38,6 @@ frappe.ui.form.on('Material Request Item', {
            method: "shopee_v01.shopee_v01.custom_script.material_request.actual_available_qty_schedule_date",
            args: {
              item_code: row.item_code,
-             warehouse: row.warehouse,
-             schedule_date: row.schedule_date,
-             actual_available_qty: row.actual_available_qty,
              qty: row.qty
            },
            callback: function(r) {
