@@ -115,3 +115,7 @@ def generate_new_pick_list(item_list, purchase_order_doc, max_qty, input_qty):
         row.picked_qty = input_qty
     pick_list.save()
     return pick_list
+
+@frappe.whitelist()
+def get_first_name(doc):
+    return frappe.db.sql("""select first_name from `tabContact` where name like '%{0}%' """.format(doc.supplier), as_dict=1)
