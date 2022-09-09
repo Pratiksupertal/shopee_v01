@@ -113,11 +113,15 @@
       </tr>
       <tr>
         <td colspan="4"><b>Ship To</b></td>
-        <td colspan="8">PT Indah Subur Sejati
-          <br>Jl. Kayu Besar III Blok M12 No. 1
-          <br>Komp. Pergudangan Rawa Melati, Kapuk Kamal
-          <br>Jakarta Barat - 11820
-        </td>
+        {% set address = frappe.get_all('Address',filters={'address_title': 'PT Indah Subur Sejati'}, fields=['address_line1','address_line2','city','pincode']) %}
+        {% for address in address %}
+            <td colspan="8">PT Indah Subur Sejati
+              <br>{{address.address_line1}}
+              <br>{{address.address_line2}}
+              <br>{{address.city}}{{' - '}}{{address.pincode}}
+            </td>
+        {% endfor %}
+
       </tr>
     </table>
   </div>
