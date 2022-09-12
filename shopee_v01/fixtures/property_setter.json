@@ -1533,7 +1533,7 @@
   "parenttype": null,
   "property": "in_standard_filter",
   "property_type": "Check",
-  "value": "0"
+  "value": "1"
  },
  {
   "default_value": null,
