@@ -10,12 +10,6 @@ frappe.ui.form.on('Item', {
                 },
           callback: function(r) {
                var resp = r.message
-               if(resp == "True"){
-                frappe.msgprint(__("Halosis API update successfull"))
-               }
-               else{
-                frappe.msgprint(__("No Variant Available"))
-               }
               }
            });
 			});

@@ -231,7 +231,7 @@ def get_product_warehouse_qty(item_code):
 	warehouse_qy_list = frappe.db.sql("""
 			SELECT
 				ledger.warehouse,
-				sum(ledger.actual_qty) as actual_qty
+				sum(ledger.actual_qty) as quantity
 			FROM
 				`tabBin` AS ledger
 			INNER JOIN `tabItem` AS item
@@ -239,52 +239,77 @@ def get_product_warehouse_qty(item_code):
 			INNER JOIN `tabWarehouse` warehouse
 				ON warehouse.name = ledger.warehouse
 			WHERE
-				item.item_code = "%s" GROUP BY ledger.warehouse, item.item_code;"""% (item_code))
-	print(type(warehouse_qy_list))
+				item.item_code = "%s" GROUP BY ledger.warehouse, item.item_code;"""% (item_code),as_dict=True)
 	if(warehouse_qy_list):
 		return warehouse_qy_list
 	else:
-		default_warehouse = frappe.db.sql("""Select default_warehouse, 0 from `tabItem Default` where parent = "%s" """% (item_code))
+		default_warehouse = frappe.db.sql("""Select default_warehouse as warehouse, 0 from `tabItem Default` where parent = "%s" """% (item_code),as_dict=True)
 		return default_warehouse
-	
+
 
 
 
 	# -----------------------------------
-@frappe.whitelist()	
+@frappe.whitelist()
 def create_template_payload(template):
-	print(template)
-	print("========== create payload function called ==========")
-	# template = "FSH.650.K393.819.C-S/S"
+	import re
+	import requests
 	request_body,variant_detail, variants = {},{}, []
-	product_name = frappe.db.get_values("Item", {"item_code": template}, ["item_name","description","brand","image","item_category"],as_dict=1)
+	product_name = frappe.db.get_values("Item", {"item_code": template}, ["item_name","description","brand","image","item_group"],as_dict=1)
+	item_group_description=re.sub("[()]","",frappe.db.get_value("Item Group",product_name[0].item_group,"item_group_description"))
 	variant_list = frappe.get_list("Item",filters={"variant_of":template},fields=['name'])
 	if len(variant_list) < 1:
 		return False
 	for variant in variant_list:
 		variant_details = frappe.get_doc("Item",variant)
+		variant_price = frappe.db.get_value("Item Price",{"item_code":variant_details.item_code,"price_list":"Standard Selling"},"price_list_rate"),
 		variant_detail= {
-		"variant_type" : [attr.attribute for attr in variant_details.attributes],
-		"variant_value":[attr.attribute_value for attr in variant_details.attributes],
+		# "variant_type" : [attr.attribute for attr in variant_details.attributes],
+		"variant_type" : variant_details.attributes[0].attribute,
+		"variant_value": variant_details.attributes[0].attribute_value,
+		# "variant_value":[attr.attribute_value for attr in variant_details.attributes],
 		"product_code" : variant_details.item_code,
 		"product_price":
 			{
-				"price":frappe.db.get_value("Item Price",{"item_code":variant_details.item_code,"price_list":"Standard Selling"},"price_list_rate"),
+				"price": variant_price[0],
 				"special_price" :
 					{
-						"value" : None ,
+						"value" : variant_price[0] ,
 						"start_date":"2022-08-26",
 						"end_date":"2022-09-30"
 					}
 			},
 		"product_quantity": get_product_warehouse_qty(variant_details.item_code)
+		# "product_quantity":[{
+        #             "warehouse": "DEFAULT WAREHOUSE",
+        #             "quantity": 2.0
+        #         }]
 		}
-	print("\n\n-----------\n\n")
-	print("Variant Detail")
-	print(variant_detail)
+		variants.append(variant_detail)
+	request_body = {
+		"product_name":product_name[0].item_name,
+		"product_desc":product_name[0].description,
+		"product_image":[product_name[0].image],
+		"product_brand":product_name[0].brand,
+		"product_category":[item_group_description],
+		"product_variant":variants
 
-	print("==============\n\nProduct name : ",product_name)
-	print("\n\n=================\n\n variant list : ")
-	print(variant_list)
-
+	}
+	try:
+		request_body = json.dumps(request_body).replace("'", '"')
+		url = 'https://api-multiservices.main.halosis.co.id/api/product/sync-from-erp'
+		response = requests.post(
+			url,
+			json=json.loads(request_body),
+			headers={"Content-Type":"application/json"}
+			)
+		print(response.status_code)
+		if response.status_code == 200:
+			frappe.log_error(title="Item is updated on Halosis server", message=response.text)
+		else:
+			frappe.log_error(title="Item is not updated on Halosis server", message=response.text)
+			frappe.msgprint(response.text)
+	except Exception as e:
+		frappe.log_error(title="Error in update Item Master", message=e)
+		raise
 	return True
