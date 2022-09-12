@@ -246,9 +246,6 @@ def get_product_warehouse_qty(item_code):
 		default_warehouse = frappe.db.sql("""Select default_warehouse as warehouse, 0 from `tabItem Default` where parent = "%s" """% (item_code),as_dict=True)
 		return default_warehouse
 
-
-
-
 	# -----------------------------------
 @frappe.whitelist()
 def create_template_payload(template):
