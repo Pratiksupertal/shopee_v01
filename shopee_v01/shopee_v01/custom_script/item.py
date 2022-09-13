@@ -347,24 +347,24 @@ def get_product_warehouse_qty(item_code):
 
 @frappe.whitelist()
 def create_template_payload():
-    template = 'Product Name B'
-    try:
-        request_body, variant_detail, variants = {}, {}, []
-        product_name = frappe.db.get_values(
-			"Item",
-			{"item_code": template},
-			["item_name", "description", "brand", "image", "item_group"],
-			as_dict=1,
+	template = 'CST.262.D002E.001.C-L/S'
+	try:
+		request_body, variant_detail, variants = {}, {}, []
+		product_name = frappe.db.get_values(
+		"Item",
+		{"item_code": template},
+		["item_name", "description", "brand", "image", "item_group"],
+		as_dict=1,
 		)
-        print('\n\nproduct_name: ', product_name, '\n\n')
-        item_group_description = frappe.db.get_value(
-			"Item Group", product_name[0].item_group, "item_group_description")
-        if item_group_description:
-            item_group_description = re.sub("[()]", "", item_group_description)
-		print('\n\nitem_group_description: ', item_group_description, '\n\n')
-		variant_list = frappe.get_list(
+		print('\n\nproduct_name: ', product_name, '\n\n')
+		item_group_description = frappe.db.get_value(
+		"Item Group", product_name[0].item_group, "item_group_description")
+		if item_group_description:
+			item_group_description = re.sub("[()]", "", item_group_description)
+			print('\n\nitem_group_description: ', item_group_description, '\n\n')
+			variant_list = frappe.get_list(
 			"Item", filters={"variant_of": template}, fields=["name"]
-		)
+			)
 		if len(variant_list) < 1:
 			return
 		for variant in variant_list:
@@ -407,12 +407,12 @@ def create_template_payload():
 		if not product_name[0].brand:
 			raise Exception('Product brand is empty')
 		request_body = {
-			"product_name": product_name[0].item_name,
-			"product_desc": product_name[0].description,
-			"product_image": [product_name[0].image],
-			"product_brand": product_name[0].brand,
-			"product_category": [item_group_description],
-			"product_variant": variants,
+		"product_name": product_name[0].item_name,
+		"product_desc": product_name[0].description,
+		"product_image": [product_name[0].image],
+		"product_brand": product_name[0].brand,
+		"product_category": [item_group_description],
+		"product_variant": variants,
 		}
 		request_body = json.dumps(request_body).replace("'", '"')
 
@@ -436,9 +436,9 @@ def create_template_payload():
 				}
 			)
 			frappe.msgprint(response.text)
-    except Exception as e:
+	except Exception as e:
 		frappe.log_error(title="Error in update Item Master", message={
-			'request_body': request_body,
-			'exception': str(e)
+		'request_body': request_body,
+		'exception': str(e)
 		})
 		raise
