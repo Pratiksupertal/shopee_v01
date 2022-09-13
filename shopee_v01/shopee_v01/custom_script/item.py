@@ -335,8 +335,9 @@ def get_product_warehouse_qty(item_code):
     if warehouse_qy_list:
         return warehouse_qy_list
     else:
+		#hardcoded default warehouse to "DEFAULT WAREHOUSE" as per Albert's instructions
         default_warehouse = frappe.db.sql(
-            """Select default_warehouse as warehouse, 0 from `tabItem Default` where parent = "%s" """
+            """Select "DEFAULT WAREHOUSE" as warehouse, 0 as quantity from `tabItem Default` where parent = "%s" """
             % (item_code),
             as_dict=True,
         )
@@ -346,26 +347,25 @@ def get_product_warehouse_qty(item_code):
 
 
 @frappe.whitelist()
-def create_template_payload():
-	template = 'CST.262.D002E.001.C-L/S'
+def create_template_payload(template):
 	try:
 		request_body, variant_detail, variants = {}, {}, []
 		product_name = frappe.db.get_values(
-		"Item",
-		{"item_code": template},
-		["item_name", "description", "brand", "image", "item_group"],
-		as_dict=1,
-		)
-		print('\n\nproduct_name: ', product_name, '\n\n')
+				"Item",
+				{"item_code": template},
+				["item_name", "description", "brand", "image", "item_group"],
+				as_dict=1,
+			)
 		item_group_description = frappe.db.get_value(
 		"Item Group", product_name[0].item_group, "item_group_description")
+
 		if item_group_description:
 			item_group_description = re.sub("[()]", "", item_group_description)
-			print('\n\nitem_group_description: ', item_group_description, '\n\n')
-			variant_list = frappe.get_list(
-			"Item", filters={"variant_of": template}, fields=["name"]
-			)
+		variant_list = frappe.get_list(
+		"Item", filters={"variant_of": template}, fields=["name"]
+		)
 		if len(variant_list) < 1:
+			raise Exception('No variants available to update')
 			return
 		for variant in variant_list:
 			variant_details = frappe.get_doc("Item", variant)
@@ -396,11 +396,13 @@ def create_template_payload():
 						"end_date": "2022-09-30",
 					},
 				},
-				# "product_quantity": get_product_warehouse_qty(variant_details.item_code)
-				"product_quantity":[{
-							"warehouse": "DEFAULT WAREHOUSE",
-							"quantity": 2.0
-						}]
+				"product_quantity": get_product_warehouse_qty(variant_details.item_code)
+				# Product quantity section includes warehouse and qty available in it
+				# If we use below hardcoded values API is working fine if Warehouse does not match with existing
+				# "product_quantity":[{
+				# 			"warehouse": "DEFAULT WAREHOUSE",
+				# 			"quantity": 2.0
+				# 		}]
 			}
 			variants.append(variant_detail)
 		# some validations / special case
@@ -415,11 +417,11 @@ def create_template_payload():
 		"product_variant": variants,
 		}
 		request_body = json.dumps(request_body).replace("'", '"')
-
-		print('\n\n\n', request_body, '\n\n\n')
-		url = "https://api-multiservices.main.halosis.co.id/api/product/sync-from-erp"
+		# Fetching URL given in "Online Warehouse Configuration" single doctype
+		config = frappe.get_single("Online Warehouse Configuration")
+		url = config.url + "/api/product/sync-from-erp"
 		response = requests.post(
-			url,
+			url.replace("'", '"'),
 			json=json.loads(request_body),
 			headers={"Content-Type": "application/json"},
 		)

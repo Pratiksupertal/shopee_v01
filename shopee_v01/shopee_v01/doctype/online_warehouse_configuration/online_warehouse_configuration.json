@@ -10,7 +10,9 @@
   "password",
   "section_break_5",
   "online_warehouse",
-  "brand_vendor_mapping"
+  "brand_vendor_mapping",
+  "item_master_update_section",
+  "url"
  ],
  "fields": [
   {
@@ -47,10 +49,20 @@
    "fieldtype": "Table",
    "label": "Brand Vendor Mapping",
    "options": "Brand Vendor Mapping"
+  },
+  {
+   "fieldname": "item_master_update_section",
+   "fieldtype": "Section Break",
+   "label": "Item Master Update"
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "Base URL"
   }
  ],
  "issingle": 1,
- "modified": "2022-06-24 14:16:39.926336",
+ "modified": "2022-09-13 22:06:18.882799",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Online Warehouse Configuration",
