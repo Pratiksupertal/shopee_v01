@@ -1,7 +1,7 @@
 frappe.ui.form.on('Item', {
   onload: function(frm) {
     if(frm.doc.has_variants==1) {
-		  frm.add_custom_button(__('Update to Halosis'), function () {
+      frm.add_custom_button(__('Update to Halosis'), function () {
         console.log("Clicking Works")
         frappe.call({
           method: "shopee_v01.shopee_v01.custom_script.item.create_template_payload",
