@@ -450,7 +450,7 @@ def create_template_payload(template):
 					'response': response.text
 				}
 			)
-			frappe.msgprint(response.text)
+		frappe.msgprint(response.text)
 	except Exception as e:
 		frappe.log_error(title="Error in update Item Master", message={
 		'request_body': request_body,
