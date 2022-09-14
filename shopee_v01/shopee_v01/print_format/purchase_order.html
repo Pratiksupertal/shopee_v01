@@ -23,20 +23,29 @@
   .f_font {
     font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;
   }
-  .barcode {
-    margin-top: 14rem;
+  .header {
+    margin-top: 12rem;
   }
 </style>
-<div class="print-heading">
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js"></script>
-
-  <svg
-    class="barcode"
-    jsbarcode-fontsize="8"
-    jsbarcode-height="16"
-    jsbarcode-width="1"
-    jsbarcode-value="{{doc.name}}"/>
-  {% set username = ""%}
+<div class="header">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td width="40%"></td>
+        <td width="60%"></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td colspan="6"></td>
+        <td colspan="6"></td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% set username = ""%}
   {% if frappe.session.user != "Administrator" %}
     {% set user = frappe.get_doc('User', frappe.session.user)%}
     {% set username= user.full_name %}
@@ -57,15 +66,9 @@
   {% endfor %}
   {% set uom=namespace(uom_name="") %}
   {% set disc=namespace(discount=0) %}
+  {% set check=namespace(checkcounter="1") %}
+  {% set check2=namespace(checkcounter="1") %}
 
-  <h2 style="font-size: 16px; font-weight: bold">
-    Purchase Order<br /><small style="font-weight: bold">{{ doc.name }}</small>
-  </h2>
-</div>
-
-<script>
-  JsBarcode(".barcode").init();
-</script>
 <!--<div class="row section-break f_font">
     <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
       <tr>
@@ -74,20 +77,55 @@
     </table>
 </div>-->
 <div class="row section-break f_font">
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed">
+  <div class="col-xs-2">
+  </div>
+  <div class="col-xs-10">
+    <table width="100%" style="table-layout: auto">
+      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js"></script>
       <tr>
-        <td width="40%"><b>Nama Supplier</b></td>
-        <td width="60%">{{ doc.supplier or '' }}</td>
+        <td colspan="6" style="font-size:26px"><b>PURCHASE ORDER </b></td>
+        <td colspan="6"><svg
+          class="barcode"
+          jsbarcode-fontsize="8"
+          jsbarcode-height="12"
+          jsbarcode-width="1"
+          jsbarcode-value="{{doc.name}}"/></td>
+      </tr>
+      <script>
+        JsBarcode(".barcode").init();
+      </script>
+    </table>
+  </div>
+</div>
+<div class="row f_font">
+  <div class="col-xs-7">
+    <table width="100%" style="table-layout: auto">
+      <tr>
+        <td colspan="4"><b>To</b></td>
+        <td colspan="8">{{ doc.supplier or '' }}</td>
       </tr>
       <tr>
-        <td width="40%"><b>Alamat</b></td>
-        <td width="60%">{{ doc.address_display or '' }}</td>
+        <td colspan="4"><b>ATTN</b></td>
+        {% set contact = get_first_name(doc) %}
+        {% for contact in contact %}
+          <td colspan="8">{{ contact.first_name or '' }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <td colspan="4"><b>Ship To</b></td>
+        {% set address = frappe.get_all('Address',filters={'address_title': 'PT Indah Subur Sejati'}, fields=['address_line1','address_line2','city','pincode']) %}
+        {% for address in address %}
+          <td colspan="8">PT Indah Subur Sejati
+            <br>{{address.address_line1}}
+            <br>{{address.address_line2}}
+            <br>{{address.city}}{{' - '}}{{address.pincode}}
+          {% endfor %}
+
       </tr>
     </table>
   </div>
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed">
+  <div class="col-xs-5">
+    <table width="100%" style="table-layout: auto">
       <tr>
         <td colspan="6"><b>Purchase Order No</b></td>
         <td colspan="6">{{ doc.name or ''}}</td>
@@ -99,7 +137,23 @@
           "dd-mm-yyyy") }}
         </td>
       </tr>
+      <tr>
+        <td colspan="6"><b>Delivery Date</b></td>
+
+        {% set delivery_date = frappe.get_all('Purchase Order Item',filters={'parent': doc.name}, fields=['expected_delivery_date']) %}
+        {% for delivery_date in delivery_date %}
+          {% if check.checkcounter == "1" %}
+              <td colspan="6">
+                {{ frappe.utils.formatdate(delivery_date.expected_delivery_date,
+                "dd-mm-yyyy") }}
+              </td>
+          {% endif %}
+          {% set check.checkcounter = "2" %}
+        {% endfor %}
+
+      </tr>
     </table>
+
   </div>
 </div>
 <br />
@@ -114,8 +168,8 @@
       bordercolor="#d1d8dd">
       <tr>
         {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
-          <th class="tac" width="10%"><b>No.</b></th>
-          <th class="tac" width="32%"><b>Kode Barang dan Deskripsi</b></th>
+          <th class="tac" width="4%"><b>No.</b></th>
+          <th class="tac" width="38%"><b>Kode Barang dan Deskripsi</b></th>
           <th class="tac" width="18%"><b>Image</b></th>
           <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
           <th class="tac" width="15%"><b>Quantity</b></th>
@@ -132,15 +186,14 @@
       {% set amt=namespace(price_amount=0) %}
       {% for row in doc.items %}
       <tr>
-        <td class="tac" width="10%">{{ row.idx or '' }}</td>
+        <td class="tac" width="4%">{{ row.idx or '' }}</td>
         {% set uom.uom_name= row.uom %}
         {% set fmt_qty =frappe.utils.fmt_money(row.qty,currency="") %}
         {% set price_tag =row.amount %}
         {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
         {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
-          <td width="32%">
-            {{ row.item_code or '' }} <br />
-            {{ row.item_name}} <br />{{ row.description or '' }}
+          <td width="38%">
+            {{ row.item_code or '' }}
           </td>
           {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
 
@@ -186,7 +239,29 @@
       </tr>
     </table>
     <div class="">
-      <div class="col-xs-6"></div>
+      <div class="col-xs-6">
+        <table width="100%" style="table-layout: auto;">
+          <tr>
+            <td colspan="4"><b>Catatan:</td>
+            <td colspan="8">PO NUMBER SHOULD BE STATED ON THE PACKING LIST/INVOICE MAX TOLERANCE LEVEL IS 3% FROM ORDERED QTY</td>
+          </tr>
+          <tr>
+            <td colspan="4"><b>Cara Packing:</td>
+            <td colspan="8">{{doc.cara_packing or ""}}</td>
+          </tr>
+          <tr>
+            <td colspan="4"><b>Sample</td>
+            <td colspan="8">
+              {% for row in doc.items %}
+                {% if check2.checkcounter == "1" %}
+                    <img id="item_img" src="{{ row.sample_image }}" />
+                {% endif %}
+                {% set check2.checkcounter = "2" %}
+              {% endfor %}
+            </td>
+          </tr>
+        </table>
+      </div>
       <div class="col-xs-6">
         <table width="100%" style="table-layout: fixed; margin-left: 15px">
           {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
@@ -252,25 +327,9 @@
         </table>
       </div>
       <br /><br />
-      <div class="col-xs-2">Catatan :</div>
-      <div class="col-xs-10">{{doc.remarks or ""}} <br /></div>
-      <br />
-      <div class="col-xs-2">Cara Packing :</div>
-      <div class="col-xs-10">{{doc.cara_packing or ""}} <br /></div>
     </div>
   </div>
-  <div class="col-xs-12">
-    <div class="col-xs-2">
-      <b>Sample</b>
-    </div>
-    {% for row in doc.items %}
-    <div class="col-xs-2">
-      {% if row.sample_image %}
-      <img id="item_img" src="{{ row.sample_image }}" />
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
+
   <div class="row section-break f_font">
     <div class="col-xs-12">
       <table width="100%" style="table-layout: fixed">
@@ -288,9 +347,13 @@
           <td colspan="3" class="tac">
             <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_po or''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
           </td>
-          <td colspan="3" class="tac" style="">
-            <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
-          </td>
+          {% set prepared = frappe.get_all('User',filters={'name': doc.owner}, fields=['full_name']) %}
+          {% for prepared in prepared %}
+            <td colspan="3" class="tac" style="">
+              <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{prepared.full_name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+            </td>
+          {% endfor %}
+
           <td colspan="3" class="tac"><u></u></td>
         </tr>
 
