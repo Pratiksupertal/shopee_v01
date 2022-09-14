@@ -343,8 +343,19 @@ def get_product_warehouse_qty(item_code):
         )
         return default_warehouse
 
-    # -----------------------------------
-
+    # ---------Fetching variant / template selling price --------------------------
+def get_item_price(item_code):
+	variant_price = [
+		frappe.db.get_value(
+			"Item Price",
+			{
+				"item_code": item_code,
+				"price_list": "Standard Selling",
+			},
+			"price_list_rate",
+		),
+	]
+	return variant_price
 
 @frappe.whitelist()
 def create_template_payload(template):
@@ -369,19 +380,12 @@ def create_template_payload(template):
 			return
 		for variant in variant_list:
 			variant_details = frappe.get_doc("Item", variant)
-			variant_price = (
-				frappe.db.get_value(
-					"Item Price",
-					{
-						"item_code": variant_details.item_code,
-						"price_list": "Standard Selling",
-					},
-					"price_list_rate",
-				),
-			)
+			variant_price = get_item_price(variant_details.item_code)
 			# some validations / special case
 			if not variant_price[0]:
-				raise Exception('Price and value cannot be empty')
+				variant_price =	get_item_price(variant_details.item_name)
+				if not variant_price[0]:
+					raise Exception('Price and value cannot be empty')
 			variant_detail = {
 				# "variant_type" : [attr.attribute for attr in variant_details.attributes],
 				"variant_type": variant_details.attributes[0].attribute,
@@ -419,6 +423,8 @@ def create_template_payload(template):
 		request_body = json.dumps(request_body).replace("'", '"')
 		# Fetching URL given in "Online Warehouse Configuration" single doctype
 		config = frappe.get_single("Online Warehouse Configuration")
+		if not config.url:
+			raise Exception('Base URL in "Online Warehouse Configuration" is not added in Item Master Update section')
 		url = config.url + "/api/product/sync-from-erp"
 		response = requests.post(
 			url.replace("'", '"'),
