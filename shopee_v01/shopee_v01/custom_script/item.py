@@ -336,7 +336,7 @@ def get_product_warehouse_qty(item_code):
 	if warehouse_qy_list:
 		for i in warehouse_qy_list:
 			warehouse_dict= {
-					"warehouse":i['warehouse'].split('- ISS')[0].rstrip(" "),
+					"warehouse":i['warehouse'].split('- ISS')[0].rstrip(" ").upper(),
 					"quantity" :i['quantity']
 			}
 			warehouse_dict_list.append(warehouse_dict)
