@@ -316,32 +316,39 @@ def add_warehouse(f_path=None):
 
 
 def get_product_warehouse_qty(item_code):
-    warehouse_qy_list = frappe.db.sql(
-        """
+	warehouse_dict,warehouse_dict_list = {},[]
+	warehouse_qy_list = frappe.db.sql(
+		"""
 			SELECT
-				ledger.warehouse,
-				sum(ledger.actual_qty) as quantity
+			ledger.warehouse,
+			sum(ledger.actual_qty) as quantity
 			FROM
-				`tabBin` AS ledger
+			`tabBin` AS ledger
 			INNER JOIN `tabItem` AS item
-				ON ledger.item_code = item.item_code
+			ON ledger.item_code = item.item_code
 			INNER JOIN `tabWarehouse` warehouse
-				ON warehouse.name = ledger.warehouse
+			ON warehouse.name = ledger.warehouse
 			WHERE
-				item.item_code = "%s" GROUP BY ledger.warehouse, item.item_code;"""
-        % (item_code),
-        as_dict=True,
-    )
-    if warehouse_qy_list:
-        return warehouse_qy_list
-    else:
+			item.item_code = "%s" GROUP BY ledger.warehouse, item.item_code;"""
+			% (item_code),
+			as_dict=True,
+	)
+	if warehouse_qy_list:
+		for i in warehouse_qy_list:
+			warehouse_dict= {
+					"warehouse":i['warehouse'].split('- ISS')[0].rstrip(" "),
+					"quantity" :i['quantity']
+			}
+			warehouse_dict_list.append(warehouse_dict)
+		return warehouse_dict_list
+	else:
 		#hardcoded default warehouse to "DEFAULT WAREHOUSE" as per Albert's instructions
-        default_warehouse = frappe.db.sql(
-            """Select "DEFAULT WAREHOUSE" as warehouse, 0 as quantity from `tabItem Default` where parent = "%s" """
-            % (item_code),
-            as_dict=True,
-        )
-        return default_warehouse
+		default_warehouse = frappe.db.sql(
+		"""Select "DEFAULT WAREHOUSE" as warehouse, 0 as quantity from `tabItem Default` where parent = "%s" """
+		% (item_code),
+		as_dict=True,
+		)
+		return default_warehouse
 
     # ---------Fetching variant / template selling price --------------------------
 def get_item_price(item_code):
