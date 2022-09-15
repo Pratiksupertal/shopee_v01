@@ -196,7 +196,7 @@
         {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
         {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
           <td width="38%">
-            {{ row.item_code or '' }}
+            {{ row.item_code or '' }}<br />{{ row.description or '' }}
           </td>
           {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
 
@@ -213,8 +213,7 @@
           </td>
         {% else %}
           <td width="47%">
-            {{ row.item_code or '' }} <br />
-            {{ row.item_name}} <br />{{ row.description or '' }}
+            {{ row.item_code or '' }} <br />{{ row.description or '' }}
           </td>
           <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
           <td class="tac" width="23%"><img src="{{ row.image }}" /></td>
