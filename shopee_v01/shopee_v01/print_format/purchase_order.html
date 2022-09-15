@@ -68,6 +68,7 @@
   {% set disc=namespace(discount=0) %}
   {% set check=namespace(checkcounter="1") %}
   {% set check2=namespace(checkcounter="1") %}
+  {% set check3=namespace(checkcounter="1") %}
 
 <!--<div class="row section-break f_font">
     <table width="100%" style="table-layout: fixed;margin-bottom:30px;" border="0px" bordercolor="#a9a9a9">
@@ -229,7 +230,12 @@
         {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %} {% set fmt_amt_price_amount =
         frappe.utils.fmt_money(amt.price_amount,currency="") %}
         <td class="tac" colspan="3">Total Quantity</td>
-        <td class="tac">{{fmt_total_qty}}</td>
+        {% for row in doc.items %}
+          {% if check3.checkcounter == "1" %}
+              <td class="tac">{{fmt_total_qty}}{{' '}}{{row.uom}}</td>
+          {% endif %}
+          {% set check3.checkcounter = "2" %}
+        {% endfor %}
         <td></td>
         <td class="tac" style="text-align: right">
           {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
