@@ -1,0 +1,47 @@
+{
+ "autoname": "field:color",
+ "creation": "2022-08-25 15:30:22.832279",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "color_id",
+  "color"
+ ],
+ "fields": [
+  {
+   "fieldname": "color_id",
+   "fieldtype": "Data",
+   "label": "Color ID"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Data",
+   "label": "Color",
+   "unique": 1
+  }
+ ],
+ "modified": "2022-08-25 15:30:22.832279",
+ "modified_by": "Administrator",
+ "module": "Shopee V01",
+ "name": "Secondary Color",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

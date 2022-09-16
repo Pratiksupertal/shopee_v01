@@ -18,7 +18,7 @@ def validate(doc,method):
                     })
                 else:
                     doc.append("barcodes",{
-                    "barcode":"1000001"
+                    "barcode":"1000000000001"
                     })
                 doc.item_bar_code = doc.barcodes[0].barcode
     except :
