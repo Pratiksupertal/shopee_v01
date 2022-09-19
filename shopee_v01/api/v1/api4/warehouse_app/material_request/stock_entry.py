@@ -409,7 +409,20 @@ def create_receive_at_shop_for_material_request():
             raise Exception("Outgoing Stock Entry Send to Shop not submitted.")
 
         """Create new Stock Entry with stock_entry_type => Receive at Shop"""
-        new_doc = create_new_stock_entry_from_outgoing_stock_entry(data)
+        new_doc = frappe.new_doc('Stock Entry')
+        new_doc.outgoing_stock_entry = data.get("outgoing_stock_entry")
+        new_doc.stock_entry_type = data.get("stock_entry_type")
+        new_doc.company = outgoing_stock_entry_doc.get("company")
+        new_doc.pick_list = outgoing_stock_entry_doc.get("pick_list")
+        new_doc.remarks = outgoing_stock_entry_doc.get("remarks")
+        for item in data.get("items"):
+            new_doc.append("items", {
+                "item_code": item['item_code'],
+                "s_warehouse": item["s_warehouse"],
+                "t_warehouse": item["t_warehouse"],
+                "qty": str(item['qty'])
+            })
+        new_doc.save()
         if not new_doc:
             raise Exception("Problem occurred in creating new Stock Entry.")
 
