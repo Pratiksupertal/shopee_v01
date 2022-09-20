@@ -664,14 +664,14 @@ def get_user_mapped_warehouses(user=frappe.session.user):
 
 def submit_stock_entry_send_to_shop(stock_entry_doc):
     items = frappe.db.get_list('Stock Entry Detail', filters={'parent': stock_entry_doc.get("name")},
-                               fields=['item_name', 'qty', 'basic_rate', 's_warehouse'])
+                               fields=['item_name', 'item_code', 'qty', 'basic_rate', 's_warehouse'])
 
     s_warehouse = None
     lists = []
     for item in items:
         current_item = {
             "product_name": item["item_name"],
-            "variant_name": frappe.db.get_value('Item Variant Attribute', {'parent': item['item_name']},
+            "variant_name": frappe.db.get_value('Item Variant Attribute', {'parent': item['item_code']},
                                                 'attribute_value'),
             "quantity": item["qty"],
             "price": item["basic_rate"]
