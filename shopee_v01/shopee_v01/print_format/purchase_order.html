@@ -260,10 +260,12 @@
             <td colspan="4"><b>Sample</td>
             <td colspan="8">
               {% for row in doc.items %}
-                {% if check2.checkcounter == "1" %}
-                    <img id="item_img" src="{{ row.sample_image }}" />
+                {% if row.sample_image %}
+                    {% if check2.checkcounter == "1" %}
+                        <img id="item_img" src="{{ row.sample_image }}" />
+                    {% endif %}
+                    {% set check2.checkcounter = "2" %}
                 {% endif %}
-                {% set check2.checkcounter = "2" %}
               {% endfor %}
             </td>
           </tr>
