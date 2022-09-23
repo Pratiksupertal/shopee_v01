@@ -494,6 +494,8 @@ def create_and_submit_sales_order(order_data, submit=False):
         sales_order.transaction_date = order_data.get("transaction_date")
         if order_data.get("additional_discount_percentage"):
             sales_order.additional_discount_percentage = order_data.get("additional_discount_percentage")
+        elif order_data.get("discount_amount"):
+            sales_order.discount_amount = order_data.get("discount_amount")
         for item in order_data.get("items"):
             sales_order.append("items", {
                 "item_code": item['item_code'],
