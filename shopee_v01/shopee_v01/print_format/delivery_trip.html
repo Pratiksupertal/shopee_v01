@@ -59,6 +59,7 @@
     {% set delivery = frappe.get_all('Delivery Note Item', filters={'against_sales_invoice': doc.name}, fields=['parent']) %}
     {% set counter=namespace(value=0) %}
     {% set totalpackage=namespace(value=0) %}
+    {% set ta=namespace(address="") %}
     {% set dn = frappe.get_all('Delivery Stop', filters={'parent': doc.name}, fields=['delivery_note','customer','customer_address']) %}
     {% for dn in dn %}
         {% set counter.value = counter.value+1 %}
@@ -76,20 +77,20 @@
               {% for dn2 in dn2 %}
                   {% if dn2.transporter is not none %}
                       <td class="tac" width="15%">{{dn2.transporter}}</td>
-                      <td class="tac" width="20%">
+
                       {% set transporter = frappe.get_all('Address', filters={'address_title': dn2.transporter}, fields=['address_line1','address_line2','city']) %}
                       {% for transporter in transporter %}
                           {% if transporter.address_line1 is not none %}
-                            <h2 style="font-size:10px">{{ transporter.address_line1 or "" }}</h2>
+                            {% set ta.address=ta.address+transporter.address_line1+"<br>" %}
                           {% endif %}
                           {% if transporter.address_line2 is not none %}
-                            <h2 style="font-size:10px">{{ transporter.address_line2 or "" }}</h2>
+                            {% set ta.address=ta.address+transporter.address_line2+"<br>" %}
                           {% endif %}
                           {% if transporter.city is not none %}
-                            <h2 style="font-size:10px">{{ transporter.city or "" }}</h2>
+                            {% set ta.address=ta.address+transporter.city+"<br>" %}
                           {% endif %}
                       {% endfor %}
-                      </td>
+                      <td class="tac" width="20%">{{ta.address}}</td>
                   {% endif %}
               {% endfor %}
             {% endif %}
