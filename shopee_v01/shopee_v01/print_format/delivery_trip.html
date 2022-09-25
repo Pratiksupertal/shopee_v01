@@ -1,0 +1,98 @@
+<div class="print-heading">
+<h2>Delivery Trip<br>
+<small>{{ doc.name }}</small>
+</h2><br>
+</div>
+<div class="row section-break f_font">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed;">
+	    <tr>
+        <td width="40%"><b>Company</b></td>
+        <td width="60%"><b>{{ doc.company or '' }}</b></td>
+      </tr>
+	     <tr>
+        <td width="40%"><b>Driver</b></td>
+        <td width="60%"><b>{{ doc.driver or '' }}</b></td>
+        </tr>
+	    <tr>
+        <td width="40%"><b>Driver Name</b></td>
+        <td width="60%"><b>{{ doc.driver_name or '' }}</b></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+	<table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td width="40%"></td>
+        <td width="60%"></td>
+      </tr>
+	    <tr>
+        <td width="40%"></td>
+        <td width="60%"></td>
+      </tr>
+	    <tr>
+        <td width="40%"><b>Vehicle</b></td>
+        <td width="60%"><b>{{ doc.vehicle or '' }}</b></td>
+      </tr>
+	    <tr>
+        <td width="40%"><b>Departure Time</b></td>
+        <td width="60%"><b>{{ frappe.utils.formatdate(doc.get_formatted('departure_time'), "dd-mm-yyyy") }}</b></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+{% set disc=namespace(discount=0) %}
+{% set amt=namespace(price_amount=0) %}
+<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+    <tr>
+        <th class="tac" width="3%"><b>No.</b></th>
+        <th class="tac" width="25%"><b>Customer</b></th>
+        <th class="tac" width="32%"><b>Customer Address</b></th>
+        <th class="tac" width="10%"><b>Total Package</b></th>
+        <th class="tac" width="15%"><b>Expedition</b></th>
+        <th class="tac" width="20%"><b>Expedition Address</b></th>
+    </tr>
+    {% set uom=namespace(uom_name="") %}
+    {% set disc=namespace(discount=0) %}
+    {% set amt=namespace(price_amount=0) %}
+    {% set delivery = frappe.get_all('Delivery Note Item', filters={'against_sales_invoice': doc.name}, fields=['parent']) %}
+    {% set counter=namespace(value=0) %}
+    {% set totalpackage=namespace(value=0) %}
+    {% set dn = frappe.get_all('Delivery Stop', filters={'parent': doc.name}, fields=['delivery_note','customer','customer_address']) %}
+    {% for dn in dn %}
+        {% set counter.value = counter.value+1 %}
+        <tr>
+            <td class="tac" width="3%">{{ counter.value }}</td>
+            <td width="25%">{% if dn.customer is not none %}{{ dn.customer }}{% endif %}</td>
+            <td width="32%">{% if dn.customer_address is not none %}{{ dn.customer_address }}{% endif %}</td>
+            {% if dn.delivery_note is not none %}
+              {% set ps = frappe.get_all('Packing Slip', filters={'delivery_note': dn.delivery_note}, fields=['name']) %}
+              {% for ps in ps %}
+                  {% set totalpackage.value = totalpackage.value + 1 %}
+              {% endfor %}
+              <td width="10%">{% if totalpackage.value >0 %}{{totalpackage.value}}{% endif %}</td>
+              {% set dn2 = frappe.get_all('Delivery Note', filters={'name': dn.delivery_note}, fields=['transporter']) %}
+              {% for dn2 in dn2 %}
+                  {% if dn2.transporter is not none %}
+                      <td class="tac" width="15%">{{dn2.transporter}}</td>
+                      <td class="tac" width="20%">
+                      {% set transporter = frappe.get_all('Address', filters={'address_title': dn2.transporter}, fields=['address_line1','address_line2','city']) %}
+                      {% for transporter in transporter %}
+                          {% if transporter.address_line1 is not none %}
+                            <h2 style="font-size:10px">{{ transporter.address_line1 or "" }}</h2>
+                          {% endif %}
+                          {% if transporter.address_line2 is not none %}
+                            <h2 style="font-size:10px">{{ transporter.address_line2 or "" }}</h2>
+                          {% endif %}
+                          {% if transporter.city is not none %}
+                            <h2 style="font-size:10px">{{ transporter.city or "" }}</h2>
+                          {% endif %}
+                      {% endfor %}
+                      </td>
+                  {% endif %}
+              {% endfor %}
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table><br>
