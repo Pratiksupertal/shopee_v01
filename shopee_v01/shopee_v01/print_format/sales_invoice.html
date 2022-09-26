@@ -50,16 +50,16 @@
 {% set amt=namespace(price_amount=0) %}
 <div class="row section-break f_font">
 <div class="col-xs-12" style="overflow-x:auto;">
-<table width="109%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+<table width="101%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
     <tr>
         <th class="tac" width="3%"><b>No.</b></th>
         <th class="tac" width="18%"><b>Kode Barang</b></th>
-        <th class="tac" width="18%"><b>Item Group</b></th>
+        <th class="tac" width="16%"><b>Item Group</b></th>
         <th class="tac" width="14%"><b>Quantity</b></th>
         <th class="tac" width="14%"><b>Basic Rate</b></th>
-        <th class="tac" width="14%"><b>Diskon</b></th>
-        <th class="tac" width="14%"><b>Harga</b></th>
-        <th class="tac" width="14%"><b>Total</b></th>
+        <th class="tac" width="12%"><b>Diskon</b></th>
+        <th class="tac" width="12%"><b>Harga</b></th>
+        <th class="tac" width="12%"><b>Total</b></th>
     </tr>
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
@@ -73,12 +73,14 @@
         {% set counter = counter + 1 %}
         <td class="tac" width="3%">{{ counter or '' }}</td>
         <td width="18%">{{ row.description or '' }}</td>
-        <td class="tac" width="18%" >
+        <td class="tac" width="16%" >
         {% set counter2=namespace(value=1) %}
         <!--<td width="18%">{{ row.description or '' }}</td>-->
-        {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_group']) %}
+        {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_category']) %}
         {% for item in item %}
-            {% if item.item_group is not none and counter2.value== 1 %}{{item.item_group or '' }}{% endif %}
+            {% if item.item_category is not none and counter2.value== 1 %}
+                {{item.item_category}}
+            {% endif %}
             {% set counter2.value = counter2.value + 1 %}
         {% endfor %}
         </td>
@@ -92,17 +94,17 @@
         {% endfor %}
         </td>
     <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-        <td class="tac" width="14%">
+        <td class="tac" width="12%">
           <!--{% if doc.currency == "IDR" %}-->
           {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}
           <!--{% if doc.currency == "USD" %}
           {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}-->
         </td>
-        <td class="tac" width="14%"> {% if doc.currency == "IDR" %}
+        <td class="tac" width="12%"> {% if doc.currency == "IDR" %}
           {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %} {% if doc.currency == "USD" %}
           {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %}
         </td>
-        <td class="tac" width="17%"> {% if doc.currency == "IDR" %}
+        <td class="tac" width="12%"> {% if doc.currency == "IDR" %}
           {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %} {% if doc.currency == "USD" %}
           {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %}
         </td>
