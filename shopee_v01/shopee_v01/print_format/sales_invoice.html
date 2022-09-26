@@ -174,34 +174,35 @@
 <br>
 <br>
 <div class="row section-break f_font">
-<div class="col-xs-12">
-<table width="100%" style="table-layout: fixed;">
-<tr><td colspan="12"></td></tr>
+  <div class="col-xs-12">
+    <table width="100%" style="table-layout: fixed;">
+      <tr>
+        <td colspan="12"></td></tr>
 
-<tr><td colspan="12" height="70px"></td></tr>
-{% set username = ""%}
-{% if frappe.session.user != "Administrator" %}
-{% set user = frappe.get_doc('User', frappe.session.user)%}
-{% set username= user.full_name %} {% endif%}
-{% if frappe.session.user == "Administrator"%}
-{% set username= frappe.session.user %} {% endif%}
-<tr>
-<!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
-<td colspan="4" class="tac "></td>
-<td colspan="4" class="tac "></td>
-<td colspan="4" class="tac " style=""><u>
-{% set full_name = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
-{% for full_name in full_name %}
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-{% endfor %}
-</tr>
+        <tr><td colspan="12" height="70px"></td></tr>
+        {% set username = ""%}
+        {% if frappe.session.user != "Administrator" %}
+        {% set user = frappe.get_doc('User', frappe.session.user)%}
+        {% set username= user.full_name %} {% endif%}
+        {% if frappe.session.user == "Administrator"%}
+        {% set username= frappe.session.user %} {% endif%}
+      <tr>
+      <!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+      <td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
+        <td colspan="4" class="tac "></td>
+        <td colspan="4" class="tac "></td>
+        <td colspan="4" class="tac " style=""><u>
+        {% set full_name = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
+        {% for full_name in full_name %}
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+        {% endfor %}
+      </tr>
 
-<tr>
-<td colspan="4" class="tac ">Tanda Terima</td>
-<td colspan="4" class="tac "></td>
-<td colspan="4" class="tac"><b>Prepared By</b></td>
-</tr>
-</table>
-</div>
+      <tr>
+        <td colspan="4" class="tac "><b>Tanda Terima<<b>/td>
+        <td colspan="4" class="tac "></td>
+        <td colspan="4" class="tac"><b>Prepared By</b></td>
+      </tr>
+    </table>
+  </div>
 </div>
