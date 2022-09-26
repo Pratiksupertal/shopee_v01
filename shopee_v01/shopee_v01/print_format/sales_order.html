@@ -111,9 +111,10 @@
           <th class="tac" width="15%"><b>Size</b></th>
           <th class="tac" width="22%"><b>Quantity</b></th>
         {% else %}
-          <th class="tac" width="40%"><b>Kode Barang</b></th>
-          <th class="tac" width="40%"><b>Description</b></th>
-          <th class="tac" width="27%"><b>Quantity</b></th>
+          <th class="tac" width="30%"><b>Kode Barang</b></th>
+          <th class="tac" width="30%"><b>Description</b></th>
+          <th class="tac" width="15%"><b>Size</b></th>
+          <th class="tac" width="22%"><b>Quantity</b></th>
         {% endif %}
       </tr>
       {% for row in doc.items %}
@@ -128,22 +129,23 @@
       {% set discount = row.discount_amount * row.qty%}
       {% set disc.discount=disc.discount+ discount %}
       <td class="tac" width="3%">{{ row.idx or '' }}</td>
-      {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}
+      <!--{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}-->
+      <td width="30%">{{ row.item_code or '' }}</td>
+      <td width="30%">{{ row.description or '' }}</td>
+      <td class="tac" width="15%" >
+      {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
+      {% for size in size %}
+          {% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
+      {% endfor %}
+      </td>
+      <!--<td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+      <td class="tac" width="22%" >{{ fmt_qty or ''}}{{' '}}{{ row.uom or ''}}</td>
+      <!--{% else %}
         <td width="30%">{{ row.item_code or '' }}</td>
         <td width="30%">{{ row.description or '' }}</td>
-        {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
-        {% for size in size %}
-            <td class="tac" width="15%" >{% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
-            </td>
-        {% endfor %}
-        <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-        <td class="tac" width="22%" >{{ fmt_qty or ''}}{{' '}}{{ row.uom or ''}}</td>
-      {% else %}
-        <td width="40%">{{ row.item_code or '' }}</td>
-        <td width="40%">{{ row.description or '' }}</td>
-        <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-        <td class="tac" width="27%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
-      {% endif %}
+         <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td>
+        <td class="tac" width="22%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
+      {% endif %}-->
 
       <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
       </tr>
