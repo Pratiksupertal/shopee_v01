@@ -3,6 +3,24 @@ frappe.provide("erpnext.buying");
 {% include 'erpnext/public/js/controllers/buying.js' %};
 
 frappe.ui.form.on("Purchase Order", {
+  setup:function(frm){
+    frm.set_query("approve_po", function() {
+			return {
+				query: "shopee_v01.shopee_v01.custom_script.purchase_order.get_user",
+        filters: {
+          "role":["CEO"]
+        }
+			};
+		});
+    frm.set_query("check_po", function() {
+			return {
+				query: "shopee_v01.shopee_v01.custom_script.purchase_order.get_user",
+        filters: {
+          "role":["ISS Purchasing Manager","ISS Accounting Supervisor"]
+        }
+			};
+		});
+  },
   supplier: function (frm) {
     if (frm.doc.supplier) {
       frappe.call({
@@ -287,7 +305,7 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 
 	},
 
-	
+
 });
 
 // for backward compatibility: combine new and previous states
@@ -330,4 +348,3 @@ frappe.ui.form.on('Purchase Order', {
         }, __("Create Pick List"), __("Create"));
     },
 });
-
