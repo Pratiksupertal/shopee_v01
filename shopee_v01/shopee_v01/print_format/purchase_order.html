@@ -201,7 +201,7 @@
           {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
 
           <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-          <td class="tac" width="18%"><img src="{{ row.image }}" /></td>
+          <td class="tac" width="18%">{% if row.image is not none %}<img src="{{ row.image }}" />{% endif %}</td>
           <td class="tac" width="15%">
             {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
           </td>
