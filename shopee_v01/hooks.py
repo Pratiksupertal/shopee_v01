@@ -79,9 +79,9 @@ doctype_list_js = {"Purchase Order" : "shopee_v01/custom_script/purchase_order_l
 # -----------
 # Permissions evaluated in scripted ways
 
-permission_query_conditions = {
-	"Item": "shopee_v01.utils.get_permission_query_conditions_for_item",
-}
+# permission_query_conditions = {
+# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+# }
 #
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",
