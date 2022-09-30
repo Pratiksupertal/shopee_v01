@@ -185,11 +185,11 @@
                         </td>
                     </tr>
                 </table>
-
+                {% set item_size = frappe.db.get_value('Item Variant Attribute', {'parent': doc.item_code},'attribute_value') %}                
                 <table class="size">
                     <tr>
                         <td>
-                            Size: {{ doc.invent_size_id }}
+                            Size: {{ item_size }}
 
                         </td>
                     </tr>
