@@ -1,0 +1,244 @@
+<style>
+    .print-format table,
+    .print-format tr,
+    tabl,
+    td,
+    th,
+    .print-format td,
+    .print-format div,
+    .print-format p,
+    .adjust-line-height,
+    p.solid {
+        font-family: Monospace;
+        vertical-align: middle;
+        line-height: 0.3em;
+    }
+
+    table.center-bold {
+        margin-right: auto;
+        font-weight: bold;
+        font-size: 10px;
+        margin-left: 4rem;
+        margin-bottom: -1rem;
+    }
+
+    table.art-no {
+        margin: auto;
+        font-size: 16px;
+        margin-bottom: -1rem;
+        text-align: center;
+    }
+
+    .test {
+        word-break: break-all;
+    }
+
+    table.front-bold {
+        margin: auto;
+        font-size: 16px;
+        margin-bottom: 0.0rem;
+        text-align: center;
+    }
+
+    .arttxt {
+        text-align: center;
+        word-break: break-all;
+        display: flex;
+        position: relative;
+        left: 25px;
+        font-size: 14px;
+    }
+
+    .test {
+        display: flex;
+    }
+
+    .first-horizontal-line {
+        border: solid;
+        color: black;
+        margin-top: 0.1rem;
+        margin-bottom: 1rem;
+        width: 69%;
+    }
+
+    .second-horizontal-line {
+        border: none;
+        border-top: 1px dotted black;
+        border-width: 2px;
+        margin-bottom: -0.1rem;
+        width: 69%;
+    }
+
+    .barcode1 {
+        height: 60px;
+        width: 100%;
+        margin-bottom: -2rem;
+        margin-left: 0.3rem;
+    }
+
+    table.size {
+        margin: auto;
+        font-size: 16px;
+        margin-bottom: 0.1rem;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    table.price {
+        margin: auto;
+        font-size: 16px;
+        margin-bottom: 0.1rem;
+        text-align: center;
+    }
+
+    .font-bold-price-amount {
+        font-size: 20px;
+
+    }
+
+    @media screen {
+        .item {
+            width: 124.724 px;
+            padding: 0.25in;
+            min-height: 2.5in;
+            border-style: solid;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            border-radius: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+</style>
+
+
+<div class="flex-container"
+    style="display: flex; flex-wrap: wrap;flex-direction: row;text-align: center;align-items: center;justify-content: center;">
+    {% for i in range(3) %}
+    <div class="item">
+        <div class="row section-break f_font">
+            <div class="adjust-line-height">
+                <center>
+
+
+                    {% if doc.division_group == "JCA" %}
+
+                    <img src="/files/JHN1.jpg" alt="" width="850" height="50">
+
+                    {% elif doc.division_group == "FRL" %}
+                    <img src="/files/JHN1.jpg" width="850" height="50">
+
+                    {% elif doc.division_group == "LAD" %}
+                    <img src="/files/L-Lgs1.jpg" width="150" height="90">
+
+
+                    {% elif doc.division_group == "JEA" %}
+                    <img src="/files/LGS1.jpg" width="90" height="60">
+
+                    {% elif doc.division_group == "CAS" %}
+                    <img src="/files/LGS1.jpg" width="90" height="60">
+
+                    {% elif doc.division_group == "UWR" %}
+                    <img src="/files/LGS1.jpg" width="90" height="60">
+
+
+                    {% elif doc.division_group == "YTH" %}
+                    <img src="/files/LGS1.jpg" width="90" height="60">
+
+
+                    {% elif doc.division_group == "GIFT" %}
+                    <img src="/files/LGS-Street.png" width="850" height="50">
+
+                    {% elif doc.division_group == "CCT4" %}
+                    <img src="/files/LGS-Street.png" width="850" height="40">
+
+                    {% else %}
+
+                    <img src="/files/LGS1.jpg" width="90" height="60">
+
+                    {% endif %}
+
+                </center>
+                <hr class="first-horizontal-line">
+
+
+                {% set item_size = frappe.db.get_value('Item Variant Attribute', {'parent':
+                doc.item_code},'attribute_value') %}
+                <table class="center-bold">
+                    <tr>
+                        <td class="arttxt">
+                            Size
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="size">
+                    <tr>
+                        <td>
+                            {{ item_size }}
+                        </td>
+                    </tr>
+                </table>
+                <table class="center-bold">
+                    <tr>
+                        <td class="arttxt">
+                            ART:
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                        </td>
+                    </tr>
+                </table>
+                <table class="art-no">
+                    <tr>
+                        <td class="test">
+                            {{ doc.item_name }}
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="front-bold">
+                    <tr>
+                        <td>
+                            Color: {{ doc.color }}
+                        </td>
+                    </tr>
+                </table>
+
+
+                {% set itsvalue = doc.standard_rate %}
+                {% set fmt_value = frappe.utils.fmt_money(itsvalue,currency="") %}
+                {% set lengthvalue = fmt_value | length %}
+
+                <table class="price">
+
+                    <tr>
+                        <td>
+                            Price:Rp
+                        </td>
+                        <td class="font-bold-price-amount">
+                            {{ fmt_value[: (lengthvalue-3)]}}
+                        </td>
+
+                    </tr>
+                </table>
+
+                <div class="barcode">
+                    <svg class="barcode1" {{ doc.item_bar_code }}</svg>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
