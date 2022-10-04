@@ -1,0 +1,135 @@
+<style>
+.tac{text-align: center;}
+.tar{text-align: right;}
+.brs{border-right: hidden;}
+.color{color: #d1d8dd;}
+.fsize{font-size: 20px;}
+.blh{border-left: hidden;}
+.bbh{border-bottom: hidden; }
+.f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+</style>
+
+<div class="print-heading">
+   <h2>Pick List<br><small>{{ doc.name }}</small></h2>
+</div>
+
+<div class="row">
+    <div class="col-xs-7">
+  		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+  		  <tr>
+      			<td width="40%">MR Number</td>
+      			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{doc.material_request or ''}}
+            </td>
+  		  </tr>
+  		</table>
+    </div>
+  	<div class="col-xs-5">
+  		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+  		  <tr>
+      			<td width="40%">MR Date</td>
+      			<td width="60%" style="text-align:right">
+              {% set mar = frappe.get_all('Material Request', filters={'name': doc.material_request}, fields=['transaction_date']) %}
+              {% for mar in mar %}
+                  {% if mar.transaction_date is not none %}{{ frappe.utils.formatdate(mar.transaction_date, "dd-mm-yyyy") or '' }}{% endif %}
+              {% endfor %}
+
+            </td>
+  		  </tr>
+  		</table>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-7">
+  		<table width="100%" style="table-layout: auto;" border="0px" bordercolor="#a9a9a9">
+  		  <tr>
+      			<td width="40%">Requested By:</td>
+            {% set modified_by=namespace(value="") %}
+      			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">
+              {% set mar = frappe.get_all('Material Request', filters={'name': doc.material_request}, fields=['modified_by']) %}
+              {% for mar in mar %}
+                  {% if mar.modified_by is not none %}{% set modified_by.value = mar.modified_by %}{% endif %}
+              {% endfor %}
+              {% set full_name = frappe.get_all('User', filters={'name': modified_by.value}, fields=['full_name']) %}
+              {% for full_name in full_name %}
+                  {% if full_name.full_name is not none %}{{full_name.full_name}}{% endif %}
+              {% endfor %}
+            </td>
+  		  </tr>
+  		</table>
+    </div>
+  	<div class="col-xs-5">
+  		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+    		  <tr>
+        			<td width="40%">Required Date</td>
+        			<td width="60%" style="text-align:right">
+                {% set counter=namespace(value=1) %}
+                {% set mar = frappe.get_all('Material Request Item', filters={'parent': doc.material_request}, fields=['schedule_date']) %}
+                {% for mar in mar %}
+                    {% if mar.schedule_date is not none and counter.value == 1 %}{{ frappe.utils.formatdate(mar.schedule_date, "dd-mm-yyyy") or '' }}{% endif %}
+                    {% set counter.value = counter.value + 1 %}
+                {% endfor %}
+              </td>
+    		  </tr>
+  		</table>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-7">
+  		<table width="100%" style="table-layout: auto;" border="0px" bordercolor="#a9a9a9">
+    		  <tr>
+        			<td width="40%">Target Warehouse:</td>
+        			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">
+                {% set counter2=namespace(value=1) %}
+                {% set mar = frappe.get_all('Material Request Item', filters={'parent': doc.material_request}, fields=['warehouse']) %}
+                {% for mar in mar %}
+                    {% if mar.warehouse is not none and counter2.value == 1 %}{{ mar.warehouse or '' }}{% endif %}
+                    {% set counter2.value = counter2.value + 1 %}
+                {% endfor %}
+              </td>
+    		  </tr>
+  		</table>
+    </div>
+  	<div class="col-xs-5">
+  		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+    		  <tr>
+        			<td width="40%">Picker Name</td>
+        			<td width="60%" style="text-align:right">
+                {% if doc.picker is not none %}
+                    {% set full_name2 = frappe.get_all('User', filters={'name': doc.picker}, fields=['full_name']) %}
+                    {% for full_name2 in full_name2 %}
+                        {% if full_name2.full_name is not none %}{{full_name2.full_name}}{% endif %}
+                    {% endfor %}
+                {% endif %}
+              </td>
+    		  </tr>
+  		</table>
+    </div>
+</div>
+
+
+<div class="row section-break f_font">
+  <div class="col-xs-12" style="overflow-x:auto;">
+    <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+      <tr>
+        <th class="tac" width="3%"><b>No</b></th>
+        <th class="tac" width="30%"><b>Item Code</b></th>
+        <th class="tac" width="37%"> <b>Warehouse</b></th>
+        <th class="tac" width="15%"><b>Qty</b></th>
+        <th class="tac" width="15%"><b>Picked Qty</b></th>
+      </tr>
+      {% set count=namespace(value=0) %}
+      {% set pick = frappe.get_all('Pick List Item', filters={'parent': doc.name,'material_request': doc.material_request}, fields=['item_code','warehouse','qty','picked_qty']) %}
+      {% for row in pick %}
+        {% set count.value = count.value+1 %}
+        <tr>
+          <td class="tac" width="3%">{{ count.value or '' }}</td>
+          <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+          <td class="tac" width="30%" >{{ row.item_code or ''}}</td>
+          <td class="tac" width="37%" >{{ row.warehouse or '' }}</td>
+          <td class="tac" width="15%" >{{ row.qty or 0 }}</td>
+          <td class="tac" width="15%" >{{ row.picked_qty or 0 | int }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
