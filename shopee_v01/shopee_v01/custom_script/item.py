@@ -17,13 +17,15 @@ def validate(doc, method):
                 )
                 pre_barcode = frappe.db.sql(sql, as_dict=True)
                 barcode = (
-                    int(pre_barcode[0].barcode) + 1 if pre_barcode else 1000001
+                    int(pre_barcode[0].barcode) + 1 if pre_barcode else 1000000000001
                 )
                 if pre_barcode:
                     barcode = barcode_design(barcode)
                     doc.append("barcodes", {"barcode": str(barcode)})
                 else:
-                    doc.append("barcodes", {"barcode": "1000001"})
+                    doc.append("barcodes",{
+                    "barcode":"1000000000001"
+                    })
                 doc.item_bar_code = doc.barcodes[0].barcode
     except:
         raise

@@ -1,0 +1,184 @@
+<style>
+    .tac{text-align: center;}
+    .tar{text-align: right;}
+    .brs{border-right: hidden;}
+    .color{color: #d1d8dd;}
+    .fsize{font-size: 20px;}
+    .blh{border-left: hidden;}
+    .bbh{border-bottom: hidden; }
+    .f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
+    </style>
+    
+    <div class="print-heading">
+      <div class="row">
+        <div class="col-xs-6">
+          <table width="100%" style="table-layout: auto;">
+            <tr>
+              {% set vfrom=namespace(from="From: ") %}
+              {% set counter2=namespace(value=1) %}
+              {% set warehouse = frappe.get_all('Stock Entry Detail', filters={'parent': doc.name}, fields=['s_warehouse']) %}
+              {% for warehouse in warehouse %}
+                  {% if warehouse.s_warehouse is not none and counter2.value== 1 %}{% set vfrom.from= vfrom.from + warehouse.s_warehouse %}{% endif %}
+                  {% set counter2.value = counter2.value + 1 %}
+              {% endfor %}
+              {% set lengthvalue = vfrom.from | length %}
+              {% set lengthvalue = lengthvalue - 6 %}
+              {% set vfrom.from = vfrom.from[:lengthvalue] %}
+    
+              <td width="100%" style="text-align:left"><b>{{vfrom.from}}</b></td>
+            </tr>
+            <tr>
+              {% set mr=namespace(material_request="") %}
+              {% set mar = frappe.get_all('Pick List', filters={'name': doc.pick_list}, fields=['material_request']) %}
+              {% for mar in mar %}
+                  {% if mar.material_request is not none %}{% set mr.material_request=mar.material_request %}{% endif %}
+              {% endfor %}
+              {% set vto=namespace(to="To: ") %}
+              {% set counter2=namespace(value=1) %}
+              {% set warehouse = frappe.get_all('Material Request Item', filters={'parent': mr.material_request}, fields=['warehouse']) %}
+              {% for warehouse in warehouse %}
+                  {% if warehouse.warehouse is not none and counter2.value== 1 %}{% set vto.to = vto.to + warehouse.warehouse %}{% endif %}
+                  {% set counter2.value = counter2.value + 1 %}
+              {% endfor %}
+              {% set lengthvalue2 = vto.to | length %}
+              {% set lengthvalue2 = lengthvalue2 - 6 %}
+              {% set vto.to = vto.to[:lengthvalue2] %}
+              <td width="100%" style="text-align:left"><b>{{vto.to}}</b></td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-xs-6">
+          <h2 style="font-size:16px"<b>Delivery Note</b></h2>
+          <small>{{ doc.name }}</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-xs-7">
+            <table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+              <tr>
+                  <td width="40%">Stock Entry Type</td>
+                  <td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{'Send to Shop'}}</td>
+              </tr>
+            </table>
+      </div>
+        <div class="col-xs-5">
+            <table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+              <tr>
+                  <td width="40%">Date</td>
+                  <td width="60%" style="text-align:right">{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</td>
+              </tr>
+            </table>
+      </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-7">
+            <table width="100%" style="table-layout: auto;" border="0px" bordercolor="#a9a9a9">
+              <tr>
+                  <!--<td width="40%">Stock Entry (Outward GIT)</td>
+            <td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">
+            {% set ste = frappe.get_all('Stock Entry', filters={'pick_list': doc.pick_list,'stock_entry_type':'Receive at Warehouse'}, fields=['name']) %}
+            {% for ste in ste %}
+                {% if ste.name is not none %}{{ ste.name or '' }}{% endif %}
+            {% endfor %}
+                  </td>-->
+            <td width="40%"></td>
+            <td width="60%"></td>
+              </tr>
+            </table>
+      </div>
+        <div class="col-xs-5">
+        <table width="100%" style="table-layout: auto;">
+          <tr>
+            <td width="40%" >Pick List</td>
+            <td width="60%" style="text-align:right">{{ doc.pick_list or '' }}</td>
+          </tr>
+          <tr>
+            <td width="40%">Material Request</td>
+            <td width="60%" style="text-align:right">
+              {% set mar = frappe.get_all('Pick List', filters={'name': doc.pick_list}, fields=['material_request']) %}
+              {% for mar in mar %}
+                  {% if mar.material_request is not none %}{{ mar.material_request or '' }}{% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+        </table>
+        </div>
+    </div>
+    <!--<div class="row">
+      <div class="col-xs-7">
+        <table width="100%" style="table-layout: fixed;">
+          <tr>
+            <td width="40%">Pick List</td>
+            <td width="60%">{{ doc.pick_list or '' }}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-xs-5">
+      </div>
+    </div>-->
+    
+    
+    <div class="row section-break f_font">
+      <div class="col-xs-12" style="overflow-x:auto;">
+        <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+          <tr>
+              <th class="tac" width="3%"><b>No</b></th>
+              <th class="tac" width="39%"><b>Item Code</b></th>
+              <th class="tac" width="18%"><b>Item Group</b></th>
+              <th class="tac" width="15%"><b>Size</b></th>
+              <th class="tac" width="25%"><b>Qty</b></th>
+          </tr>
+    {% set uom=namespace(uom_name="") %}
+    {% set total=namespace(value=0) %}
+    {% set disc=namespace(discount=0) %}
+    {% for row in doc.items %}
+          <tr>
+              <td class="tac" width="3%">{{ row.idx or '' }}</td>
+    <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
+    
+              <td class="tac" width="39%" >{{ row.item_code or '' }}</td>
+              <td class="tac" width="18%" >{{ row.item_group or '' }}</td>
+              <td class="tac" width="15%" >
+              {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
+              {% for size in size %}
+                {% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
+              {% endfor %}
+              </td>
+              <td class="tac" width="25%" >{{ row.qty }}{{' '}}{{row.uom}}</td>
+              {% set total.value = total.value + row.qty %}
+          </tr>
+    {% endfor %}
+          <tr>
+              <td class="tac" colspan="4">Total Quantity</td>
+              <td class="tac">{{total.value}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="row section-break f_font">
+      <div class="col-xs-12">
+        <br><br><br><br><br><br><br>
+        <table width="100%" style="table-layout: fixed;">
+          <tr><td colspan="12"></td></tr>
+          <tr>
+              {% set full_name = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
+              {% for full_name in full_name %}
+                  <td colspan="3" class="tac " style="">{% if full_name.full_name is not none %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+                  </td>
+              {% endfor %}
+              <td colspan="3" class="tac "></td>
+              <td colspan="3" class="tac ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{'Hendra'}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+              <td colspan="3" class="tac "></td>
+              </tr>
+          <tr>
+              <td colspan="3" class="tac " style="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dibuat oleh</td>
+              <td colspan="3" class="tac ">Ekspedisi</td>
+              <td colspan="3" class="tac ">Logistic</td>
+              <td colspan="3" class="tac ">Diterima oleh</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
