@@ -1,0 +1,371 @@
+<style>
+  .tac {
+    text-align: center;
+  }
+  .tar {
+    text-align: right;
+  }
+  .brs {
+    border-right: hidden;
+  }
+  .color {
+    color: #d1d8dd;
+  }
+  .fsize {
+    font-size: 20px;
+  }
+  .blh {
+    border-left: hidden;
+  }
+  .bbh {
+    border-bottom: hidden;
+  }
+  .f_font {
+    font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;
+  }
+  @page {
+    margin-top: 14rem;
+  }
+</style>
+<div class="header">
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td width="40%"></td>
+        <td width="60%"></td>
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-6">
+    <table width="100%" style="table-layout: fixed">
+      <tr>
+        <td colspan="6"></td>
+        <td colspan="6"></td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% set username = ""%}
+  {% if frappe.session.user != "Administrator" %}
+    {% set user = frappe.get_doc('User', frappe.session.user)%}
+    {% set username= user.full_name %}
+  {% endif %}
+  {% if frappe.session.user == "Administrator"%}
+    {% set username= frappe.session.user %}
+  {% endif %}
+  {% set name=namespace(name="") %}
+  {% set role2=namespace(role2="") %}
+  {% set user_name = frappe.get_all('User', filters={'full_name': username},fields=['name']) %}
+  {% for user_name in user_name %}
+    {% set name.name = user_name.name%}
+  {% endfor %}
+  {% set hasrole = frappe.get_all('Has Role',filters={'parent': name.name}, fields=['role']) %}
+  {% for hasrole in hasrole %}
+    {% if ((hasrole.role == "Accounting Supervisor") or (hasrole.role == "CEO") or (hasrole.role=="Accounts Manager") or (hasrole.role=="ISS Purchase User") or (hasrole.role=="Purchase AP")) %} {% set role2.role2=hasrole.role %}
+    {% endif %}
+  {% endfor %}
+  {% set uom=namespace(uom_name="") %}
+  {% set disc=namespace(discount=0) %}
+  {% set check=namespace(checkcounter="1") %}
+  {% set check2=namespace(checkcounter="1") %}
+  {% set check3=namespace(checkcounter="1") %}
+
+
+<div class="row section-break f_font">
+  <div class="col-xs-2">
+  </div>
+  <div class="col-xs-10">
+    <table width="100%" style="table-layout: auto">
+      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js"></script>
+      <tr>
+        <td colspan="6" style="font-size:26px"><b>PURCHASE ORDER </b></td>
+        <td colspan="6"><svg
+          class="barcode"
+          jsbarcode-fontsize="8"
+          jsbarcode-height="12"
+          jsbarcode-width="1"
+          jsbarcode-value="{{doc.name}}"/></td>
+      </tr>
+      <script>
+        JsBarcode(".barcode").init();
+      </script>
+    </table>
+  </div>
+</div>
+<div class="row f_font">
+
+  <div class="col-xs-7">
+    <table width="100%" style="table-layout: auto">
+      <tr>
+        <td colspan="4"><b>To</b></td>
+        <td colspan="8">{{ doc.supplier or '' }}</td>
+      </tr>
+      <tr>
+        <td colspan="4"><b>ATTN</b></td>
+        {% set contact = get_first_name(doc) %}
+        {% for contact in contact %}
+          <td colspan="8">{{ contact.first_name or '' }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <td colspan="4"><b>Ship To</b></td>
+        {% set address = frappe.get_all('Address',filters={'address_title': 'PT Indah Subur Sejati'}, fields=['address_line1','address_line2','city','pincode']) %}
+        {% for address in address %}
+          <td colspan="8">PT Indah Subur Sejati
+            <br>{{address.address_line1}}
+            <br>{{address.address_line2}}
+            <br>{{address.city}}{{' - '}}{{address.pincode}}
+          {% endfor %}
+
+      </tr>
+    </table>
+  </div>
+  <div class="col-xs-5">
+    <table width="100%" style="table-layout: auto">
+      <tr>
+        <td colspan="6"><b>Purchase Order No</b></td>
+        <td colspan="6">{{ doc.name or ''}}</td>
+      </tr>
+      <tr>
+        <td colspan="6"><b>Tanggal</b></td>
+        <td colspan="6">
+          {{ frappe.utils.formatdate(doc.get_formatted('schedule_date'),
+          "dd-mm-yyyy") }}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="6"><b>Delivery Date</b></td>
+
+        {% set delivery_date = frappe.get_all('Purchase Order Item',filters={'parent': doc.name}, fields=['expected_delivery_date']) %}
+        {% for delivery_date in delivery_date %}
+          {% if check.checkcounter == "1" %}
+              <td colspan="6">
+                {{ frappe.utils.formatdate(delivery_date.expected_delivery_date,
+                "dd-mm-yyyy") }}
+              </td>
+          {% endif %}
+          {% set check.checkcounter = "2" %}
+        {% endfor %}
+
+      </tr>
+    </table>
+
+  </div>
+</div>
+<br />
+
+<br />
+<div class="row section-break f_font">
+  <div class="col-xs-12">
+    <table
+      width="100%"
+      style="table-layout: fixed"
+      border="1px"
+      bordercolor="#d1d8dd">
+      <tr>
+        {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
+          <th class="tac" width="4%"><b>No.</b></th>
+          <th class="tac" width="38%"><b>Kode Barang dan Deskripsi</b></th>
+          <th class="tac" width="18%"><b>Image</b></th>
+          <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
+          <th class="tac" width="15%"><b>Quantity</b></th>
+          <th class="tac" width="15%"><b>Harga</b></th>
+          <th class="tac" width="20%"><b>Total</b></th>
+          {% else %}
+          <th class="tac" width="10%"><b>No.</b></th>
+          <th class="tac" width="47%"><b>Kode Barang dan Deskripsi</b></th>
+          <th class="tac" width="23%"><b>Image</b></th>
+          <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
+          <th class="tac" width="25%"><b>Quantity</b></th>
+        {% endif %}
+      </tr>
+      {% set amt=namespace(price_amount=0) %}
+      {% for row in doc.items %}
+      <tr>
+        <td class="tac" width="4%">{{ row.idx or '' }}</td>
+        {% set uom.uom_name= row.uom %}
+        {% set fmt_qty =frappe.utils.fmt_money(row.qty,currency="") %}
+        {% set price_tag =row.amount %}
+        {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
+        {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
+          <td width="38%">
+            {{ row.item_code or '' }}<br />{{ row.description or '' }}
+          </td>
+          {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
+
+          <td class="tac" width="18%">{% if row.image is not none %}<img src="{{ row.image }}" />{% endif %}</td>
+          <td class="tac" width="15%">
+            {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
+          </td>
+          <td class="tac" width="15%">
+            {% if doc.currency == "IDR" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %}
+          </td>
+          <td class="tac" width="20%" style="text-align: right">
+            {{doc.currency}} {{ fmt_price_tag or ''}}
+          </td>
+        {% else %}
+          <td width="47%">
+            {{ row.item_code or '' }} <br />{{ row.description or '' }}
+          </td>
+          <td class="tac" width="23%"><img src="{{ row.image }}" /></td>
+          <td class="tac" width="25%">
+            {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
+          </td>
+
+        {% endif %}
+        {% set amt.price_amount=amt.price_amount+price_tag %}
+        {% set discount = row.discount_amount * row.qty%}
+        {% set disc.discount=disc.discount+ discount %}
+        </tr>
+      {% endfor %}
+      <tr>
+        {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %} {% set fmt_amt_price_amount =
+        frappe.utils.fmt_money(amt.price_amount,currency="") %}
+        <td class="tac" colspan="3">Total Quantity</td>
+        {% for row in doc.items %}
+          {% if check3.checkcounter == "1" %}
+              <td class="tac">{{fmt_total_qty}}{{' '}}{{row.uom}}</td>
+          {% endif %}
+          {% set check3.checkcounter = "2" %}
+        {% endfor %}
+        <td></td>
+        <td class="tac" style="text-align: right">
+          {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
+            {{doc.currency}} {{fmt_amt_price_amount}}
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+    <div class="">
+      <div class="col-xs-6">
+        <table width="100%" style="table-layout: auto;">
+          <tr>
+            <td colspan="4"><b>Catatan:</td>
+            <td colspan="8">{{doc.remarks or ""}}</td>
+          </tr>
+          <tr>
+            <td colspan="4"><b>Cara Packing:</td>
+            <td colspan="8">{{doc.cara_packing or ""}}</td>
+          </tr>
+          <tr>
+            <td colspan="4"><b>Sample</td>
+            <td colspan="8">
+              {% for row in doc.items %}
+                {% if row.sample_image %}
+                    {% if check2.checkcounter == "1" %}
+                        <img id="item_img" src="{{ row.sample_image }}" />
+                    {% endif %}
+                    {% set check2.checkcounter = "2" %}
+                {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-xs-6">
+        <table width="100%" style="table-layout: fixed; margin-left: 15px">
+          {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+          <tr>
+            <td colspan="6">
+              <b>
+                {% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %} Total
+                {% endif %}
+              </b>
+            </td>
+            <td colspan="6" style="text-align: right">
+              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 =="CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP")
+              %}{{doc.currency}}&nbsp;{{ fmt_total or '' }}{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6">
+              <b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
+                  Diskon{% endif %}
+              </b>
+            </td>
+            {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
+            {% set tot_disc = (doc.total * doc.additional_discount_percentage)/100 %}
+            {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
+            <td colspan="6" style="text-align: right">
+              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
+              {{doc.currency}}{{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6">
+              <b
+                >{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or(role2.role2=="ISS Purchase User") or (role2.role2=="PurchaseAP") %}Total setelah Diskon{% endif %}</b>
+            </td>
+            {% set fmt_net_total =
+            frappe.utils.fmt_money(doc.net_total,currency="") %}
+            <td colspan="6" style="text-align: right">
+              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 =="CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}}
+              {{ fmt_net_total }}{% endif %}
+            </td>
+          </tr>
+          {% if doc.taxes_and_charges %}
+          <tr>
+            {% set fmt_total_taxes_and_charges =
+            frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+            <td colspan="6">
+              <b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}PPN{% endif %}</b>
+            </td>
+            <td colspan="6" style="text-align: right">
+              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{fmt_total_taxes_and_charges}}{% endif %}
+            </td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td colspan="6">
+              <b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}Grand Total{% endif %}</b>
+            </td>
+            {% set fmt_grand_total =frappe.utils.fmt_money(doc.grand_total,currency="") %}
+            <td colspan="6" style="text-align: right">
+              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 =="CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{fmt_grand_total}} {% endif %}
+            </td>
+          </tr>
+        </table>
+      </div>
+      <br /><br />
+    </div>
+  </div>
+
+  <div class="row section-break f_font">
+    <div class="col-xs-12">
+      <table width="100%" style="table-layout: fixed">
+        <tr>
+          <td colspan="12"></td>
+        </tr>
+
+        <tr>
+          <td colspan="12" height="70px"></td>
+        </tr>
+        <tr>
+          <td colspan="6" class="tac">
+            <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_po or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+          </td>
+
+          {% set prepared = frappe.get_all('User',filters={'name': doc.owner}, fields=['full_name']) %}
+          {% for prepared in prepared %}
+            <td colspan="6" class="tac" style="">
+              <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{prepared.full_name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+            </td>
+          {% endfor %}
+
+          {% set contact = get_first_name(doc) %}
+          {% for contact in contact %}
+            <td colspan="6" class="tac" style="">
+              <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{contact.first_name or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+            </td>
+          {% endfor %}
+        </tr>
+
+        <tr>
+          <td colspan="6" class="tac"><b>Approved By</b></td>
+          <td colspan="6" class="tac"><b>Prepared By</b></td>
+          <td colspan="6" class="tac"><b>{{doc.supplier or ''}}</b></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
