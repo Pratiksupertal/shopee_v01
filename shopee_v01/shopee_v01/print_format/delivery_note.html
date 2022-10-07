@@ -58,7 +58,7 @@
 	 <table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%"><b>Date</b></td>
-        <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</td>
+        <td width="60%">{{ frappe.utils.formatdate(doc.posting_date, "dd-mm-yyyy") }}</td>
       </tr>
       <tr>
         <td width="40%"><b>{% if doc.address_display is not none %} Address {% endif %}</b></td>
@@ -90,17 +90,10 @@
             <td class="tac" width="3%">{{ delnote.value or '' }}</td>
             <td width="30%">{{ row.item_code or '' }}</td>
             <td class="tac" width="27%" >
-            {% set item = frappe.get_all('Item', filters={'item_code': row.item_code}, fields=['item_group']) %}
-            {% for item in item %}
-                {% if item.item_group is not none %}
-                    {% set itemgroup = frappe.get_all('Item Group', filters={'name': item.item_group}, fields=['item_group_description']) %}
-                    {% for itemgroup in itemgroup %}
-                      {% if itemgroup.item_group_description is not none %}
-                        {{itemgroup.item_group_description}}
-                      {% endif %}
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
+              {% set item = frappe.get_all('Item', filters={'item_code': row.item_code}, fields=['item_category']) %}
+              {% for item in item %}
+                  {% if item.item_category is not none %}{{item.item_category or '' }} {% endif %}
+              {% endfor %}
             </td>
             <td class="tac" width="10%" >
             {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
