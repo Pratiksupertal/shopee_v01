@@ -129,7 +129,7 @@
       <tr>
         <td colspan="6"><b>Tanggal</b></td>
         <td colspan="6">
-          {{ frappe.utils.formatdate(doc.get_formatted('schedule_date'),
+          {{ frappe.utils.formatdate(doc.transaction_date,
           "dd-mm-yyyy") }}
         </td>
       </tr>
