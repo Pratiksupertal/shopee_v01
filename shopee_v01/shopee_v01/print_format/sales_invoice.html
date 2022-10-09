@@ -25,11 +25,11 @@
   <div class="col-xs-6">
 	<table width="100%" style="table-layout: fixed;">
       <tr>
-        <td width="40%"><b>Date</b></td>
+        <td width="40%"><b>Tanggal</b></td>
         <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</td>
       </tr>
       <tr>
-        <td width="40%"><b>Due Date</b></td>
+        <td width="40%"><b>Jatuh Tempo</b></td>
     		<td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('due_date'), "dd-mm-yyyy") }}</td>
     	  </tr>
       <tr>
@@ -54,11 +54,11 @@
     <tr>
         <th class="tac" width="3%"><b>No.</b></th>
         <th class="tac" width="18%"><b>Kode Barang</b></th>
-        <th class="tac" width="16%"><b>Item Group</b></th>
+        <th class="tac" width="16%"><b>Item Category</b></th>
         <th class="tac" width="14%"><b>Quantity</b></th>
         <th class="tac" width="14%"><b>Basic Rate</b></th>
-        <th class="tac" width="12%"><b>Diskon</b></th>
-        <th class="tac" width="12%"><b>Harga</b></th>
+        <th class="tac" width="12%"><b>Discount Price</b></th>
+        <th class="tac" width="12%"><b>Sales Price</b></th>
         <th class="tac" width="12%"><b>Total</b></th>
     </tr>
 {% set uom=namespace(uom_name="") %}
@@ -69,10 +69,9 @@
 {% set sales_invoice = get_summary_sales_invoice(doc) %}
 {% for row in sales_invoice %}
     <tr>
-
         {% set counter = counter + 1 %}
         <td class="tac" width="3%">{{ counter or '' }}</td>
-        <td width="18%">{{ row.description or '' }}</td>
+        <td width="18%">{{ row.item_name  or '' }}</td>
         <td class="tac" width="16%" >
         {% set counter2=namespace(value=1) %}
         <!--<td width="18%">{{ row.description or '' }}</td>-->
