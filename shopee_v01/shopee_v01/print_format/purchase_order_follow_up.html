@@ -378,11 +378,11 @@
           </td>
 
           <td colspan="6" class="tac">
-            {% set full_name2 = frappe.get_all('User', filters={'name': doc.modified}, fields=['full_name']) %}
+            {% set full_name2 = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
             {% set counterfullname2=namespace(value=1) %}
             {% for full_name2 in full_name2 %}
                 {% if full_name2.full_name is not none and counterfullname2.value == 1 %}
-                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ full_name2.full_name }}" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ full_name2.full_name }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
                     {% set counterfullname2.value=counterfullname2.value + 1 %}
                 {% endif %}
 
