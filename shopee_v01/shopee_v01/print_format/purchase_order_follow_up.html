@@ -345,26 +345,25 @@
             {% set signature = frappe.get_all('E_Signature', filters={'user': doc.approve_po}, fields=['signature_image']) %}
             {% for signature in signature %}
                 {% if signature.signature_image is not none %}
-                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <img id="item_img" src="{{ signature.signature_image }}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    <u>  <img id="item_img" src="{{ signature.signature_image }}" /></u>
                 {% endif %}
             {% endfor %}
           </td>
 
-          <td colspan="3" class="tac">
-            {% set signature2 = frappe.get_all('E_Signature', filters={'user': doc.modified}, fields=['signature_image']) %}
+          <td colspan="6" class="tac">
+            {% set signature2 = frappe.get_all('E_Signature', filters={'user': doc.modified_by}, fields=['signature_image']) %}
             {% for signature2 in signature2 %}
                 {% if signature2.signature_image is not none %}
-                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <img id="item_img" src="{{ signature2.signature_image }}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    <u>  <img id="item_img" src="{{ signature2.signature_image }}" /></u>
                 {% endif %}
             {% endfor %}
           </td>
 
-          {% set contact = get_first_name(doc) %}
-          {% for contact in contact %}
-            <td colspan="6" class="tac" style="">
-              <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{contact.first_name or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+
+            <td colspan="3" class="tac" style="">
+              <u></u>
             </td>
-          {% endfor %}
+
         </tr>
         <tr>
           <td colspan="3" class="tac">
@@ -372,18 +371,18 @@
             {% set counterfullname=namespace(value=1) %}
             {% for full_name in full_name %}
                 {% if full_name.full_name is not none and counterfullname.value == 1 %}
-                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ full_name.full_name }}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ full_name.full_name }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
                 {% endif %}
                 {% set counterfullname.value=2 %}
             {% endfor %}
           </td>
 
-          <td colspan="3" class="tac">
+          <td colspan="6" class="tac">
             {% set full_name2 = frappe.get_all('User', filters={'name': doc.modified}, fields=['full_name']) %}
             {% set counterfullname2=namespace(value=1) %}
             {% for full_name2 in full_name2 %}
                 {% if full_name2.full_name is not none and counterfullname2.value == 1 %}
-                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ full_name2.full_name }}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  {{ full_name2.full_name }}" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
                     {% set counterfullname2.value=counterfullname2.value + 1 %}
                 {% endif %}
 
@@ -392,16 +391,16 @@
 
           {% set contact = get_first_name(doc) %}
           {% for contact in contact %}
-            <td colspan="6" class="tac" style="">
+            <td colspan="3" class="tac" style="">
               <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{contact.first_name or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
             </td>
           {% endfor %}
         </tr>
 
         <tr>
-          <td colspan="6" class="tac"><b>Approved By</b></td>
+          <td colspan="3" class="tac"><b>Approved By</b></td>
           <td colspan="6" class="tac"><b>Prepared By</b></td>
-          <td colspan="6" class="tac"><b>{{doc.supplier_name or ''}}</b></td>
+          <td colspan="3" class="tac"><b>{{doc.supplier_name or ''}}</b></td>
         </tr>
       </table>
     </div>
