@@ -88,13 +88,13 @@
   	<table width="100%" style="table-layout: fixed;">
         <tr>
           <td width="40%"><b>Tanggal</b></td>
-          <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('transaction_date'), "dd-mm-yyyy") }}</td>
+          <td width="60%">{{ frappe.utils.formatdate(doc.transaction_date, "dd-mm-yyyy") }}</td>
         </tr>
       <!--</table>-->
   	<!--<table width="100%" style="table-layout: fixed;">-->
         <tr>
           <td width="40%"><b>Tanggal Pengiriman</b></td>
-          <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('delivery_date'), "dd-mm-yyyy") }}</td>
+          <td width="60%">{{ frappe.utils.formatdate(doc.delivery_date, "dd-mm-yyyy") }}</td>
         </tr>
       </table>
   </div>
