@@ -132,6 +132,7 @@ jenv = {
         "get_summary_sales_order:shopee_v01.shopee_v01.custom_script.sales_order.get_summary_sales_order",
         "get_pick_list_order:shopee_v01.shopee_v01.custom_script.pick_list.get_pick_list_order",
         "get_first_name:shopee_v01.shopee_v01.custom_script.purchase_order.get_first_name",
+        "get_pick_list_sort:shopee_v01.shopee_v01.custom_script.pick_list.get_pick_list_sort",
 
     ]
 }
