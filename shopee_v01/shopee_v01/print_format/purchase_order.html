@@ -136,7 +136,7 @@
       <tr>
         <td colspan="6"><b>Tanggal</b></td>
         <td colspan="6">
-          {{ frappe.utils.formatdate(doc.get_formatted('schedule_date'),
+          {{ frappe.utils.formatdate(doc.transaction_date,
           "dd-mm-yyyy") }}
         </td>
       </tr>
@@ -351,10 +351,20 @@
         </tr>
         <tr>
           <td colspan="3" class="tac">
-            <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{doc.approve_po or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+            {% set approve = frappe.get_all('User',filters={'name': doc.approve_po}, fields=['full_name']) %}
+            {% for approve in approve %}
+                {% if approve.full_name is not none %}
+                  <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{approve.full_name or ''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                {% endif %}
+            {% endfor %}
           </td>
           <td colspan="3" class="tac">
-            <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{doc.check_po or''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+            {% set checkpo = frappe.get_all('User',filters={'name': doc.check_po}, fields=['full_name']) %}
+            {% for checkpo in checkpo %}
+                {% if checkpo.full_name is not none %}
+                    <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{checkpo.full_name or''}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                {% endif %}
+            {% endfor %}
           </td>
           {% set prepared = frappe.get_all('User',filters={'name': doc.owner}, fields=['full_name']) %}
           {% for prepared in prepared %}
