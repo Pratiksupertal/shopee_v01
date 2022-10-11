@@ -368,39 +368,39 @@ def get_item_price(item_code):
 
 @frappe.whitelist()
 def create_template_payload(template):
-	try:
-		request_body, variant_detail, variants = {}, {}, []
-		product_name = frappe.db.get_values(
+    try:
+        request_body, variant_detail, variants = {}, {}, []
+        product_name = frappe.db.get_values(
 				"Item",
 				{"item_code": template},
 				["item_name", "description", "brand", "image", "item_group"],
 				as_dict=1,
 			)
-		item_group_description = frappe.db.get_value(
+        item_group_description = frappe.db.get_value(
 		"Item Group", product_name[0].item_group, "item_group_description")
-
-		if item_group_description:
-			item_group_description = re.sub("[()]", "", item_group_description)
-		variant_list = frappe.get_list(
+        if item_group_description:
+            item_group_description = re.sub("[()]", "", item_group_description)
+        variant_list = frappe.get_list(
 		"Item", filters={"variant_of": template}, fields=["name"]
 		)
-		if len(variant_list) < 1:
-			raise Exception('No variants available to update')
-			return
-		for variant in variant_list:
-			variant_details = frappe.get_doc("Item", variant)
-			variant_price = get_item_price(variant_details.item_code)
+        if len(variant_list) < 1:
+            raise Exception('No variants available to update')
+            return
+        for variant in variant_list:
+            variant_details = frappe.get_doc("Item", variant)
+            variant_price = get_item_price(variant_details.item_code)
 			# some validations / special case
-			if not variant_price[0]:
-				variant_price =	get_item_price(variant_details.item_name)
-				if not variant_price[0]:
-					raise Exception('Price and value cannot be empty')
-			variant_detail = {
+            if not variant_price[0]:
+                variant_price =	get_item_price(variant_details.item_name)
+                if not variant_price[0]:
+                    raise Exception('Price and value cannot be empty')
+            variant_detail = {
 				# "variant_type" : [attr.attribute for attr in variant_details.attributes],
 				"variant_type": variant_details.attributes[0].attribute,
 				"variant_value": variant_details.attributes[0].attribute_value,
 				# "variant_value":[attr.attribute_value for attr in variant_details.attributes],
 				"product_code": variant_details.item_code,
+                "barcode":variant_details.item_bar_code,
 				"product_price": {
 					"price": variant_price[0],
 					"special_price": {
@@ -417,11 +417,11 @@ def create_template_payload(template):
 				# 			"quantity": 2.0
 				# 		}]
 			}
-			variants.append(variant_detail)
+            variants.append(variant_detail)
 		# some validations / special case
-		if not product_name[0].brand:
-			raise Exception('Product brand is empty')
-		request_body = {
+        if not product_name[0].brand:
+            raise Exception('Product brand is empty')
+        request_body = {
 		"product_name": product_name[0].item_name,
 		"product_desc": product_name[0].description,
 		"product_image": [product_name[0].image],
@@ -429,33 +429,34 @@ def create_template_payload(template):
 		"product_category": [item_group_description],
 		"product_variant": variants,
 		}
-		request_body = json.dumps(request_body).replace("'", '"')
+        print("\n\n",request_body)
+        request_body = json.dumps(request_body).replace("'", '"')
 		# Fetching URL given in "Online Warehouse Configuration" single doctype
-		config = frappe.get_single("Online Warehouse Configuration")
-		if not config.url:
-			raise Exception('Base URL in "Online Warehouse Configuration" is not added in Item Master Update section')
-		url = config.url + "/api/product/sync-from-erp"
-		response = requests.post(
+        config = frappe.get_single("Online Warehouse Configuration")
+        if not config.url:
+            raise Exception('Base URL in "Online Warehouse Configuration" is not added in Item Master Update section')
+        url = config.url + "/api/product/sync-from-erp"
+        response = requests.post(
 			url.replace("'", '"'),
 			json=json.loads(request_body),
 			headers={"Content-Type": "application/json"},
 		)
-		print(response.status_code, response.text)
-		if response.status_code == 200:
-			frappe.log_error(
+        print(response.status_code, response.text)
+        if response.status_code == 200:
+            frappe.log_error(
 				title="Item is updated on Halosis server", message=response.text
 			)
-		else:
-			frappe.log_error(
+        else:
+            frappe.log_error(
 				title="Item is not updated on Halosis server", message={
 					'request_body': request_body,
 					'response': response.text
 				}
 			)
-		frappe.msgprint(response.text)
-	except Exception as e:
-		frappe.log_error(title="Error in update Item Master", message={
+        frappe.msgprint(response.text)
+    except Exception as e:
+        frappe.log_error(title="Error in update Item Master", message={
 		'request_body': request_body,
 		'exception': str(e)
 		})
-		raise
+        raise
