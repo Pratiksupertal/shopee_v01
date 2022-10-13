@@ -263,6 +263,11 @@ def save_picklist_and_create_stockentry():
         if new_picked_qty < 0.0:
             raise Exception("Picked quantity can not be more than total quantity.")
 
+        """Adding remarks to the Pick List."""
+        picklist = frappe.get_doc("Pick List", data.get('pick_list'))
+        picklist.note = data.get('remarks')
+        picklist.save()
+
         """Create stock entry"""
         stock_entry = create_new_stock_entry_for_single_item(
             data=data,
