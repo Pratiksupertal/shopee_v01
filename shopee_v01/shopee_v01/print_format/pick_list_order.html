@@ -12,83 +12,90 @@
 <div class="print-heading">
    <h2>Pick List<br><small>{{ doc.name }}</small></h2>
 </div>
-{% set pick_list_order = get_pick_list_order(doc) %}
+{% set pick_list_sales_order = get_pick_list_sales_order(doc) %}
 {% set count2=namespace(value=0) %}
-{% for row in pick_list_order %}
-  {% set sales_info = frappe.get_all('Sales Order', filters={'name': row.sonumber}, fields=['external_so_number','transaction_date','delivery_date']) %}
-  {% for row2 in sales_info %}
-      {% if count2.value == 0 %}
-          <div class="row">
-              <div class="col-xs-7">
-            		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
-            		  <tr>
-            			<td width="40%">SO NO</td>
-            			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ row.sonumber or '' }}</td>
-            		  </tr>
-            		</table>
-              </div>
-            	<div class="col-xs-5">
-            		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
-            		  <tr>
-            			<td width="40%">SO Date</td>
-            			<td width="60%" style="text-align:right">{{ frappe.utils.formatdate(row2.transaction_date, "dd-mm-yyyy") }}</td>
-            		  </tr>
-            		</table>
-              </div>
-          </div>
-          <div class="row">
-              <div class="col-xs-7">
-            		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
-            		  <tr>
-            			<td width="40%">EXT SO:</td>
-            			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ row2.external_so_number or '' }}</td>
-            		  </tr>
-            		</table>
-              </div>
-          	<div class="col-xs-5">
-          		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
-          		  <tr>
-          			<td width="40%">Delivery Date</td>
-          			<td width="60%" style="text-align:right">{{ frappe.utils.formatdate(row2.delivery_date, "dd-mm-yyyy") }}</td>
-          		  </tr>
-          		</table>
-            </div>
-          </div>
-          <div class="row">
+{% set so_number=namespace(value="") %}
+{% set customer=namespace(value="") %}
+{% for row in pick_list_sales_order %}
+    {% set so_number.value = row.sonumber %}
+    {% set customer.value = row.customer %}
+{% endfor %}
+{% set sales_info = frappe.get_all('Sales Order', filters={'name':so_number.value}, fields=['external_so_number','transaction_date','delivery_date']) %}
+{% for row2 in sales_info %}
+    {% if count2.value == 0 %}
+        <div class="row">
             <div class="col-xs-7">
           		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
           		  <tr>
-          			<td width="40%">Customer:</td>
-          			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ row.customer or '' }}</td>
+          			<td width="40%">SO NO</td>
+          			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ so_number.value or '' }}</td>
           		  </tr>
           		</table>
             </div>
           	<div class="col-xs-5">
           		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
           		  <tr>
-          			<td width="40%">Nama Picker</td>
-          			<td width="60%" style="text-align:right">{% if doc.picker is not none %}{{ doc.picker }}{% endif %}</td>
+          			<td width="40%">SO Date</td>
+          			<td width="60%" style="text-align:right">{{ frappe.utils.formatdate(row2.transaction_date, "dd-mm-yyyy") }}</td>
           		  </tr>
           		</table>
             </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-7">
+          		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+          		  <tr>
+          			<td width="40%">EXT SO:</td>
+          			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ row2.external_so_number or '' }}</td>
+          		  </tr>
+          		</table>
+            </div>
+        	<div class="col-xs-5">
+        		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+        		  <tr>
+        			<td width="40%">Delivery Date</td>
+        			<td width="60%" style="text-align:right">{{ frappe.utils.formatdate(row2.delivery_date, "dd-mm-yyyy") }}</td>
+        		  </tr>
+        		</table>
           </div>
-          {% set count2.value = 1 %}
-      {% endif %}
-  {% endfor %}
+        </div>
+        <div class="row">
+          <div class="col-xs-7">
+        		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+        		  <tr>
+        			<td width="40%">Customer:</td>
+        			<td width="60%" class="fsize tac blh brs bbh" style="text-align:left;font-size:12px;">{{ customer.value or '' }}</td>
+        		  </tr>
+        		</table>
+          </div>
+        	<div class="col-xs-5">
+        		<table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
+        		  <tr>
+        			<td width="40%">Nama Picker</td>
+        			<td width="60%" style="text-align:right">{% if doc.picker is not none %}{{ doc.picker }}{% endif %}</td>
+        		  </tr>
+        		</table>
+          </div>
+        </div>
+        {% set count2.value = 1 %}
+    {% endif %}
 {% endfor %}
+
 
 <div class="row section-break f_font">
   <div class="col-xs-12" style="overflow-x:auto;">
     <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
       <tr>
-        <th class="tac" width="3%"><b>Sr</b></th>
+        <th class="tac" width="3%"><b>No</b></th>
         <th class="tac" width="30%"><b>Item Code</b></th>
         <th class="tac" width="37%"> <b>Warehouse</b></th>
         <th class="tac" width="15%"><b>Qty</b></th>
         <th class="tac" width="15%"><b>Picked Qty</b></th>
       </tr>
-      {% set pick_list_order2 = get_pick_list_order(doc) %}
+      {% set pick_list_order2 = get_pick_list_sales_order(doc) %}
       {% set count=namespace(value=0) %}
+      {% set sum_qty=namespace(value=0) %}
+  	  {% set sum_pick=namespace(value=0) %}
       {% for row in pick_list_order2 %}
         {% set count.value = count.value+1 %}
         <tr>
@@ -98,8 +105,22 @@
           <td class="tac" width="37%" >{{ row.warehouse or '' }}</td>
           <td class="tac" width="15%" >{{ row.qty or 0 }}</td>
           <td class="tac" width="15%" >{{ row.picked_qty or 0 | int }}</td>
+          {% set sum_qty.value=sum_qty.value+row.qty %}
+		      {% set sum_pick.value=sum_pick.value+row.picked_qty %}
         </tr>
       {% endfor %}
+      {% set fmt_total_qty = frappe.utils.fmt_money(sum_qty.value,currency="") %}
+	    {% set fmt_total_pick = frappe.utils.fmt_money(sum_pick.value,currency="") %}
+      <tr>
+          <td class="tac" colspan="3" style="text-align:left">Remarks/Catatan</td>
+          <td class="tac">{{fmt_total_qty}}</td>
+          <td class="tac">{{fmt_total_pick}}</td>
+      </tr>
+      <tr>
+      		<td class="tac" colspan="3" style="text-align:left">{% if doc.note is not none %}{{doc.note}}{% endif %}</td>
+      		<td class="tac"></td>
+      		<td class="tac"></td>
+  	  </tr>
     </table>
   </div>
 </div>

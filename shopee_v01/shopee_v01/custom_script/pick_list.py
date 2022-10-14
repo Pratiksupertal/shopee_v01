@@ -19,5 +19,9 @@ def validate(doc,method):
 def get_pick_list_order(doc):
     return frappe.db.sql("""select distinct pli.parent as name,pick.customer as customer,pli.sales_order as sonumber,pli.warehouse,se.name as stock_entry,pli.item_code,convert(pli.qty,int) as qty,convert(pli.stock_qty,int) as stock_qty,convert(sed.qty,int) as picked_qty from `tabPick List Item` pli inner join `tabPick List` pick on pli.parent = pick.name inner join `tabStock Entry` se on pick.name = se.pick_list inner join `tabStock Entry Detail` sed on se.name = sed.parent where pli.item_code = sed.item_code and pli.sales_order is not null and pli.parent = %s and se.stock_entry_type=%s""",(doc.name,'Material Transfer'),as_dict=True)
 
+def get_pick_list_sales_order(doc):
+    return frappe.db.sql("""select pli.parent as name,pick.customer as customer,pli.sales_order as sonumber,pli.warehouse,pli.item_code,convert(pli.qty,int) as qty,convert(pli.stock_qty,int) as stock_qty,convert(pli.picked_qty,int) as picked_qty from `tabPick List Item` pli inner join `tabPick List` pick on pli.parent = pick.name where pli.parent = %s and pli.sales_order is not null order by pli.item_code""",(doc.name),as_dict=True)
+
 def get_pick_list_sort(doc):
     return frappe.db.sql("""select item_code,warehouse,qty,picked_qty from `tabPick List Item` where parent =%s and material_request=%s order by item_code""",(doc.name,doc.material_request),as_dict=True)
+
