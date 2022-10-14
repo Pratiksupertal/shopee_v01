@@ -118,7 +118,9 @@
         <th class="tac" width="15%"><b>Picked Qty</b></th>
       </tr>
       {% set count=namespace(value=0) %}
-      {% set pick = frappe.get_all('Pick List Item', filters={'parent': doc.name,'material_request': doc.material_request}, fields=['item_code','warehouse','qty','picked_qty']) %}
+      {% set pick = get_pick_list_sort(doc) %}
+  	  {% set sum_qty=namespace(value=0) %}
+  	  {% set sum_pick=namespace(value=0) %}
       {% for row in pick %}
         {% set count.value = count.value+1 %}
         <tr>
@@ -128,8 +130,22 @@
           <td class="tac" width="37%" >{{ row.warehouse or '' }}</td>
           <td class="tac" width="15%" >{{ row.qty or 0 }}</td>
           <td class="tac" width="15%" >{{ row.picked_qty or 0 | int }}</td>
+          {% set sum_qty.value=sum_qty.value+row.qty %}
+		      {% set sum_pick.value=sum_pick.value+row.picked_qty %}
         </tr>
       {% endfor %}
+      {% set fmt_total_qty = frappe.utils.fmt_money(sum_qty.value,currency="") %}
+	    {% set fmt_total_pick = frappe.utils.fmt_money(sum_pick.value,currency="") %}
+      <tr>
+          <td class="tac" colspan="3" style="text-align:left">Remarks/Catatan</td>
+          <td class="tac">{{fmt_total_qty}}</td>
+          <td class="tac">{{fmt_total_pick}}</td>
+      </tr>
+      <tr>
+    			<td class="tac" colspan="3" style="text-align:left">{% if doc.note is not none %}{{doc.note}}{% endif %}</td>
+    			<td class="tac"></td>
+    			<td class="tac"></td>
+  		</tr>
     </table>
   </div>
 </div>
