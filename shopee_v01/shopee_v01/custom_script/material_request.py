@@ -36,38 +36,17 @@ def actual_available_qty_schedule_date(item_code,qty):
     return doc1.invent_size_id,reserved_qty3
 
 
-@frappe.whitelist()
-def make_stock_entry(source_name, target_doc=None):
-
-    doclist = get_mapped_doc("Sales Order", source_name, {
-        "Sales Order": {
-            "doctype": "Stock Entry", },
-        "Sales Order Item": {
-            "doctype": "Stock Entry Detail",
-        },
-    }, target_doc)
-
-    return doclist
-
 def update_cancel_material_request(doc,action):
     for item in doc.items:
         sql = "update `tabMaterial Request Item` set actual_available_qty = actual_available_qty + qty, qty = 0 where name = '{0}'".format(item.name)
         query = frappe.db.sql(sql)
         frappe.db.commit()
 
-
-@frappe.whitelist()
-def get_summary_sales_order(doc):
-    return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Order Item` where parent = %s group by parent,item_name""",(doc.name),as_dict=True)
-
 def get_reserved_qty4(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     warehouse = "Delivery Area - ISS"
     sql = "select distinct b.reserved_qty FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c ON a.item_code = c.item_code LEFT JOIN `tabItem Price` d ON a.item_code = d.item_code where a.item_code = '{0}' and b.warehouse = '{1}'".format(item_code,warehouse)
     reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking for Query %s',sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
 def cancel_update(doc,method):
@@ -85,16 +64,10 @@ def get_value_of_quantity_of_Material_Request_Item(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     sql = "select sum(qty) qty from `tabMaterial Request Item` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking for Query %s',sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
 def get_value_of_quantity_of_Sales_Order_Item(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     sql = "select sum(qty) qty from `tabSales Order Item` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
-    FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-    logging.basicConfig(format=FORMAT)
-    logging.warning('Checking for Query %s',sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
