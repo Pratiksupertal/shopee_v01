@@ -29,9 +29,9 @@
 	  <tr>
         <td width="40%"><b>Requested by</b></td>
         <td width="60%">
-		{% set full_name = frappe.get_all('User', filters={'name': doc.owner}, fields=['full_name']) %}
+		    {% set full_name = frappe.get_all('User', filters={'name': doc.owner}, fields=['full_name']) %}
         {% for full_name in full_name %}
-            {% if full_name.full_name is not none %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+            {% if full_name.full_name is not none %}{{ full_name.full_name }}{% endif %}
         {% endfor %}
 		</td>
       </tr>
@@ -41,7 +41,7 @@
     		{% set counterwarehouse=namespace(value="1") %}
     		{% set req = frappe.get_all('Material Request Item', filters={'parent': doc.name}, fields=['warehouse']) %}
     		{% for req in req %}
-    			{% if req.warehouse is not none and counterwarehouse.value == "1" %}{{ req.warehouse }} ''
+    			{% if req.warehouse is not none and counterwarehouse.value == "1" %}{{ req.warehouse }}
     				{% set counterwarehouse.value = "2" %}
     			{% endif %}
     		{% endfor %}
@@ -72,34 +72,42 @@
 <br>
 
 <div class="row section-break f_font">
-<div class="col-xs-12">
-<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
-<tr>
-<th class="tac" width="5%"><b>No</b></th>
-<th class="tac" width="35%"><b>Item Code</b></th>
-<!-- <th class="tac" width="15%"> <b>Image</b></th> -->
-<th class="tac" width="20%"><b>Item Group</b></th>
-<th class="tac" width="20%"><b>Size</b></th>
-<th class="tac" width="20%"><b>Qty</b></th>
-</tr>
-{% set counter=namespace(value=0) %}
-{% set matreqitem = get_material_request_sort(doc) %}
-{% for row in matreqitem %}
-<tr>
-{% set counter.value = counter.value + 1 %}
-<td class="tac" width="5%">{{ counter.value or '' }}</td>
-<td width="35%">{{ row.item_code or '' }}</td>
-<td width="20%">{{ row.item_group or '' }}</td>
-<td class="tac" width="20%">
-{% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
-{% for size in size %}
-	{% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
-{% endfor %}
-</td>
-<td class="tac" width="25%"> {{ row.qty or '' }}{{' '}}{{row.uom}}</td>
-</tr>
-{% endfor %}
-</table>
+  <div class="col-xs-12">
+    <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+      <tr>
+        <th class="tac" width="5%"><b>No</b></th>
+        <th class="tac" width="35%"><b>Item Code</b></th>
+        <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
+        <th class="tac" width="20%"><b>Item Group</b></th>
+        <th class="tac" width="20%"><b>Size</b></th>
+        <th class="tac" width="20%"><b>Qty</b></th>
+      </tr>
+    {% set totalquantity=namespace(value=0)  %}
+    {% set counter=namespace(value=0) %}
+    {% set matreqitem = get_material_request_sort(doc) %}
+    {% set uom=namespace(value="") %}
+    {% for row in matreqitem %}
+      <tr>
+        {% set counter.value = counter.value + 1 %}
+        <td class="tac" width="5%">{{ counter.value or '' }}</td>
+        <td width="35%">{{ row.item_code or '' }}</td>
+        <td class="tac" width="20%">{{ row.item_group or '' }}</td>
+        <td class="tac" width="20%">
+        {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
+        {% for size in size %}
+        	{% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
+        {% endfor %}
+        </td>
+        <td class="tac" width="25%"> {{ row.qty or '' }}{{' '}}{{row.uom}}</td>
+        {% set uom.value = row.uom %}
+        {% set totalquantity.value = totalquantity.value + row.qty %}
+      </tr>
+    {% endfor %}
+      <tr>
+        <td class="tac" colspan=4>Total Quantity</td>
+        <td class="tac">{{totalquantity.value}}{{' '}}{{uom.value}}</td>
+      </tr>
+    </table>
 
-</div>
+  </div>
 </div>
