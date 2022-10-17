@@ -32,23 +32,3 @@ frappe.ui.form.on('Material Request Item', {
         });
     }
 });
-erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.extend({
-    item_code: function() {
-  		// to override item code trigger from transaction.js
-  	},
-    items_add: function(doc, cdt, cdn) {
-        var row = frappe.get_doc(cdt, cdn);
-        this.frm.script_manager.copy_from_first_row("items", row, ["warehouse"]);
-        if(!row.warehouse) row.warehouse = this.frm.doc.from_warehouse;
-
-    },
-    from_warehouse: function(doc) {
-        this.set_warehouse_in_children(doc.items, "warehouse", doc.from_warehouse);
-  	},
-    set_warehouse_in_children: function(child_table, warehouse_field, warehouse) {
-    		let transaction_controller = new erpnext.TransactionController();
-    		transaction_controller.autofill_warehouse(child_table, warehouse_field, warehouse);
-  	}
-});
-// for backward compatibility: combine new and previous states
-$.extend(cur_frm.cscript, new erpnext.buying.MaterialRequestController({frm: cur_frm}));
