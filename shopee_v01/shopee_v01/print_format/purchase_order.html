@@ -219,9 +219,7 @@
         {% endfor %}
         <td></td>
         <td class="tac" style="text-align: right">
-          {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
             {{doc.currency}} {{fmt_amt_price_amount}}
-          {% endif %}
         </td>
       </tr>
     </table>
