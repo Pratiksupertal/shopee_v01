@@ -90,7 +90,7 @@
       <tr>
         {% set counter.value = counter.value + 1 %}
         <td class="tac" width="5%">{{ counter.value or '' }}</td>
-        <td width="35%">{{ row.item_code or '' }}</td>
+        <td class="tac" width="35%">{{ row.item_code or '' }}</td>
         <td class="tac" width="20%">{{ row.item_group or '' }}</td>
         <td class="tac" width="20%">
         {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
