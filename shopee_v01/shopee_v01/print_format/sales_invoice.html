@@ -75,7 +75,6 @@
         <td width="18%">{{ row.item_name  or '', item_size }} </td>
         <td class="tac" width="16%" >
         {% set counter2=namespace(value=1) %}
-        <!--<td width="18%">{{ row.description or '' }}</td>-->
         {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_category']) %}
         {% for item in item %}
             {% if item.item_category is not none and counter2.value== 1 %}
