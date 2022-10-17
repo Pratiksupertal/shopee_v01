@@ -8,11 +8,14 @@ from frappe.model.mapper import get_mapped_doc
 @frappe.whitelist()
 def size_filter(item_code):
     doc1 = frappe.get_doc('Item', item_code)
-    price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
+    price_list_rate = frappe.db.get_value('Item Price', {"selling": 1, "item_code": item_code}, 'price_list_rate')
+    if price_list_rate is None:
+        price_list_rate = frappe.db.get_value('Item Price', {"selling": 1, "item_code": doc1.item_name}, 'price_list_rate')
     doc2 = frappe.get_doc('Finished901ItemQtySummary')
     doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_code]
+    size_id = frappe.db.get_value('Item Variant Attribute', {'parent': item_code}, 'attribute_value')
     reserved_qty = get_reserved_qty(item_code)
-    return doc1.invent_size_id,price_list.price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty
+    return size_id, price_list_rate, doc2[0] if len(doc2) > 0 else '', reserved_qty
 
 
 @frappe.whitelist()
