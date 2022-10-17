@@ -130,8 +130,11 @@ jenv = {
     "methods": [
         "get_summary_sales_invoice:shopee_v01.shopee_v01.custom_script.sales_invoice.get_summary_sales_invoice",
         "get_summary_sales_order:shopee_v01.shopee_v01.custom_script.sales_order.get_summary_sales_order",
-        "get_pick_list_order:shopee_v01.shopee_v01.custom_script.pick_list.get_pick_list_order",
+        "get_pick_list_sales_order:shopee_v01.shopee_v01.custom_script.pick_list.get_pick_list_sales_order",
         "get_first_name:shopee_v01.shopee_v01.custom_script.purchase_order.get_first_name",
+        "get_sales_order:shopee_v01.shopee_v01.custom_script.delivery_note.get_sales_order",
+        "get_delivery_note:shopee_v01.shopee_v01.custom_script.delivery_note.get_delivery_note",
+        "get_pick_list_sort:shopee_v01.shopee_v01.custom_script.pick_list.get_pick_list_sort",
 
     ]
 }
