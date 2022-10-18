@@ -16,7 +16,7 @@ def validate_data(data):
 # it is created by pratik/Rakesh as sales order cycle doesn't have the customer data for validation
 def data_validation_for_sales_order_cycle(order_data, payment_data):
     if not order_data.get("delivery_date"):
-        order_data["delivery_date"] = today()
+        raise Exception("Required data missing : Unable to proceed : Delivery date is required")
     if not order_data.get("items"):
         raise Exception("Required data missing : Unable to proceed : Items are required")
     if not order_data.get("store"):
@@ -28,7 +28,7 @@ def data_validation_for_sales_order_cycle(order_data, payment_data):
     if not payment_data.get("paid_from_account_currency"):
         raise Exception("Required data missing : Unable to proceed : Paid from account currency is required")
     if not payment_data.get("paid_to_account_currency"):
-        raise Exception("Required data missing : Unable to proceed : Paid to accountcurrency is required")
+        raise Exception("Required data missing : Unable to proceed : Paid to account currency is required")
     if not payment_data.get("paid_amount"):
         raise Exception("Required data missing : Unable to proceed : Paid amount is required")
     if not payment_data.get("received_amount"):
@@ -63,7 +63,7 @@ def data_validation_for_create_sales_order_web(customer_data, order_data, paymen
         raise Exception('Customer country is required')
 
     if not order_data.get("delivery_date"):
-        order_data["delivery_date"] = today()
+        raise Exception("Required data missing : Unable to proceed : Delivery date is required")
     if not order_data.get("items"):
         raise Exception("Required data missing : Unable to proceed : Items are required")
     if not order_data.get("external_so_number") or not order_data.get("source_app_name"):
@@ -76,7 +76,7 @@ def data_validation_for_create_sales_order_web(customer_data, order_data, paymen
     if not payment_data.get("paid_from_account_currency"):
         raise Exception("Required data missing : Unable to proceed : Paid from account currency is required")
     if not payment_data.get("paid_to_account_currency"):
-        raise Exception("Required data missing : Unable to proceed : Paid to accountcurrency is required")
+        raise Exception("Required data missing : Unable to proceed : Paid to account currency is required")
     if not payment_data.get("paid_amount"):
         raise Exception("Required data missing : Unable to proceed : Paid amount is required")
     if not payment_data.get("received_amount"):
@@ -99,7 +99,10 @@ def data_validation_for_create_receive_at_warehouse(data):
 
     outgoing_stock_entry = frappe.get_list("Stock Entry", {"outgoing_stock_entry": data.get("outgoing_stock_entry")})
     if len(outgoing_stock_entry) > 0:
-        raise Exception('Received at warehouse is already done for this Stock entry')
+        if data.get("stock_entry_type") == "Receive at Shop":
+            raise Exception('Received at Shop is already done for this Stock entry')
+        else:
+            raise Exception('Received at Warehouse is already done for this Stock entry')
 
 
 def data_validation_for_save_picklist_and_create_stockentry(data):

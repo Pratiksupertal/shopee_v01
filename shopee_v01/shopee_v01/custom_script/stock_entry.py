@@ -1,4 +1,10 @@
-import frappe, json
+import frappe
+import requests
+import json
+
+from shopee_v01.helpers.auth import get_auth_token
+
+
 group_warehouse, node_warehouse = [], []
 
 def update_finished901itemsummary(doc,action):
@@ -72,8 +78,10 @@ def is_type_adjustment(pick_list):
 
 
 def get_stock_update_type(adjustment_type, item):
-    in_type = parent_warehouse(item.t_warehouse)
-    out_type = parent_warehouse(item.s_warehouse)
+    config = frappe.get_single("Online Warehouse Configuration")
+    warehouse_list = [i.warehouse for i in config.online_warehouse]
+    in_type = parent_warehouse(item.t_warehouse, warehouse_list)
+    out_type = parent_warehouse(item.s_warehouse, warehouse_list)
     if adjustment_type and in_type:
         return "adjustment", "plus"
     elif adjustment_type and out_type:
@@ -103,8 +111,6 @@ def get_qty(type, cal_type, item):
 
 
 def update_stock_to_halosis(doc):
-    import requests
-    # Comparing the parent warehouse
     request = []
     config = frappe.get_single("Online Warehouse Configuration")
 
@@ -124,32 +130,17 @@ def update_stock_to_halosis(doc):
             "qty": get_qty(type, cal_type, item),
             "type": type
         }
-        print('\n\n\n', request_body, '\n\n\n')
+        request.append(request_body)
+
+    if request:
         try:
-            request.append(request_body)
-            url = config.base_url + 'auth'
-            data = {
-                "username": config.username,
-                "password": config.get_password('password')
-            }
-            auth_res = requests.post(url.replace("'", '"'), data=data)
-            auth_res_json = json.loads(auth_res.text)
-            auth_token = "Bearer " + auth_res_json["data"]["token"]
-            print(auth_res_json)
-        except Exception:
-            raise
-            frappe.log_error(title="Update stock API Login part", message=frappe.get_traceback())
-            frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
-    request = json.dumps(request).replace("'", '"')
-    if len(request) > 2:
-        try:
+            request = json.dumps(request).replace("'", '"')
             url = config.base_url + 'update-stock'
             response = requests.post(
                 url.replace("'", '"'),
                 json=json.loads(request),
-                headers={"Authorization": auth_token},)
+                headers={"Authorization": get_auth_token(config)},)
             frappe.log_error(title="Update stock API update stock part", message=response.text)
-
             if response.status_code == 200:
                 frappe.msgprint('Updating to Halosis. Please, check error log for more update.')
             else:
@@ -159,18 +150,15 @@ def update_stock_to_halosis(doc):
             frappe.log_error(title="Update stock API Data part", message=frappe.get_traceback())
             frappe.msgprint(f'Problem in halosis update. {frappe.get_traceback()}')
 
-def parent_warehouse(warehouse):
-    config = frappe.get_single("Online Warehouse Configuration")
-    warehouse_list = [i.warehouse for i in config.online_warehouse]
+
+def parent_warehouse(warehouse, warehouse_list):
     base_parent = [frappe.db.get_value("Warehouse", warehouse, "parent") for warehouse in warehouse_list]
-    a = frappe.db.get_value("Warehouse", warehouse, "parent")
-    if not a:
+    parent = frappe.db.get_value("Warehouse", warehouse, "parent")
+    if not parent:
         return False
-    elif a in warehouse_list:
-        # parent matched
+    elif parent in warehouse_list:  # parent matched
         return True
-    elif a in base_parent:
+    elif parent in base_parent:
         return False
     else:
-        b = parent_warehouse(a)
-        return b
+        return parent_warehouse(parent, warehouse_list)

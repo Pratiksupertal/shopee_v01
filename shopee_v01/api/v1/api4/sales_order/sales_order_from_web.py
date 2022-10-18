@@ -54,11 +54,8 @@ def create_sales_order_from_web():
             add_region=True
         )
 
-        base = get_base_url(url=frappe.request.url)
-
         """step 1: create and save the customer"""
         customer = create_and_save_customer(
-            base=base,
             customer_data=customer_data,
             submit=True
         )
@@ -70,20 +67,17 @@ def create_sales_order_from_web():
 
         """step 2: create and submit sales order"""
         sales_order = create_and_submit_sales_order(
-            base=base,
             order_data=order_data,
             submit=True
         )
-        if sales_order.status_code != 200:
+        if not sales_order:
             raise Exception('Sales order not created. Please, provide valid data. ')
 
-        sales_order = sales_order.json().get('data')
         so_name = sales_order.get("name")
         response['sales_order'] = so_name
 
         """step 3: create and submit sales invoice"""
         sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-            base=base,
             source_name=so_name,
             accounting_dimensions=accounting_dimensions,
             submit=True
@@ -92,9 +86,8 @@ def create_sales_order_from_web():
 
         """step 4: create and submit payment entry"""
         payment_entry = create_payment_for_sales_order_from_web(
-            base=base,
             payment_data=payment_data,
-            sales_invoice_data=sales_invoice,
+            sales_invoice=sales_invoice,
             accounting_dimensions=accounting_dimensions,
             submit=True
         )
@@ -179,21 +172,18 @@ def create_sales_order_from_web_bulk():
 
             """step 1: create and submit sales order"""
             sales_order = create_and_submit_sales_order(
-                base=base,
                 order_data=order_data,
                 submit=True
             )
 
-            if sales_order.status_code != 200:
+            if not sales_order:
                 raise Exception('Sales order not created. Please, provide valid data. ')
 
-            sales_order = sales_order.json().get('data')
             so_name = sales_order.get("name")
             response['sales_order'] = so_name
 
             """step 2: create and submit sales invoice"""
             sales_invoice = create_and_submit_sales_invoice_from_sales_order(
-                base=base,
                 source_name=so_name,
                 accounting_dimensions=accounting_dimensions,
                 submit=True
@@ -202,9 +192,8 @@ def create_sales_order_from_web_bulk():
 
             """step 3: create and submit payment entry"""
             payment_entry = create_payment_for_sales_order_from_web(
-                base=base,
                 payment_data=payment_data,
-                sales_invoice_data=sales_invoice,
+                sales_invoice=sales_invoice,
                 accounting_dimensions=accounting_dimensions,
                 submit=True
             )

@@ -115,3 +115,24 @@ def generate_new_pick_list(item_list, purchase_order_doc, max_qty, input_qty):
         row.picked_qty = input_qty
     pick_list.save()
     return pick_list
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_user(doctype, txt, searchfield, start, page_len, filters):
+    role = ""
+    if filters and filters.get('role'):
+        if len(filters.get('role'))>1:
+            role = "and role in {0}".format(tuple(filters.get('role')))
+        else:
+            role = "and role = '{0}'".format(filters.get('role')[0])
+
+    return frappe.db.sql("""select parent from `tabHas Role`
+		where `parent` LIKE %(txt)s and parenttype='User' {role} ;"""
+        .format(role=role), {
+            'txt': '%' + txt + '%'
+        },debug=True)
+
+
+@frappe.whitelist()
+def get_first_name(doc):
+    return frappe.db.get_list("Contact", {'name': ['like', '%{0}%'.format(doc.supplier)]}, ['first_name'])

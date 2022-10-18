@@ -137,7 +137,14 @@ def get_entries(filters):
               conditions2 += "and 1=1 and b.warehouse like '{0}%'".format(filters.get("warehouse_name"))
            else:
               conditions2 += "and 1=1"
-
+    if filters.get("division_group"):
+        conditions3 = " and 1=1 and a.division_group like '%{0}'".format(filters.get("division_group"))
+    else:
+        conditions3 = " and 1=1"
+    if filters.get("retail_group"):
+        conditions4 = " and 1=1 and a.retail_group like '%{0}'".format(filters.get("retail_group"))
+    else:
+        conditions4 = " and 1=1"
 
     entries = frappe.db.sql("""
         select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
@@ -148,13 +155,13 @@ def get_entries(filters):
         b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c
         ON a.item_code = c.item_code LEFT JOIN `tabItem Price` d ON a.item_code = d.item_code where
         a.item_group in ('J2B','C2B','JC2C','F2B','F2C','JC2B','F2A','U2B','C2C','J2C','J2A',
-        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A') {0}
+        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A') {0} {1} {2}
         group by a.item_code, b.warehouse) a where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0
         group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.price_list,a.warehouse
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
-        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions), as_dict=1)
+        where iva.attribute = 'Size' {3} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions3,conditions4,conditions), as_dict=1)
 
     return entries
 

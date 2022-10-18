@@ -9,14 +9,28 @@
 .f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
 </style>
 <div class="print-heading">
-
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js">
-</script>
-
-<svg class="barcode"
-jsbarcode-fontsize="10"
-jsbarcode-height="30"
-jsbarcode-value="{{doc.name}}"/>
+  <div class="row section-break f_font">
+    <div class="col-xs-3"></div>
+    <div class="col-xs-9">
+      <table width="100%" style="table-layout: auto">
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.9.0/dist/JsBarcode.all.min.js">
+        </script>
+        <tr>
+          <td colspan="6" style="font-size:22px"><b>Sales Order </b></td>
+          <td colspan="6">
+            <svg class="barcode"
+            jsbarcode-fontsize="8"
+            jsbarcode-height="12"
+            jsbarcode-width="1"
+            jsbarcode-value="{{doc.name}}"/>
+          </td>
+        </tr>
+        <script>JsBarcode(".barcode").init();</script>
+      </table>
+    </div>
+  </div>
+  <h2 style="font-size:16px;font-weight:bold;">Sales Order<br><small style="font-weight:bold;">{{ doc.name }}</small></h2>
+</div>
 {% set username = ""%}
 {% if frappe.session.user != "Administrator" %}
 {% set user = frappe.get_doc('User', frappe.session.user)%}
@@ -24,24 +38,9 @@ jsbarcode-value="{{doc.name}}"/>
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 {% set name=namespace(name="") %}
-{% set role2=namespace(role2="") %}
 {% set user_name = frappe.get_all('User', filters={'full_name': username}, fields=['name']) %}
-  {% for user_name in user_name %}
-     {% set name.name = user_name.name%}
-  {% endfor %}
-{% set hasrole = frappe.get_all('Has Role', filters={'parent': name.name}, fields=['role']) %}
-  {% for hasrole in hasrole %}
-     {% if ((hasrole.role == "Accounting Supervisor") or (hasrole.role == "CEO") or (hasrole.role=="Accounts Manager")) %}
-        {% set role2.role2=hasrole.role %}
-     {% endif %}
-
-  {% endfor %}
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
-
-<h2 style="font-size:16px;font-weight:bold;">Sales Order<br><small style="font-weight:bold;">{{ doc.name }}</small></h2></div>
-
-<script>JsBarcode(".barcode").init();</script>
 
 <!--<div class="row section-break f_font">
     <div class="col-xs-6">
@@ -78,79 +77,61 @@ jsbarcode-value="{{doc.name}}"/>
   	<table width="100%" style="table-layout: fixed;">
         <tr>
           <td width="40%"><b>Tanggal</b></td>
-          <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('transaction_date'), "dd-mm-yyyy") }}</td>
+          <td width="60%">{{ frappe.utils.formatdate(doc.transaction_date, "dd-mm-yyyy") }}</td>
         </tr>
       <!--</table>-->
   	<!--<table width="100%" style="table-layout: fixed;">-->
         <tr>
           <td width="40%"><b>Tanggal Pengiriman</b></td>
-          <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('delivery_date'), "dd-mm-yyyy") }}</td>
+          <td width="60%">{{ frappe.utils.formatdate(doc.delivery_date, "dd-mm-yyyy") }}</td>
         </tr>
       </table>
   </div>
 </div>
 
 <div class="row section-break f_font">
-<div class="col-xs-12" style="overflow-x:auto;">
-<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
-<tr>
-  <th class="tac" width="3%"><b>No</b></th>
-  {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}
-     <th class="tac" width="25%"><b>Kode Barang</b></th>
-     <th class="tac" width="25%"><b>Description</b></th>
-     <th class="tac" width="15%"><b>Quantity</b></th>
-     <th class="tac" width="12%"><b>Diskon</b></th>
-     <th class="tac" width="15%"><b>Harga</b></th>
-     <th class="tac" width="18%"><b>Total</b></th>
-  {% else %}
-     <th class="tac" width="40%"><b>Kode Barang</b></th>
-     <th class="tac" width="40%"><b>Description</b></th>
-     <th class="tac" width="27%"><b>Quantity</b></th>
-  {% endif %}
-</tr>
-{% for row in doc.items %}
-<tr>
+  <div class="col-xs-12" style="overflow-x:auto;">
+    <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+      <tr>
+          <th class="tac" width="3%"><b>No</b></th>
+          <th class="tac" width="30%"><b>Kode Barang</b></th>
+          <th class="tac" width="30%"><b>Description</b></th>
+          <th class="tac" width="15%"><b>Size</b></th>
+          <th class="tac" width="22%"><b>Quantity</b></th>
+      </tr>
+      {% for row in doc.items %}
+        <tr>
 
-{% set uom.uom_name= row.uom%}
-{% set fmtrate =  frappe.utils.fmt_money(row.rate,currency="") %}
-{% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
-{% set fmt_qty =  frappe.utils.fmt_money(row.qty,currency="") %}
-{% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="") %}
-{% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
-{% set discount = row.discount_amount * row.qty%}
-{% set disc.discount=disc.discount+ discount %}
-<td class="tac" width="3%">{{ row.idx or '' }}</td>
-{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}
-   <td width="25%">{{ row.item_code or '' }}</td>
-   <td width="25%">{{ row.description or '' }}</td>
-   <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-   <td class="tac" width="15%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
-   <td class="tac" width="12%" >{{doc.currency}}{{ fmtdiscount_amount or ''}}</td>
-   <td class="tac" width="15%" >{{doc.currency}}{{ fmtrate or ''}} </td>
-   <td class="tac" width="18%" >{{doc.currency}}{{ fmtamount or ''}} </td>
- {% else %}
-   <td width="40%">{{ row.item_code or '' }}</td>
-   <td width="40%">{{ row.description or '' }}</td>
-   <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-   <td class="tac" width="27%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
- {% endif %}
-
-<!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-</tr>
-{% endfor %}
-  {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
-  <tr>
-    <td class="tac" colspan="3">Total Quantity</td>
-    <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
-    {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}
-       <td></td><td></td><td></td>
-    {% endif %}
-  </tr>
-</table>
-</div>
+        {% set uom.uom_name= row.uom%}
+        {% set fmtrate =  frappe.utils.fmt_money(row.rate,currency="") %}
+        {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+        {% set fmt_qty =  frappe.utils.fmt_money(row.qty,currency="") %}
+        {% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="") %}
+        {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+        {% set discount = row.discount_amount * row.qty%}
+        {% set disc.discount=disc.discount+ discount %}
+          <td class="tac" width="3%">{{ row.idx or '' }}</td>
+          <td width="30%">{{ row.item_code or '' }}</td>
+          <td width="30%">{{ row.description or '' }}</td>
+          <td class="tac" width="15%" >
+          {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
+          {% for size in size %}
+              {% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
+          {% endfor %}
+          </td>
+          <td class="tac" width="22%" >{{ fmt_qty or ''}}{{' '}}{{ row.uom or ''}}</td>
+        </tr>
+      {% endfor %}
+      {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+      <tr>
+        <td class="tac" colspan="4">Total Quantity</td>
+        <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
+      </tr>
+    </table>
+  </div>
 </div>
 <!--<div class="row section-break f_font">-->
-<div class="row">
+<div class="section-break f_font">
   {% set tot_disc = disc.discount+doc.discount_amount %}
   {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
   {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
@@ -161,62 +142,56 @@ jsbarcode-value="{{doc.name}}"/>
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
   <div class="col-xs-6">
-  </div>
-  <div class="col-xs-6">
     <div class="row">
-        <table width="100%" style="table-layout: fixed;">
+        <table width="100%" style="table-layout: auto;">
           <tr>
-            <td colspan="40%"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}Total{% endif %}</b></td>
-            <td colspan="60%">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}{{doc.currency}}&nbsp;{{ fmt_total or '' }}{% endif %}</td>
-          </tr>
-        <!--</table>-->
-        <!--<table width="100%" style="table-layout: fixed;">-->
-          <tr>
-            <td colspan="40%"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}Diskon{% endif %}</b></td>
-            <td colspan="60%">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}{% endif %}</td>
-          </tr>
-        <!--</table>
-        <table width="100%" style="table-layout: fixed;">-->
-          <tr>
-            <td colspan="40%"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}Total Setelah Diskon{% endif %}</b></td>
-            <td colspan="60%">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}{{doc.currency}}&nbsp;{{ fmt_net_total or '' }}{% endif %}</td>
-          </tr>
-        <!--</table>
-        <table width="100%" style="table-layout: fixed;">-->
-          <tr>
-            <td colspan="40%"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}PPN{% endif %}</b></td>
-            <td colspan="60%">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}{{doc.currency}}&nbsp;{{ fmt_tot_tax or '' }}{% endif %}</td>
-          </tr>
-        <!--</table>
-        <table width="100%" style="table-layout: fixed;">-->
-          <tr>
-            <td colspan="40%"><b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}Grand Total{% endif %}</b></td>
-            <td colspan="60%">{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}{{doc.currency}}&nbsp;{{ fmt_rounded_total or '' }}{% endif %}</td>
+            <td colspan="30%"><b>Note</b>
+            </td>
+            <td colspan="70%"><b>{% if doc.note is not none %}{{doc.note}}{% endif %}</b>
+            </td>
           </tr>
         </table>
     </div>
   </div>
+  <div class="col-xs-6">
+  </div>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
 </div>
 
-<br>
+
+
+
 <div class="row section-break f_font">
-<div class="col-xs-12">
-<table width="100%" style="table-layout: fixed;">
+  <div class="col-xs-12">
+    <table width="100%" style="table-layout: fixed;">
 
-<tr>
-<!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
-<td colspan="4" class="tac " style=""> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-<td colspan="4" class="tac "></td>
-<td colspan="4" class="tac "></td>
-</tr>
+      <tr>
+        <!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+        <td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
+        <td colspan="4" class="tac " style=""> <u>
+        {% set full_name = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
+        {% for full_name in full_name %}
+            {% if full_name.full_name is not none %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+        {% endfor %}
+        </td>
+        <!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td> -->
+        <td colspan="4" class="tac "></td>
+        <td colspan="4" class="tac "></td>
+        </tr>
 
-<tr>
-<td colspan="4" class="tac"><b>Prepared By</b></td>
-<td colspan="4" class="tac "></td>
-<td colspan="4" class="tac "></td>
-</tr>
-</table>
+        <tr>
+        <td colspan="4" class="tac"><b>Prepared By</b></td>
+        <td colspan="4" class="tac "></td>
+        <td colspan="4" class="tac "></td>
+      </tr>
+    </table>
 
-</div>
+  </div>
 </div>
