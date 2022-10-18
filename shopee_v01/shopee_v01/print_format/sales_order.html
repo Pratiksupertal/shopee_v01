@@ -38,18 +38,7 @@
 {% if frappe.session.user == "Administrator"%}
 {% set username= frappe.session.user %} {% endif%}
 {% set name=namespace(name="") %}
-{% set role2=namespace(role2="") %}
 {% set user_name = frappe.get_all('User', filters={'full_name': username}, fields=['name']) %}
-  {% for user_name in user_name %}
-    {% set name.name = user_name.name%}
-  {% endfor %}
-{% set hasrole = frappe.get_all('Has Role', filters={'parent': name.name}, fields=['role']) %}
-  {% for hasrole in hasrole %}
-    {% if ((hasrole.role == "Accounting Supervisor") or (hasrole.role == "CEO") or (hasrole.role=="Accounts Manager")) %}
-        {% set role2.role2=hasrole.role %}
-    {% endif %}
-
-  {% endfor %}
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
 
@@ -88,13 +77,13 @@
   	<table width="100%" style="table-layout: fixed;">
         <tr>
           <td width="40%"><b>Tanggal</b></td>
-          <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('transaction_date'), "dd-mm-yyyy") }}</td>
+          <td width="60%">{{ frappe.utils.formatdate(doc.transaction_date, "dd-mm-yyyy") }}</td>
         </tr>
       <!--</table>-->
   	<!--<table width="100%" style="table-layout: fixed;">-->
         <tr>
           <td width="40%"><b>Tanggal Pengiriman</b></td>
-          <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('delivery_date'), "dd-mm-yyyy") }}</td>
+          <td width="60%">{{ frappe.utils.formatdate(doc.delivery_date, "dd-mm-yyyy") }}</td>
         </tr>
       </table>
   </div>
@@ -104,59 +93,39 @@
   <div class="col-xs-12" style="overflow-x:auto;">
     <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
       <tr>
-        <th class="tac" width="3%"><b>No</b></th>
-        {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}
+          <th class="tac" width="3%"><b>No</b></th>
           <th class="tac" width="30%"><b>Kode Barang</b></th>
           <th class="tac" width="30%"><b>Description</b></th>
           <th class="tac" width="15%"><b>Size</b></th>
           <th class="tac" width="22%"><b>Quantity</b></th>
-        {% else %}
-          <th class="tac" width="30%"><b>Kode Barang</b></th>
-          <th class="tac" width="30%"><b>Description</b></th>
-          <th class="tac" width="15%"><b>Size</b></th>
-          <th class="tac" width="22%"><b>Quantity</b></th>
-        {% endif %}
       </tr>
       {% for row in doc.items %}
-      <tr>
+        <tr>
 
-      {% set uom.uom_name= row.uom%}
-      {% set fmtrate =  frappe.utils.fmt_money(row.rate,currency="") %}
-      {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
-      {% set fmt_qty =  frappe.utils.fmt_money(row.qty,currency="") %}
-      {% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="") %}
-      {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
-      {% set discount = row.discount_amount * row.qty%}
-      {% set disc.discount=disc.discount+ discount %}
-      <td class="tac" width="3%">{{ row.idx or '' }}</td>
-      <!--{% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}-->
-      <td width="30%">{{ row.item_code or '' }}</td>
-      <td width="30%">{{ row.description or '' }}</td>
-      <td class="tac" width="15%" >
-      {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
-      {% for size in size %}
-          {% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
-      {% endfor %}
-      </td>
-      <!--<td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-      <td class="tac" width="22%" >{{ fmt_qty or ''}}{{' '}}{{ row.uom or ''}}</td>
-      <!--{% else %}
-        <td width="30%">{{ row.item_code or '' }}</td>
-        <td width="30%">{{ row.description or '' }}</td>
-         <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td>
-        <td class="tac" width="22%" >{{ fmt_qty or ''}}{{ row.uom or ''}}</td>
-      {% endif %}-->
-
-      <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-      </tr>
+        {% set uom.uom_name= row.uom%}
+        {% set fmtrate =  frappe.utils.fmt_money(row.rate,currency="") %}
+        {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+        {% set fmt_qty =  frappe.utils.fmt_money(row.qty,currency="") %}
+        {% set fmtdiscount_amount =  frappe.utils.fmt_money(row.discount_amount,currency="") %}
+        {% set fmtamount =  frappe.utils.fmt_money(row.amount,currency="") %}
+        {% set discount = row.discount_amount * row.qty%}
+        {% set disc.discount=disc.discount+ discount %}
+          <td class="tac" width="3%">{{ row.idx or '' }}</td>
+          <td width="30%">{{ row.item_code or '' }}</td>
+          <td width="30%">{{ row.description or '' }}</td>
+          <td class="tac" width="15%" >
+          {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
+          {% for size in size %}
+              {% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
+          {% endfor %}
+          </td>
+          <td class="tac" width="22%" >{{ fmt_qty or ''}}{{' '}}{{ row.uom or ''}}</td>
+        </tr>
       {% endfor %}
       {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
       <tr>
         <td class="tac" colspan="4">Total Quantity</td>
         <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
-        {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") %}
-
-        {% endif %}
       </tr>
     </table>
   </div>
