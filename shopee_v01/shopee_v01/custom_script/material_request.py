@@ -71,3 +71,8 @@ def get_value_of_quantity_of_Sales_Order_Item(item_code):
     sql = "select sum(qty) qty from `tabSales Order Item` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
+
+frappe.whitelist()
+def get_material_request_sort(doc):
+    return frappe.db.sql("""select item_code,item_group,qty,uom from `tabMaterial Request Item` where parent = %s order by item_code""",(doc.name),as_dict=True)
+
