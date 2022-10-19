@@ -130,7 +130,7 @@ def get_user(doctype, txt, searchfield, start, page_len, filters):
 		where `parent` LIKE %(txt)s and parenttype='User' {role} ;"""
         .format(role=role), {
             'txt': '%' + txt + '%'
-        },debug=True)
+        })
 
 
 @frappe.whitelist()

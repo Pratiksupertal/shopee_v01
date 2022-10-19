@@ -27,12 +27,12 @@ frappe.ui.form.on("Purchase Order", {
 				"method": "frappe.client.get_value",
 				args: {
 					doctype: "User",
-					fieldname: "username",
+					fieldname: "full_name",
 					filters: {name: cur_frm.doc.approve_po}
 				},
 				callback: function (data) {
-            if(data.message.username){
-              cur_frm.set_value("approver_name", data.message.username);
+            if(data.message.full_name){
+              cur_frm.set_value("approver_name", data.message.full_name);
               frm.refresh_field("approver_name");
             }
             else{
@@ -48,12 +48,12 @@ frappe.ui.form.on("Purchase Order", {
 				"method": "frappe.client.get_value",
 				args: {
 					doctype: "User",
-					fieldname: "username",
+					fieldname: "full_name",
 					filters: {name: cur_frm.doc.check_po}
 				},
 				callback: function (data) {
-          if(data.message.username){
-            cur_frm.set_value("checker_name", data.message.username);
+          if(data.message.full_name){
+            cur_frm.set_value("checker_name", data.message.full_name);
             frm.refresh_field("checker_name");
           }
           else{
