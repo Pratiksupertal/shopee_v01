@@ -45,7 +45,7 @@
     </table>
   </div>
 </div>
-{% set username = ""%}
+  {% set username = ""%}
   {% if frappe.session.user != "Administrator" %}
     {% set user = frappe.get_doc('User', frappe.session.user)%}
     {% set username= user.full_name %}
@@ -53,17 +53,6 @@
   {% if frappe.session.user == "Administrator"%}
     {% set username= frappe.session.user %}
   {% endif %}
-  {% set name=namespace(name="") %}
-  {% set role2=namespace(role2="") %}
-  {% set user_name = frappe.get_all('User', filters={'full_name': username},fields=['name']) %}
-  {% for user_name in user_name %}
-    {% set name.name = user_name.name%}
-  {% endfor %}
-  {% set hasrole = frappe.get_all('Has Role',filters={'parent': name.name}, fields=['role']) %}
-  {% for hasrole in hasrole %}
-    {% if ((hasrole.role == "Accounting Supervisor") or (hasrole.role == "CEO") or (hasrole.role=="Accounts Manager") or (hasrole.role=="ISS Purchase User") or (hasrole.role=="Purchase AP")) %} {% set role2.role2=hasrole.role %}
-    {% endif %}
-  {% endfor %}
   {% set uom=namespace(uom_name="") %}
   {% set disc=namespace(discount=0) %}
   {% set check=namespace(checkcounter="1") %}
@@ -163,7 +152,6 @@
       border="1px"
       bordercolor="#d1d8dd">
       <tr>
-        {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
           <th class="tac" width="4%"><b>No.</b></th>
           <th class="tac" width="38%"><b>Kode Barang dan Deskripsi</b></th>
           <th class="tac" width="18%"><b>Image</b></th>
@@ -171,51 +159,34 @@
           <th class="tac" width="15%"><b>Quantity</b></th>
           <th class="tac" width="15%"><b>Harga</b></th>
           <th class="tac" width="20%"><b>Total</b></th>
-          {% else %}
-          <th class="tac" width="10%"><b>No.</b></th>
-          <th class="tac" width="47%"><b>Kode Barang dan Deskripsi</b></th>
-          <th class="tac" width="23%"><b>Image</b></th>
-          <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
-          <th class="tac" width="25%"><b>Quantity</b></th>
-        {% endif %}
+
       </tr>
       {% set amt=namespace(price_amount=0) %}
       {% for row in doc.items %}
-      <tr>
-        <td class="tac" width="4%">{{ row.idx or '' }}</td>
-        {% set uom.uom_name= row.uom %}
-        {% set fmt_qty =frappe.utils.fmt_money(row.qty,currency="") %}
-        {% set price_tag =row.amount %}
-        {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
-        {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
-          <td width="38%">
-            {{ row.item_code or '' }}<br />{{ row.description or '' }}
-          </td>
-          {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
+        <tr>
+          <td class="tac" width="4%">{{ row.idx or '' }}</td>
+          {% set uom.uom_name= row.uom %}
+          {% set fmt_qty =frappe.utils.fmt_money(row.qty,currency="") %}
+          {% set price_tag =row.amount %}
+          {% set fmt_price_tag = frappe.utils.fmt_money(price_tag,currency="") %}
+            <td width="38%">
+              {{ row.item_code or '' }}<br />{{ row.description or '' }}
+            </td>
+            {% set fmt_price_list_rate = frappe.utils.fmt_money(row.rate,currency="") %}
 
-          <td class="tac" width="18%">{% if row.image is not none %}<img src="{{ row.image }}" />{% endif %}</td>
-          <td class="tac" width="15%">
-            {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
-          </td>
-          <td class="tac" width="15%">
-            {% if doc.currency == "IDR" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %}
-          </td>
-          <td class="tac" width="20%" style="text-align: right">
-            {{doc.currency}} {{ fmt_price_tag or ''}}
-          </td>
-        {% else %}
-          <td width="47%">
-            {{ row.item_code or '' }} <br />{{ row.description or '' }}
-          </td>
-          <td class="tac" width="23%"><img src="{{ row.image }}" /></td>
-          <td class="tac" width="25%">
-            {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
-          </td>
-
-        {% endif %}
-        {% set amt.price_amount=amt.price_amount+price_tag %}
-        {% set discount = row.discount_amount * row.qty%}
-        {% set disc.discount=disc.discount+ discount %}
+            <td class="tac" width="18%">{% if row.image is not none %}<img src="{{ row.image }}" />{% endif %}</td>
+            <td class="tac" width="15%">
+              {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
+            </td>
+            <td class="tac" width="15%">
+              {% if doc.currency == "IDR" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %}
+            </td>
+            <td class="tac" width="20%" style="text-align: right">
+              {{doc.currency}} {{ fmt_price_tag or ''}}
+            </td>
+          {% set amt.price_amount=amt.price_amount+price_tag %}
+          {% set discount = row.discount_amount * row.qty%}
+          {% set disc.discount=disc.discount+ discount %}
         </tr>
       {% endfor %}
       <tr>
@@ -230,9 +201,7 @@
         {% endfor %}
         <td></td>
         <td class="tac" style="text-align: right">
-          {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
-            {{doc.currency}} {{fmt_amt_price_amount}}
-          {% endif %}
+          {{doc.currency}} {{fmt_amt_price_amount}}
         </td>
       </tr>
     </table>
@@ -268,60 +237,55 @@
           <tr>
             <td colspan="6">
               <b>
-                {% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %} Total
-                {% endif %}
+                 Total
               </b>
             </td>
             <td colspan="6" style="text-align: right">
-              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 =="CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP")
-              %}{{doc.currency}}&nbsp;{{ fmt_total or '' }}{% endif %}
+              {{doc.currency}}&nbsp;{{ fmt_total or '' }}
             </td>
           </tr>
           <tr>
             <td colspan="6">
-              <b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
-                  Diskon{% endif %}
+              <b>
+                  Diskon
               </b>
             </td>
             {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
             {% set tot_disc = (doc.total * doc.additional_discount_percentage)/100 %}
             {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
             <td colspan="6" style="text-align: right">
-              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}
-              {{doc.currency}}{{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}{% endif %}
+              {{doc.currency}}{{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}
             </td>
           </tr>
           <tr>
             <td colspan="6">
-              <b
-                >{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or(role2.role2=="ISS Purchase User") or (role2.role2=="PurchaseAP") %}Total setelah Diskon{% endif %}</b>
+              <b>Total setelah Diskon</b>
             </td>
             {% set fmt_net_total =
             frappe.utils.fmt_money(doc.net_total,currency="") %}
             <td colspan="6" style="text-align: right">
-              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 =="CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}}
-              {{ fmt_net_total }}{% endif %}
+              {{doc.currency}}{{ fmt_net_total }}
             </td>
           </tr>
           {% if doc.taxes_and_charges %}
-          <tr>
-            {% set fmt_total_taxes_and_charges =
-            frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
-            <td colspan="6">
-              <b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}PPN{% endif %}</b>
-            </td>
-            <td colspan="6" style="text-align: right">
-              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 == "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{fmt_total_taxes_and_charges}}{% endif %}
-            </td>
-          </tr>
+            <tr>
+              {% set fmt_total_taxes_and_charges =
+              frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+              <td colspan="6">
+                <b>PPN</b>
+              </td>
+              <td colspan="6" style="text-align: right">
+                {{doc.currency}} {{fmt_total_taxes_and_charges}}
+              </td>
+            </tr>
           {% endif %}
           <tr>
             <td colspan="6">
-              <b>{% if (role2.role2 == "Accounting Supervisor") or (role2.role2== "CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}Grand Total{% endif %}</b>
+              <b>Grand Total</b>
             </td>
             {% set fmt_grand_total =frappe.utils.fmt_money(doc.grand_total,currency="") %}
             <td colspan="6" style="text-align: right">
-              {% if (role2.role2 == "Accounting Supervisor") or (role2.role2 =="CEO") or (role2.role2=="Accounts Manager") or (role2.role2=="ISS Purchase User") or (role2.role2=="Purchase AP") %}{{doc.currency}} {{fmt_grand_total}} {% endif %}
+               {{doc.currency}} {{fmt_grand_total}}
             </td>
           </tr>
         </table>
