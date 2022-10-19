@@ -26,64 +26,88 @@
         <td width="40%"><b>Type</b></td>
         <td width="60%"><b>{{ doc.material_request_type or '' }}</b></td>
       </tr>
+	  <tr>
+        <td width="40%"><b>Requested by</b></td>
+        <td width="60%">
+		    {% set full_name = frappe.get_all('User', filters={'name': doc.owner}, fields=['full_name']) %}
+        {% for full_name in full_name %}
+            {% if full_name.full_name is not none %}{{ full_name.full_name }}{% endif %}
+        {% endfor %}
+		</td>
+      </tr>
+	  <tr>
+        <td width="40%"><b>Target Warehouse</b></td>
+        <td width="40%">
+    		{% set counterwarehouse=namespace(value="1") %}
+    		{% set req = frappe.get_all('Material Request Item', filters={'parent': doc.name}, fields=['warehouse']) %}
+    		{% for req in req %}
+    			{% if req.warehouse is not none and counterwarehouse.value == "1" %}{{ req.warehouse }}
+    				{% set counterwarehouse.value = "2" %}
+    			{% endif %}
+    		{% endfor %}
+		    </td>
+      </tr>
     </table>
   </div>
   <div class="col-xs-6">
     <table width="100%" style="table-layout: fixed;">
       <tr>
-        <td colspan="6"><b>Tanggal</b></td>
-        <td colspan="6">{{ frappe.utils.formatdate(doc.get_formatted('schedule_date'), "dd-mm-yyyy") }}</td>
+        <td colspan="6"><b>MR Date</b></td>
+        <td colspan="6">{{ frappe.utils.formatdate(doc.transaction_date, "dd-mm-yyyy") }}</td>
       </tr>
+	  <tr>
+		<td colspan="6"><b>Required Date</b></td>
+		<td colspan="6">
+		{% set counterdate=namespace(value="1") %}
+		{% set reqdate = frappe.get_all('Material Request Item', filters={'parent': doc.name}, fields=['schedule_date']) %}
+		{% for reqdate in reqdate %}
+			{% if reqdate.schedule_date is not none and counterdate.value == "1" %}{{ frappe.utils.formatdate(reqdate.schedule_date, "dd-mm-yyyy") }}
+				{% set counterdate.value = "2" %}
+			{% endif %}
+		{% endfor %}
+	  </tr>
     </table>
   </div>
 </div>
 <br>
 
 <div class="row section-break f_font">
-<div class="col-xs-12">
-<table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
-<tr>
-<th class="tac" width="5%"><b>SR</b></th>
-<th class="tac" width="15%"><b>Item Code</b></th>
-<!-- <th class="tac" width="15%"> <b>Image</b></th> -->
-<th class="tac" width="20%"><b>Description</b></th>
-<th class="tac" width="16%"><b>Quantity</b></th>
-<th class="tac" width="15%"><b>For Warehouse</b></th>
-<th class="tac" width="12%"><b>Required Date</b></th>
-<th class="tac" width="15%"><b>Rate</b></th>
-<th class="tac" width="25%"><b>Amount</b></th>
-</tr>
-{% set uom=namespace(uom_name="") %}
-{% for row in doc.items %}
-<tr>
-<td class="tac" width="5%">{{ row.idx or '' }}</td>
-<td width="15%">{{ row.item_code or '' }}</td>
-<td width="20%">{{ row.description or '' }}</td>
-{% set uom.uom_name= row.uom%}
-{% set rateformat =  frappe.utils.fmt_money(row.rate,currency="Rp") %}
-{% set rateamount =  frappe.utils.fmt_money(row.amount,currency="Rp") %}
-{% set rateqty =  frappe.utils.fmt_money(row.qty,currency="") %}
-<!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-<td class="tac" width="16%" >{{ rateqty or ''}}&nbsp;{{ row.uom or ''}}</td>
-<td class="tac" width="15%" >{{ row.warehouse or ''}}</td>
-<td class="tac" width="12%"> {{ frappe.utils.formatdate(row.schedule_date, "dd-mm-yyyy") }}</td>
-<td class="tac" width="15%" style="text-align: right;">{{ rateformat or '' }}</td>
-<td class="tac" width="25%" style="text-align: right;"> {{ rateamount or '' }} </td>
-</tr>
-{% endfor %}
-</table>
-
-</div>
-</div>
-<div class="row section-break f_font">
-  <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
+  <div class="col-xs-12">
+    <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
       <tr>
-        <td width="40%"><b>Transaction Date</b></td>
-        <td width="60%"><b>{{ frappe.utils.formatdate(doc.get_formatted('transaction_date'), "dd-mm-yyyy") }}</b></td>
+        <th class="tac" width="5%"><b>No</b></th>
+        <th class="tac" width="35%"><b>Item Code</b></th>
+        <!-- <th class="tac" width="15%"> <b>Image</b></th> -->
+        <th class="tac" width="20%"><b>Item Group</b></th>
+        <th class="tac" width="20%"><b>Size</b></th>
+        <th class="tac" width="20%"><b>Qty</b></th>
+      </tr>
+    {% set totalquantity=namespace(value=0)  %}
+    {% set counter=namespace(value=0) %}
+    {% set matreqitem = get_material_request_sort(doc) %}
+    {% set uom=namespace(value="") %}
+    {% for row in matreqitem %}
+      <tr>
+        {% set counter.value = counter.value + 1 %}
+        <td class="tac" width="5%">{{ counter.value or '' }}</td>
+        <td class="tac" width="35%">{{ row.item_code or '' }}</td>
+        <td class="tac" width="20%">{{ row.item_group or '' }}</td>
+        <td class="tac" width="20%">
+        {% set size = frappe.get_all('Item Variant Attribute', filters={'parent': row.item_code}, fields=['attribute_value']) %}
+        {% for size in size %}
+        	{% if size.attribute_value is not none %}{{size.attribute_value or '' }} {% endif %}
+        {% endfor %}
+        </td>
+        <td class="tac" width="25%"> {{ row.qty or '' }}{{' '}}{{row.uom}}</td>
+        {% set uom.value = row.uom %}
+        {% set totalquantity.value = totalquantity.value + row.qty %}
+      </tr>
+    {% endfor %}
+      <tr>
+        <td class="tac" colspan=4>Total Quantity</td>
+        <td class="tac">{{totalquantity.value}}{{' '}}{{uom.value}}</td>
       </tr>
     </table>
-  </div>
-  <div class="col-xs-6">
+
   </div>
 </div>

@@ -3,7 +3,6 @@
 <small>{{ doc.name }}</small>
 </h2><br>
 <h2 style="font-size:10px">
-<!--{{ doc.items[0].sales_order or "" }}<br></h2>-->
 {% set delivery = frappe.get_all('Delivery Note Item', filters={'against_sales_invoice': doc.name}, fields=['parent']) %}
 {% for delivery in delivery %}
     <h2 style="font-size:10px">{{ delivery.parent or "" }}</h2>
@@ -25,11 +24,11 @@
   <div class="col-xs-6">
 	<table width="100%" style="table-layout: fixed;">
       <tr>
-        <td width="40%"><b>Date</b></td>
+        <td width="40%"><b>Tanggal</b></td>
         <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</td>
       </tr>
       <tr>
-        <td width="40%"><b>Due Date</b></td>
+        <td width="40%"><b>Jatuh Tempo</b></td>
     		<td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('due_date'), "dd-mm-yyyy") }}</td>
     	  </tr>
       <tr>
@@ -54,11 +53,11 @@
     <tr>
         <th class="tac" width="3%"><b>No.</b></th>
         <th class="tac" width="18%"><b>Kode Barang</b></th>
-        <th class="tac" width="16%"><b>Item Group</b></th>
+        <th class="tac" width="16%"><b>Item Category</b></th>
         <th class="tac" width="14%"><b>Quantity</b></th>
-        <th class="tac" width="14%"><b>Basic Rate</b></th>
-        <th class="tac" width="12%"><b>Diskon</b></th>
-        <th class="tac" width="12%"><b>Harga</b></th>
+        <th class="tac" width="14%"><b>Harga Normal</b></th>
+        <th class="tac" width="12%"><b>Discount Price</b></th>
+        <th class="tac" width="12%"><b>Sales Price</b></th>
         <th class="tac" width="12%"><b>Total</b></th>
     </tr>
 {% set uom=namespace(uom_name="") %}
@@ -69,13 +68,12 @@
 {% set sales_invoice = get_summary_sales_invoice(doc) %}
 {% for row in sales_invoice %}
     <tr>
-
         {% set counter = counter + 1 %}
+
         <td class="tac" width="3%">{{ counter or '' }}</td>
-        <td width="18%">{{ row.description or '' }}</td>
+        <td width="18%">{{ row.description}} </td>
         <td class="tac" width="16%" >
         {% set counter2=namespace(value=1) %}
-        <!--<td width="18%">{{ row.description or '' }}</td>-->
         {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_category']) %}
         {% for item in item %}
             {% if item.item_category is not none and counter2.value== 1 %}
@@ -86,14 +84,15 @@
         </td>
         <td class="tac" width="14%">{{ frappe.utils.fmt_money(row.quantity,currency="") or 0}}&nbsp;{{row.uom}}</td>
         <td class="tac" width="14%">
-        {% set br = frappe.get_all('Sales Order Item', filters={'parent': doc.items[0].sales_order}, fields=['basic_rate']) %}
+          {{ frappe.utils.fmt_money(row.rate) or 0}}
+        <!-- {% set br = frappe.get_all('Item Price', filters={'item_code': doc.items[0].item_name }, fields=['price_list_rate']) %}
+         = frappe.db.sql("select price_list_rate from `tabItem Price` where item_code = 'JWUW.02.887.3.7C' ")
         {% for br in br %}
-            {% if br.basic_rate is not none %}
-                {{ frappe.utils.fmt_money(br.basic_rate,currency="") or 0}}
-            {% endif %}
-        {% endfor %}
+          {% if br.basic_rate is not none %}
+            {{ frappe.utils.fmt_money(br.basic_rate,currency="") or 0}}
+          {% endif %}
+        {% endfor %} -->
         </td>
-    <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
         <td class="tac" width="12%">
           <!--{% if doc.currency == "IDR" %}-->
           {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}

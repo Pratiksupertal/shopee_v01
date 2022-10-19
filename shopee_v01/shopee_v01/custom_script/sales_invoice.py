@@ -70,7 +70,7 @@ def validate(doc,method):
 
 @frappe.whitelist()
 def get_summary_sales_invoice(doc):
-    return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Invoice Item` where parent = %s group by parent,item_name""",(doc.name),as_dict=True)
+    return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Invoice Item` where parent = %s group by parent,item_name,rate""",(doc.name),as_dict=True)
 
 
 def make_customer_gl_entry(doc, method):

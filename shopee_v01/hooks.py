@@ -135,6 +135,7 @@ jenv = {
         "get_sales_order:shopee_v01.shopee_v01.custom_script.delivery_note.get_sales_order",
         "get_delivery_note:shopee_v01.shopee_v01.custom_script.delivery_note.get_delivery_note",
         "get_pick_list_sort:shopee_v01.shopee_v01.custom_script.pick_list.get_pick_list_sort",
+        "get_material_request_sort:shopee_v01.shopee_v01.custom_script.material_request.get_material_request_sort",
 
     ]
 }
