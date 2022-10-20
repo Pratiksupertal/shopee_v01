@@ -20,7 +20,7 @@ frappe.ui.form.on('Material Request Item', {
     item_code: function(frm, cdt, cdn){
         var row = locals[cdt][cdn];
         frappe.call({
-           method: "shopee_v01.shopee_v01.custom_script.sales_order.size_filter",
+           method: "shopee_v01.shopee_v01.custom_script.material_request.size_filter",
            args: {
              item_code: row.item_code
            },
@@ -28,7 +28,23 @@ frappe.ui.form.on('Material Request Item', {
                 var resp = r.message
                         frappe.model.set_value(row.doctype, row.name, "available_qty", resp[2]);
                         frappe.model.set_value(row.doctype, row.name, "actual_available_qty", resp[2]-resp[3]);
+                        frm.refresh_field('items');
               }
         });
-    }
+    },
+    qty: function(frm, cdt, cdn){
+        var row = locals[cdt][cdn];
+        frappe.call({
+           method: "shopee_v01.shopee_v01.custom_script.material_request.actual_available_qty_schedule_date",
+           args: {
+             item_code: row.item_code,
+             qty: row.qty
+           },
+           callback: function(r) {
+                var resp = r.message
+                        frappe.model.set_value(row.doctype, row.name, "actual_available_qty", resp[1]);
+                        frm.refresh_field('items');
+              }
+        });
+    },
 });
