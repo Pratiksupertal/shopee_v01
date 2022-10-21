@@ -63,20 +63,20 @@
 {% set uom=namespace(uom_name="") %}
 {% set disc=namespace(discount=0) %}
 {% set amt=namespace(price_amount=0) %}
-{% set counter = 0 %}
+{% set counter = namespace(value=0) %}
 {% set sales_invoice = None %}
 {% set sales_invoice = get_summary_sales_invoice(doc) %}
 {% for row in sales_invoice %}
     <tr>
-        {% set counter = counter + 1 %}
+        {% set counter.value = counter.value + 1 %}
 
-        <td class="tac" width="3%">{{ counter or '' }}</td>
-        <td width="18%">{{ row.description}} </td>
+        <td class="tac" width="3%">{{ counter.value or '' }}</td>
+        <td width="18%">{{ row.item_name}} </td>
         <td class="tac" width="16%" >
-        {% set counter2=namespace(value=counter) %}
+        {% set counter2=namespace(value=1) %}
         {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_category']) %}
         {% for item in item %}
-            {% if item.item_category is not none and counter2.value== counter %}
+            {% if item.item_category is not none and counter2.value== 1 %}
                 {{item.item_category}}
             {% endif %}
             {% set counter2.value = counter2.value + 1 %}
@@ -130,7 +130,7 @@
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
   {% set fmt_dpp = frappe.utils.fmt_money(dpp,currency="") %}
-  {% set total_ppn_dpp = fmt_dpp + fmt_tot_tax  %}
+  {% set total_ppn_dpp = dpp + doc.total_taxes_and_charges  %}
   {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
 <div class="row section-break f_font">
@@ -152,6 +152,7 @@
           <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
         </tr>
         <tr> -->
+        <tr>
           <td colspan="40%"><b>DPP</b></td>
           <td colspan="60%">{{doc.currency}}&nbsp;{{ dpp or '' }}</td>
         </tr>
