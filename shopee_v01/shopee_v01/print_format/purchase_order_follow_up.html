@@ -179,7 +179,7 @@
               {{ fmt_qty or ''}}&nbsp;{{ row.uom or ''}}
             </td>
             <td class="tac" width="15%">
-              {% if doc.currency == "IDR" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %} {% if doc.currency == "USD" %} {{doc.currency}} {{ fmt_price_list_rate or ''}} {% endif %}
+              {{doc.currency}} {{ fmt_price_list_rate or ''}}
             </td>
             <td class="tac" width="20%" style="text-align: right">
               {{doc.currency}} {{ fmt_price_tag or ''}}
