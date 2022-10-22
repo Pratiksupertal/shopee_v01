@@ -7,6 +7,33 @@ from shopee_v01.helpers.auth import get_auth_token
 
 group_warehouse, node_warehouse = [], []
 
+def update_warehouse_finished901():
+    se = "MAT-STE-2022-00122"
+    doc = frappe.get_doc("Stock Entry",se)
+    warehouse_tuple = []
+    warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
+    print("---- doc -----",warehouse_list)
+    for item in doc.items:
+        print("\n\n",item.item_code)
+        if frappe.db.exists('Finished 901 Item Summary', item.item_code):
+            warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
+            warehouse_tuple = tuple(warehouse_tuple)
+            print(warehouse_tuple)
+            print(item_summary)
+        else:
+            balance_qty = 0
+            for i in warehouse_list.child_warehouse:
+                temp = frappe.db.sql("""select qty_after_transaction from `tabStock Ledger Entry`
+                where item_code=%s and warehouse = %s and is_cancelled='No'
+                order by posting_date desc, posting_time desc, creation desc
+                limit 1""", (item.item_code, i.warehouse))
+                temp = int(temp[0][0]) if len(temp)>0 else 0
+                balance_qty = balance_qty + temp
+                print("balance qty for item {0} is {1} in warehouse {2}".format(item.item_code,balance_qty,i.warehouse))
+
+
+    pass
+
 def update_finished901itemsummary(doc,action):
     warehouse_tuple = []
     warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
