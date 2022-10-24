@@ -131,6 +131,7 @@
   {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
   {% set fmt_dpp = frappe.utils.fmt_money(dpp,currency="") %}
   {% set total_ppn_dpp = dpp + doc.total_taxes_and_charges  %}
+  {% set fmt_total_ppn_dpp = frappe.utils.fmt_money(total_ppn_dpp,currency="")  %}
   {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
   {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
 <div class="row section-break f_font">
@@ -154,7 +155,7 @@
         <tr> -->
         <tr>
           <td colspan="40%"><b>DPP</b></td>
-          <td colspan="60%">{{doc.currency}}&nbsp;{{ dpp or '' }}</td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_dpp or '' }}</td>
         </tr>
         <tr>
           <td colspan="40%"><b>PPN</b></td>
@@ -166,7 +167,7 @@
         </tr> -->
         <tr>
           <td colspan="40%"><b>Total</b></td>
-          <td colspan="60%">{{doc.currency}}&nbsp;{{ total_ppn_dpp or '' }}</td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total_ppn_dpp or '' }}</td>
         </tr>
       </table>
     </div>
