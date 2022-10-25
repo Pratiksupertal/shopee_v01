@@ -120,9 +120,10 @@
 </div>
 </div>
   {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
-  {% set tot_disc =  (doc.total * doc.additional_discount_percentage)/100 %}
-  {% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-  {% set dpp = doc.total - tot_disc %}
+  {% set tot_disc_disp =  (doc.total * doc.additional_discount_percentage)/100 %}
+  {% set tot_disc =  doc.discount_amount %}
+  {% set fmt_tot_disc_disp = frappe.utils.fmt_money(tot_disc_disp,currency="") %}
+  {% set dpp = doc.total - tot_disc_disp %}
   {% set tot_ppn = doc.grand_total - (doc.total - tot_disc) %}
   {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
   {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
@@ -154,6 +155,14 @@
         </tr>
         <tr> -->
         <tr>
+          <td colspan="40%"><b>Total</b></td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
+        </tr>
+        <tr>
+          <td colspan="40%"><b>Additional Discount</b></td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_disc_disp or '' }}</td>
+        </tr>
+        <tr>
           <td colspan="40%"><b>DPP</b></td>
           <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_dpp or '' }}</td>
         </tr>
@@ -166,7 +175,7 @@
           <td colspan="60%">{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}</td>
         </tr> -->
         <tr>
-          <td colspan="40%"><b>Total</b></td>
+          <td colspan="40%"><b>Grand Total</b></td>
           <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total_ppn_dpp or '' }}</td>
         </tr>
       </table>
