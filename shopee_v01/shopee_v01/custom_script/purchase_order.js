@@ -16,10 +16,52 @@ frappe.ui.form.on("Purchase Order", {
 			return {
 				query: "shopee_v01.shopee_v01.custom_script.purchase_order.get_user",
         filters: {
-          "role":["ISS Purchasing Manager","ISS Accounting Supervisor"]
+          "role":["ISS Purchasing Manager","ISS Accounting Supervisor","ISS Purchasing"]
         }
 			};
 		});
+  },
+  approve_po:function(frm){
+    if(cur_frm.doc.approve_po){
+      frappe.call({
+				"method": "frappe.client.get_value",
+				args: {
+					doctype: "User",
+					fieldname: "full_name",
+					filters: {name: cur_frm.doc.approve_po}
+				},
+				callback: function (data) {
+            if(data.message.full_name){
+              cur_frm.set_value("approver_name", data.message.full_name);
+              frm.refresh_field("approver_name");
+            }
+            else{
+              frappe.msgprint("Approver username is not set")
+            }
+        }
+			});
+    }
+  },
+  check_po:function(frm){
+    if(cur_frm.doc.check_po){
+      frappe.call({
+				"method": "frappe.client.get_value",
+				args: {
+					doctype: "User",
+					fieldname: "full_name",
+					filters: {name: cur_frm.doc.check_po}
+				},
+				callback: function (data) {
+          if(data.message.full_name){
+            cur_frm.set_value("checker_name", data.message.full_name);
+            frm.refresh_field("checker_name");
+          }
+          else{
+            frappe.msgprint("Approver username is not set")
+          }
+          }
+			});
+    }
   },
   supplier: function (frm) {
     if (frm.doc.supplier) {
