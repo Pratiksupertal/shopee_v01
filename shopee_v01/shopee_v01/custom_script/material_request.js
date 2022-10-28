@@ -27,7 +27,7 @@ frappe.ui.form.on('Material Request Item', {
            callback: function(r) {
                 var resp = r.message
                         frappe.model.set_value(row.doctype, row.name, "available_qty", resp[2]);
-                        frappe.model.set_value(row.doctype, row.name, "actual_available_qty", resp[2]-resp[3]);
+                        frappe.model.set_value(row.doctype, row.name, "actual_available_qty", resp[3]);
                         frm.refresh_field('items');
               }
         });
