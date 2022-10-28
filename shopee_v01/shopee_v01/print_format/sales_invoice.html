@@ -1,13 +1,12 @@
 <div class="print-heading">
-  <h2>Sales Invoice<br>
-    <small>{{ doc.name }}</small>
-  </h2><br>
-  <h2 style="font-size:10px">
-    {% set delivery = frappe.get_all('Delivery Note Item', filters={'against_sales_invoice': doc.name},
-    fields=['parent']) %}
-    {% for delivery in delivery %}
+<h2>Sales Invoice<br>
+<small>{{ doc.name }}</small>
+</h2><br>
+<h2 style="font-size:10px">
+{% set delivery = frappe.get_all('Delivery Note Item', filters={'against_sales_invoice': doc.name}, fields=['parent']) %}
+{% for delivery in delivery %}
     <h2 style="font-size:10px">{{ delivery.parent or "" }}</h2>
-    {% endfor %}
+{% endfor %}
 </div>
 <div class="row section-break f_font">
   <div class="col-xs-6">
@@ -23,26 +22,25 @@
     </table>
   </div>
   <div class="col-xs-6">
-    <table width="100%" style="table-layout: fixed;">
+	<table width="100%" style="table-layout: fixed;">
       <tr>
         <td width="40%"><b>Tanggal</b></td>
         <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('posting_date'), "dd-mm-yyyy") }}</td>
       </tr>
       <tr>
         <td width="40%"><b>Jatuh Tempo</b></td>
-        <td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('due_date'), "dd-mm-yyyy") }}</td>
-      </tr>
+    		<td width="60%">{{ frappe.utils.formatdate(doc.get_formatted('due_date'), "dd-mm-yyyy") }}</td>
+    	  </tr>
       <tr>
         <td width="40%"><b>SO Number</b></td>
-        <td width="60%">{{ doc.items[0].sales_order or "" }}</td>
-      </tr>
+    		<td width="60%">{{ doc.items[0].sales_order or "" }}</td>
+  	  </tr>
       <tr>
         <td width="40%"><b>Delivery Note Number</b></td>
-        {% set dn = frappe.get_all('Delivery Note', filters={'sales_order': doc.items[0].sales_order}, fields=['name'])
-        %}
-        {% for dn in dn %}
+      {% set dn = frappe.get_all('Delivery Note', filters={'sales_order': doc.items[0].sales_order}, fields=['name']) %}
+      {% for dn in dn %}
         <td width="60%">{% if dn.name is not none %}{{ dn.name or "" }}{% endif %}</td>
-        {% endfor %}
+      {% endfor %}
     </table>
   </div>
 </div>
@@ -50,9 +48,9 @@
 {% set disc=namespace(discount=0) %}
 {% set amt=namespace(price_amount=0) %}
 <div class="row section-break f_font">
-  <div class="col-xs-12" style="overflow-x:auto;">
-    <table width="101%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
-      <tr>
+<div class="col-xs-12" style="overflow-x:auto;">
+<table width="101%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
+    <tr>
         <th class="tac" width="3%"><b>No.</b></th>
         <th class="tac" width="18%"><b>Kode Barang</b></th>
         <th class="tac" width="16%"><b>Item Category</b></th>
@@ -61,84 +59,80 @@
         <th class="tac" width="12%"><b>Discount Price</b></th>
         <th class="tac" width="12%"><b>Sales Price</b></th>
         <th class="tac" width="12%"><b>Total</b></th>
-      </tr>
-      {% set uom=namespace(uom_name="") %}
-      {% set disc=namespace(discount=0) %}
-      {% set amt=namespace(price_amount=0) %}
-      {% set counter = namespace(value=0) %}
-      {% set sales_invoice = None %}
-      {% set sales_invoice = get_summary_sales_invoice(doc) %}
-      {% for row in sales_invoice %}
-      <tr>
+    </tr>
+{% set uom=namespace(uom_name="") %}
+{% set disc=namespace(discount=0) %}
+{% set amt=namespace(price_amount=0) %}
+{% set counter = namespace(value=0) %}
+{% set sales_invoice = None %}
+{% set sales_invoice = get_summary_sales_invoice(doc) %}
+{% for row in sales_invoice %}
+    <tr>
         {% set counter.value = counter.value + 1 %}
-
+        {% if counter.value == 1 %}
+            {% set uom.uom_name=row.uom %}
+        {% endif %}
         <td class="tac" width="3%">{{ counter.value or '' }}</td>
         <td width="18%">{{ row.item_name}} </td>
-        <td class="tac" width="16%">
-          {% set counter2=namespace(value=1) %}
-          {% set item = frappe.get_all('Item', filters={'item_name': row.item_name}, fields=['item_category']) %}
-          {% for item in item %}
-          {% if item.item_category is not none and counter2.value== 1 %}
-          {{item.item_category}}
-          {% endif %}
-          {% set counter2.value = counter2.value + 1 %}
-          {% endfor %}
+        <td class="tac" width="16%" >
+        {% set counter2=namespace(value=1) %}
+        {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_category']) %}
+        {% for item in item %}
+            {% if item.item_category is not none and counter2.value== 1 %}
+                {{item.item_category}}
+            {% endif %}
+            {% set counter2.value = counter2.value + 1 %}
+        {% endfor %}
         </td>
         <td class="tac" width="14%">{{ frappe.utils.fmt_money(row.quantity,currency="") or 0}}&nbsp;{{row.uom}}</td>
         <td class="tac" width="14%">
           {{ frappe.utils.fmt_money(row.rate) or 0}}
-          <!-- {% set br = frappe.get_all('Item Price', filters={'item_code': doc.items[0].item_name }, fields=['price_list_rate']) %}
-           = frappe.db.sql("select price_list_rate from `tabItem Price` where item_code = 'JWUW.02.887.3.7C' ")
-          {% for br in br %}
-            {% if br.basic_rate is not none %}
-              {{ frappe.utils.fmt_money(br.basic_rate,currency="") or 0}}
-            {% endif %}
-          {% endfor %} -->
         </td>
         <td class="tac" width="12%">
-          <!--{% if doc.currency == "IDR" %}-->
-          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}
-          <!--{% if doc.currency == "USD" %}
-            {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}} {% endif %}-->
+          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.discount_amount,currency="") or ''}}
+
+        <td class="tac" width="12%">
+          {% set countersii=namespace(value=1) %}
+          {% set sii = frappe.get_all('Sales Invoice Item', filters={'item_name': row.item_name}, fields=['rate']) %}
+          {% for sii in sii %}
+              {% if sii.rate is not none and countersii.value== 1 %}
+                  {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(sii.rate,currency="") or ''}}
+              {% endif %}
+              {% set countersii.value = countersii.value + 1 %}
+          {% endfor %}
+
         </td>
-        <td class="tac" width="12%"> {% if doc.currency == "IDR" %}
-          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %} {% if doc.currency
-          == "USD" %}
-          {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(row.rate,currency="") or ''}} {% endif %}
-        </td>
-        <td class="tac" width="12%"> {% if doc.currency == "IDR" %}
-          {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %} {% if
-          doc.currency == "USD" %}
-          {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}} {% endif %}
+        <td class="tac" width="12%">
+          {{doc.currency}} &nbsp;{{ frappe.utils.fmt_money(row.amount,currency="") or ''}}
         </td>
 
-      </tr>
-      {% endfor %}
-      {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
-      <tr>
-        <td class="tac" colspan="3">Total Quantity</td>
-        <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-    </table><br>
-  </div>
+    </tr>
+{% endfor %}
+    {% set fmt_total_qty = frappe.utils.fmt_money(doc.total_qty,currency="") %}
+    <tr>
+      <td class="tac" colspan="3">Total Quantity</td>
+      <td class="tac">{{fmt_total_qty}}&nbsp;{{uom.uom_name}}</td>
+      <td></td><td></td><td></td>
+    </tr>
+</table><br>
 </div>
-{% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
-{% set tot_disc = (doc.total * doc.additional_discount_percentage)/100 %}
-{% set fmt_tot_disc = frappe.utils.fmt_money(tot_disc,currency="") %}
-{% set dpp = doc.total - tot_disc %}
-{% set tot_ppn = doc.grand_total - (doc.total - tot_disc) %}
-{% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
-{% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
-{% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
-{% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
-{% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
-{% set fmt_dpp = frappe.utils.fmt_money(dpp,currency="") %}
-{% set total_ppn_dpp = dpp + doc.total_taxes_and_charges %}
-{% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
-{% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+</div>
+  {% set fmt_tot_disc_percentage= doc.additional_discount_percentage %}
+  {% set tot_disc_disp =  (doc.total * doc.additional_discount_percentage)/100 %}
+  {% set tot_disc =  doc.discount_amount %}
+  {% set fmt_tot_disc_disp = frappe.utils.fmt_money(tot_disc_disp,currency="") %}
+  {% set dpp = doc.total - tot_disc_disp %}
+  {% set tot_ppn = doc.grand_total - (doc.total - tot_disc) %}
+  {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
+  {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
+  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
+  {% set fmt_tot_tax = frappe.utils.fmt_money(doc.total_taxes_and_charges,currency="") %}
+  {% set fmt_dpp = frappe.utils.fmt_money(dpp,currency="") %}
+  {% set total_ppn_dpp = dpp + doc.total_taxes_and_charges  %}
+  {% set fmt_total_ppn_dpp = frappe.utils.fmt_money(total_ppn_dpp,currency="")  %}
+  {% set fmt_grand_total = frappe.utils.fmt_money(doc.grand_total,currency="") %}
+  {% set fmt_rounded_total = frappe.utils.fmt_money(doc.rounded_total,currency="") %}
 <div class="row section-break f_font">
   <div class="col-xs-6">
     <div class="row">
@@ -154,25 +148,33 @@
     <div class="row">
       <table width="100%" style="table-layout: fixed;">
         <!-- <tr>
-            <td colspan="40%"><b>Total</b></td>
-            <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
-          </tr>
-          <tr> -->
+          <td colspan="40%"><b>Total</b></td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
+        </tr>
+        <tr> -->
+        <tr>
+          <td colspan="40%"><b>Total</b></td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total or '' }}</td>
+        </tr>
+        <tr>
+          <td colspan="40%"><b>Additional Disc</b>{{' ('}}{{fmt_tot_disc_percentage}}{{'%)'}}</td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_disc_disp or '' }}</td>
+        </tr>
         <tr>
           <td colspan="40%"><b>DPP</b></td>
-          <td colspan="60%">{{doc.currency}}&nbsp;{{ dpp or '' }}</td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_dpp or '' }}</td>
         </tr>
         <tr>
           <td colspan="40%"><b>PPN</b></td>
           <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_tot_tax or '' }}</td>
         </tr>
         <!-- <tr>
-            <td colspan="40%"><b>Additional Discount Amount</b></td>
-            <td colspan="60%">{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}</td>
-          </tr> -->
+          <td colspan="40%"><b>Additional Discount Amount</b></td>
+          <td colspan="60%">{{doc.currency}} {{ fmt_tot_disc or '0'}}&nbsp;{{'('}}{{fmt_tot_disc_percentage}}&nbsp;{{'%)'}}</td>
+        </tr> -->
         <tr>
-          <td colspan="40%"><b>Total</b></td>
-          <td colspan="60%">{{doc.currency}}&nbsp;{{ total_ppn_dpp or '' }}</td>
+          <td colspan="40%"><b>Grand Total</b></td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total_ppn_dpp or '' }}</td>
         </tr>
       </table>
     </div>
@@ -184,27 +186,24 @@
   <div class="col-xs-12">
     <table width="100%" style="table-layout: fixed;">
       <tr>
-        <td colspan="12"></td>
-      </tr>
+        <td colspan="12"></td></tr>
 
+        <tr><td colspan="12" height="70px"></td></tr>
+        {% set username = ""%}
+        {% if frappe.session.user != "Administrator" %}
+        {% set user = frappe.get_doc('User', frappe.session.user)%}
+        {% set username= user.full_name %} {% endif%}
+        {% if frappe.session.user == "Administrator"%}
+        {% set username= frappe.session.user %} {% endif%}
       <tr>
-        <td colspan="12" height="70px"></td>
-      </tr>
-      {% set username = ""%}
-      {% if frappe.session.user != "Administrator" %}
-      {% set user = frappe.get_doc('User', frappe.session.user)%}
-      {% set username= user.full_name %} {% endif%}
-      {% if frappe.session.user == "Administrator"%}
-      {% set username= frappe.session.user %} {% endif%}
-      <tr>
-        <!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
-        <td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
+      <!--<td colspan="4" class="tac "> <u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+      <td colspan="4" class="tac "> <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>-->
         <td colspan="4" class="tac "></td>
         <td colspan="4" class="tac "></td>
         <td colspan="4" class="tac " style=""><u>
-            {% set full_name = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
-            {% for full_name in full_name %}
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
+        {% set full_name = frappe.get_all('User', filters={'name': doc.modified_by}, fields=['full_name']) %}
+        {% for full_name in full_name %}
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ full_name.full_name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> </td>
         {% endfor %}
       </tr>
 
