@@ -155,7 +155,7 @@ def get_entries(filters):
         b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c
         ON a.item_code = c.item_code LEFT JOIN `tabItem Price` d ON a.item_code = d.item_code where
         a.item_group in ('J2B','C2B','JC2C','F2B','F2C','JC2B','F2A','U2B','C2C','J2C','J2A',
-        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A','C1B','L2G','L2T'.'R2A','S2A','SA','SJG') {0} {1} {2}
+        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A','C1B','L2G','L2T','R2A','S2A','SA','SJG') {0} {1} {2}
         group by a.item_code, b.warehouse) a where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0
         group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.price_list,a.warehouse
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
