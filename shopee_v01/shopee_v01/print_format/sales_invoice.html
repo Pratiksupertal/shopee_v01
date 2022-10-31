@@ -93,7 +93,7 @@
 
         <td class="tac" width="12%">
           {% set countersii=namespace(value=1) %}
-          {% set sii = frappe.get_all('Sales Invoice Item', filters={'item_name': row.item_name}, fields=['rate']) %}
+          {% set sii = frappe.get_all('Sales Invoice Item', filters={'parent':doc.name,'item_name': row.item_name}, fields=['rate']) %}
           {% for sii in sii %}
               {% if sii.rate is not none and countersii.value== 1 %}
                   {{doc.currency}}&nbsp; {{ frappe.utils.fmt_money(sii.rate,currency="") or ''}}
