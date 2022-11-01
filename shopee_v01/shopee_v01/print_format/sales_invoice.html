@@ -76,12 +76,12 @@
         <td width="18%">{{ row.item_name}} </td>
         <td class="tac" width="16%" >
         {% set counter2=namespace(value=1) %}
-        {% set item = frappe.get_all('Item', filters={'item_name': row.description}, fields=['item_category']) %}
+        {% set item = frappe.get_all('Item', filters={'item_name': row.item_name}, fields=['item_category']) %}
         {% for item in item %}
             {% if item.item_category is not none and counter2.value== 1 %}
                 {{item.item_category}}
+                {% set counter2.value = counter2.value + 1 %}
             {% endif %}
-            {% set counter2.value = counter2.value + 1 %}
         {% endfor %}
         </td>
         <td class="tac" width="14%">{{ frappe.utils.fmt_money(row.quantity,currency="") or 0}}&nbsp;{{row.uom}}</td>
