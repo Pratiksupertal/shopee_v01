@@ -1,4 +1,5 @@
 {
+ "autoname": "field:item_code",
  "creation": "2022-10-21 11:08:14.437491",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -15,7 +16,8 @@
    "fieldname": "item_code",
    "fieldtype": "Link",
    "label": "Item Code",
-   "options": "Item"
+   "options": "Item",
+   "unique": 1
   },
   {
    "fieldname": "item_name",
@@ -25,6 +27,7 @@
   {
    "fieldname": "available_qty",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "Available Qty"
   },
   {
@@ -37,7 +40,7 @@
    "fieldtype": "Column Break"
   }
  ],
- "modified": "2022-10-21 12:22:38.828441",
+ "modified": "2022-10-27 23:55:33.894610",
  "modified_by": "Administrator",
  "module": "Shopee V01",
  "name": "Finished 901 Item Summary",
