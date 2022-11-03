@@ -28,20 +28,12 @@ def update_warehouse_finished901_stock_rec(doc,method):
 
         else:
             balance_qty = 0
-            for i in warehouse_list.child_warehouse:
-                temp = frappe.db.sql("""select qty_after_transaction from `tabStock Ledger Entry`
-                where item_code=%s and warehouse = %s and is_cancelled='No'
-                order by posting_date desc, posting_time desc, creation desc
-                limit 1""", (item.item_code, i.warehouse))
-                temp = int(temp[0][0]) if len(temp)>0 else 0
-                balance_qty = balance_qty + temp
-            # finished_901_summary = create_finished901summary(item,balance_qty)
             summary_doc = frappe.new_doc("Finished 901 Item Summary")
             summary_doc.item_code = item.item_code
             summary_doc.item_name =item.item_name
             summary_doc.available_qty = item.qty
             summary_doc.modified_time = now()
-            comment = "Stock Reconciliation ' {} ' updated item quantity. Before update qty is {}".format(frappe.bold(_(doc.name)),balance_qty)
+            comment = "Stock Reconciliation ' {} ' updated item quantity.".format(frappe.bold(_(doc.name)))
             summary_doc.save()
             summary_doc.add_comment("Comment", comment)
     pass

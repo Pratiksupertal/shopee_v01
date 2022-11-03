@@ -23,7 +23,7 @@ def update_warehouse_finished901(doc,action):
                 if warehouse_tuple[0] == item.t_warehouse:
                     qty = item.qty if action == "update" else -item.qty
                 if warehouse_tuple[0] == item.s_warehouse:
-                    qty = -item.qty if action == "cancel" else item.qty
+                    qty = -item.qty if action == "update" else item.qty
                 if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
                     qty = 0
             item_availability = frappe.get_doc("Finished 901 Item Summary",item.item_code)
@@ -48,7 +48,7 @@ def update_warehouse_finished901(doc,action):
             summary_doc = frappe.new_doc("Finished 901 Item Summary")
             summary_doc.item_code = item.item_code
             summary_doc.item_name = item.item_name
-            summary_doc.available_qty = balance_qty + item.qty
+            summary_doc.available_qty = balance_qty
             summary_doc.modified_time = now()
             comment = "Action on Stock Entry ' {} ' is {} and qty before update is {}".format(frappe.bold(_(doc.name)),action,balance_qty)
             summary_doc.save()
