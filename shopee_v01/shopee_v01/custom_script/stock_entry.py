@@ -1,11 +1,64 @@
 import frappe
+from frappe import _
 import requests
 import json
+from frappe.utils import now
 
 from shopee_v01.helpers.auth import get_auth_token
 
 
 group_warehouse, node_warehouse = [], []
+
+
+def update_warehouse_finished901(doc,action):
+    # se = "MAT-STE-2022-00122"
+    # doc = frappe.get_doc("Stock Entry",se)
+    warehouse_tuple = []
+    warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
+    for item in doc.items:
+        if frappe.db.exists('Finished 901 Item Summary', item.item_code):
+            warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
+            warehouse_tuple = tuple(warehouse_tuple)
+            if len(warehouse_tuple) > 0:
+                if warehouse_tuple[0] == item.t_warehouse:
+                    qty = item.qty if action == "update" else -item.qty
+                if warehouse_tuple[0] == item.s_warehouse:
+                    qty = -item.qty if action == "update" else item.qty
+                if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
+                    qty = 0
+            item_availability = frappe.get_doc("Finished 901 Item Summary",item.item_code)
+            pre_qty = item_availability.available_qty
+            item_availability.available_qty += qty
+            item_availability.modified_time = now()
+            comment = "Action on Stock Entry ' {} ' is {} and qty before update is {}".format(frappe.bold(_(doc.name)),action,pre_qty)
+            item_availability.save()
+            item_availability.add_comment("Comment", comment)
+            item_availability.save()
+        else:
+            balance_qty = 0
+            warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
+            warehouse_tuple = tuple(warehouse_tuple)
+            for i in warehouse_list.child_warehouse:
+                temp = frappe.db.sql("""select qty_after_transaction from `tabStock Ledger Entry`
+                where item_code=%s and warehouse = %s and is_cancelled='No'
+                order by posting_date desc, posting_time desc, creation desc
+                limit 1""", (item.item_code, i.warehouse))
+                temp = int(temp[0][0]) if len(temp)>0 else 0
+                balance_qty = balance_qty + temp
+            summary_doc = frappe.new_doc("Finished 901 Item Summary")
+            summary_doc.item_code = item.item_code
+            summary_doc.item_name = item.item_name
+            summary_doc.available_qty = balance_qty
+            summary_doc.modified_time = now()
+            comment = "Action on Stock Entry ' {} ' is {} and qty before update is {}".format(frappe.bold(_(doc.name)),action,balance_qty)
+            summary_doc.save()
+            summary_doc.add_comment("Comment", comment)
+            summary_doc.save()
+            # frappe.msgprint("Finished 901 Item Summary is Updated")
+            print("balance qty for item {0} is {1} in warehouse {2}".format(item.item_code,summary_doc.available_qty,i.warehouse))
+    frappe.msgprint("Finished 901 Item Summary is Updated")
+
+    pass
 
 def update_finished901itemsummary(doc,action):
     warehouse_tuple = []
@@ -42,11 +95,13 @@ def update_finished901itemsummary(doc,action):
 
 def finished901ItemQtySummary(doc,method):
     """Stock Entry Items belongs to Finished warehouse then item count will be updated."""
-    update_finished901itemsummary(doc,action="update")
+    # update_finished901itemsummary(doc,action="update")
+    update_warehouse_finished901(doc,action="update")
 
 def cancel_update(doc,method):
     """Stock Entry Items belongs to Finished warehouse then item count will be reversed."""
-    update_finished901itemsummary(doc,action="cancel")
+    # update_finished901itemsummary(doc,action="cancel")
+    update_warehouse_finished901(doc,action="cancel")
 
 def submit(doc, method):
     update_stock_to_halosis(doc=doc)
