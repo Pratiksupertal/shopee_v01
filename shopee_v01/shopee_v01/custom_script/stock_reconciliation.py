@@ -18,8 +18,9 @@ def update_warehouse_finished901_stock_rec(doc,method):
                     qty = item.qty
                 if qty != 0:
                     item_availability = frappe.get_doc("Finished 901 Item Summary",item.item_code)
+                    balance_qty = recalculating_901(item)
                     pre_qty = item_availability.available_qty
-                    item_availability.available_qty = qty
+                    item_availability.available_qty = pre_qty - item.current_qty + item.qty
                     item_availability.modified_time = now()
                     comment = "Stock Reconciliation ' {} ' is updated and qty before update is {}".format(frappe.bold(_(doc.name)),pre_qty)
                     item_availability.save()
@@ -28,15 +29,31 @@ def update_warehouse_finished901_stock_rec(doc,method):
 
         else:
             balance_qty = 0
+            balance_qty = recalculating_901(item)
             summary_doc = frappe.new_doc("Finished 901 Item Summary")
             summary_doc.item_code = item.item_code
             summary_doc.item_name =item.item_name
-            summary_doc.available_qty = item.qty
+            summary_doc.available_qty = balance_qty
             summary_doc.modified_time = now()
             comment = "Stock Reconciliation ' {} ' updated item quantity.".format(frappe.bold(_(doc.name)))
             summary_doc.save()
             summary_doc.add_comment("Comment", comment)
     pass
+
+#
+def recalculating_901(item_obj):
+    balance_qty = 0
+    warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
+    warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item_obj.warehouse)]
+    warehouse_tuple = tuple(warehouse_tuple)
+    for i in warehouse_list.child_warehouse:
+        temp = frappe.db.sql("""select qty_after_transaction from `tabStock Ledger Entry`
+        where item_code=%s and warehouse = %s and is_cancelled='No'
+        order by posting_date desc, posting_time desc, creation desc
+        limit 1""", (item_obj.item_code, i.warehouse))
+        temp = int(temp[0][0]) if len(temp)>0 else 0
+        balance_qty = balance_qty + temp
+    return balance_qty
 
 # Finished901ItemQtySummary Single doctype was updating with reconciled item quantity
 #Note : Not using anymore
