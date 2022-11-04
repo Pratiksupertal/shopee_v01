@@ -72,7 +72,7 @@ def get_summary_sales_order(doc):
     return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Order Item` where parent = %s group by parent,item_name""",(doc.name),as_dict=True)
 
 
-def get_reserved_qty(item_code):
+def get_reserved_qty4(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     warehouse = "Delivery Area - ISS"
     sql = "select distinct b.reserved_qty FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c ON a.item_code = c.item_code LEFT JOIN `tabItem Price` d ON a.item_code = d.item_code where a.item_code = '{0}' and b.warehouse = '{1}'".format(item_code,warehouse)
