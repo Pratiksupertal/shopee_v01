@@ -58,14 +58,12 @@ def size_filter11(item_code="x"):
 
 @frappe.whitelist()
 def actual_qty_delivery_date(item_code,qty):
-    reserved_qty3 = 0
-    doc1 = frappe.get_doc('Item', item_code)
     doc2 = frappe.get_doc('Finished 901 Item Summary',item_code)
-    doc2 = doc2.available_qty
+    available_qty = doc2.available_qty
     reserved_qty2 = int(qty)+get_value_of_quantity_of_Material_Request_Item(item_code)+get_value_of_quantity_of_Sales_Order_Item(item_code)
-    reserved_qty3 = reserved_qty3+doc2-reserved_qty2
+    actual_available_qty = available_qty-reserved_qty2
     resp = {
-        "actual_available_qty":reserved_qty3
+        "actual_available_qty":actual_available_qty
     }
     return resp
 
