@@ -94,7 +94,7 @@ def update_cancel_material_request(doc,action):
 def get_value_of_quantity_of_Material_Request_Item(item_code):
     """warehouse is hard coded as per Mr. Albert's instructions"""
     warehouse = "Delivery Area - ISS"
-    sql = """SELECT soi.qty, so.status
+    sql = """SELECT sum(soi.qty) qty
                 from `tabMaterial Request` so
                 join `tabMaterial Request Item` soi
                 on so.name= soi.parent
