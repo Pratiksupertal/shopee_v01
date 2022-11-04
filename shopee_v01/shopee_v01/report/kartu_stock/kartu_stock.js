@@ -9,7 +9,7 @@ frappe.query_reports["Kartu Stock"] = {
 			label: __("Warehouse"),
 			fieldtype: "Link",
 			options: "Warehouse",
-			default: "All Warehouses - ISS"
+			default: " "
 		},
 	{
 			fieldname: "division_group",

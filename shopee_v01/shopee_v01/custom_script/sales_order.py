@@ -1,9 +1,6 @@
 from frappe.model.naming import make_autoname
 import frappe
-from frappe.model.document import Document
-from frappe.utils import cstr, flt, getdate, new_line_sep, nowdate, add_days
-from frappe.model.mapper import get_mapped_doc
-import logging
+from frappe.utils import flt
 
 @frappe.whitelist()
 def size_filter(item_code):

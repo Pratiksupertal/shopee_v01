@@ -70,13 +70,12 @@ def validate(doc,method):
 
 @frappe.whitelist()
 def get_summary_sales_invoice(doc):
-    return frappe.db.sql("""select parent,image,item_name,description,uom,sum(qty) quantity,rate,discount_amount,sum(amount) amount from `tabSales Invoice Item` where parent = %s group by parent,item_name,rate""",(doc.name),as_dict=True)
-
+    return frappe.db.sql("""select a.parent,a.item_name,a.description,a.uom,sum(a.qty) quantity,a.rate,a.discount_amount,sum(a.amount) amount from
+                            (select sii.parent,sii.item_name,sii.description,sii.uom,sii.qty,sii.discount_amount,sii.amount,soi.basic_rate rate  from `tabSales Invoice Item` sii
+                            left join `tabSales Order Item` soi on sii.sales_order = soi.parent and sii.item_code = soi.item_code where sii.parent = %s) a group by a.parent,a.item_name,a.rate""",(doc.name),as_dict=True)
 
 def make_customer_gl_entry(doc, method):
     gle_list = frappe.db.get_list('GL Entry', filters={'voucher_no': doc.name}, fields=['name'])
     for gle in gle_list:
         gle_doc = frappe.get_doc("GL Entry", gle)
         frappe.db.set_value('GL Entry', gle, 'department_category', doc.department_category, update_modified=False)
-
-

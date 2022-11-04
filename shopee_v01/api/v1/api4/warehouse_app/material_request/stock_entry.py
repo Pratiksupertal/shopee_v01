@@ -51,7 +51,7 @@ def filter_stock_entry_for_material_request():
         filtered_se = frappe.db.get_list(
             'Stock Entry',
             filters=filters,
-            fields=['name', 'pick_list']
+            fields=['name', 'pick_list', 'owner']
         )
 
         result_se = []
@@ -62,6 +62,8 @@ def filter_stock_entry_for_material_request():
                                                             fields=['name'])
             if len(se_created_from_current_se) > 0:
                 continue
+
+            se['owner_name'] = frappe.db.get_value('User', se.get('owner'), 'full_name')
 
             pl_data = frappe.db.get_value(
                 'Pick List', se.get('pick_list'), ['customer', 'picker', 'material_request', 'name']
@@ -82,6 +84,9 @@ def filter_stock_entry_for_material_request():
                     se['transaction_date'] = mr_data[1]
                     se['required_date'] = mr_data[2]
                     se['mr_created_by'] = frappe.db.get_value('User', mr_data[3], 'full_name')
+                    se['final_destination'] = frappe.db.get_list('Material Request Item',
+                                                                 filters={'parent': mr_data[0]},
+                                                                 fields=['warehouse'])[0]['warehouse']
                 else:
                     continue
             else:
@@ -352,7 +357,6 @@ def trigger_send_to_shop_spg(request_body):
     """This method triggers Send to Shop Stock Entry at SPG end when Stock Entry Send to Shop
     is submitted at ERP end. The prerequisite data for making API request is fetched from
     Warehouse App Settings."""
-    import requests
     config = frappe.get_single("Warehouse App Settings")
     try:
         url = config.spg_base_url + 'request-token'

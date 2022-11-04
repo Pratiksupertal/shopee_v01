@@ -16,7 +16,7 @@ frappe.ui.form.on("Purchase Order", {
 			return {
 				query: "shopee_v01.shopee_v01.custom_script.purchase_order.get_user",
         filters: {
-          "role":["ISS Purchasing Manager","ISS Accounting Supervisor"]
+          "role":["ISS Purchasing Manager","ISS Accounting Supervisor","ISS Purchasing"]
         }
 			};
 		});
