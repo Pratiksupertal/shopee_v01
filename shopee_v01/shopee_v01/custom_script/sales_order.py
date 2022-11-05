@@ -5,9 +5,10 @@ from frappe.utils import flt
 @frappe.whitelist()
 def size_filter(item_code):
     item = frappe.get_doc('Item', item_code)
-    available_qty, actual_available_qty, price_list = 0, 0, 0
+    available_qty, actual_available_qty, item_price = 0, 0, 0
     if frappe.db.exists('Item Price', {"selling":1,"item_code":item_code}):
         price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
+        item_price = price_list.price_list_rate
     qty_MRI = get_value_of_quantity_of_Material_Request_Item(item_code)
     qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
     if frappe.db.exists('Finished 901 Item Summary', item_code):
@@ -22,7 +23,7 @@ def size_filter(item_code):
     resp = {
     "available_qty": available_qty,
     "actual_available_qty":actual_available_qty,
-    "price_list":price_list.price_list_rate,
+    "price_list":item_price,
     "invent_size_id": attr_abbr if attr_abbr else "",
     }
     return resp
