@@ -21,7 +21,6 @@ def data_migration_901_warehouse_summary():
     warehouse_list = frappe.get_doc('Finished901ItemQtySummary')
     item_list = frappe.get_list("Total Item count in Warehouse","item_code")
     for i in item_list:
-        print(i.item_code)
         if frappe.db.exists('Finished 901 Item Summary', i.item_code):
             continue
         else:
@@ -36,7 +35,6 @@ def data_migration_901_warehouse_summary():
                 limit 1""", (i.item_code, j.warehouse))
                 temp = int(temp[0][0]) if len(temp)>0 else 0
                 balance_qty = balance_qty + temp
-                print(f'\nbalance_qty : {balance_qty} for item {i.item_code}\n')
             summary_doc = frappe.new_doc("Finished 901 Item Summary")
             summary_doc.item_code = i.item_code
             summary_doc.item_name = frappe.get_value("Item",i.item_code, "item_name")
@@ -44,7 +42,6 @@ def data_migration_901_warehouse_summary():
             summary_doc.modified_time = now()
             summary_doc.save()
             comment = f'Data migration done for the Item : {i.item_code} with qty {balance_qty} '
-            frappe.log_error(title="Data migration for 901 item summary Task", message=comment)
             print(comment)
             if counter >= 1000:
                 break
