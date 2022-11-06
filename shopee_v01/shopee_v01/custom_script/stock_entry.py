@@ -19,6 +19,7 @@ def update_warehouse_finished901(doc,action):
         if frappe.db.exists('Finished 901 Item Summary', item.item_code):
             warehouse_tuple = [i.warehouse for i in warehouse_list.child_warehouse if (i.warehouse == item.t_warehouse or i.warehouse == item.s_warehouse)]
             warehouse_tuple = tuple(warehouse_tuple)
+            qty = 0
             if len(warehouse_tuple) > 0:
                 if warehouse_tuple[0] == item.t_warehouse:
                     qty = item.qty if action == "update" else -item.qty

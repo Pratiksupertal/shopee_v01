@@ -1,6 +1,7 @@
 from frappe.model.naming import make_autoname
 import frappe
 from frappe.utils import flt
+from frappe.model.mapper import get_mapped_doc
 
 @frappe.whitelist()
 def size_filter(item_code):
@@ -104,3 +105,14 @@ def get_value_of_quantity_of_Sales_Order_Item(item_code):
     sql = "select sum(soi.qty) qty from `tabSales Order` so join `tabSales Order Item` soi on so.name= soi.parent  where item_code = '{0}' and status not in ('Completed','To Bill','Cancelled','Closed');".format(item_code)
     reserved_qty = frappe.db.sql(sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
+
+@frappe.whitelist()
+def make_stock_entry(source_name, target_doc=None):
+    doclist = get_mapped_doc("Sales Order", source_name, {
+        "Sales Order": {
+            "doctype": "Stock Entry", },
+        "Sales Order Item": {
+            "doctype": "Stock Entry Detail",
+        },
+    }, target_doc)
+    return doclist
