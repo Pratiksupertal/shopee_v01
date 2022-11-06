@@ -296,27 +296,6 @@ def barcode(code):
     return str(code)
 
 
-@frappe.whitelist()
-def add_warehouse(f_path=None):
-    import sys
-    import os
-
-    doc = frappe.get_single("Finished901ItemQtySummary")
-    import csv
-
-    path = os.path.join(os.path.dirname(__file__), f_path)
-    file = open(path, "r")
-    csvreader = csv.reader(file)
-    header = []
-    rows = []
-    header = next(csvreader)
-    for row in csvreader:
-        rows.append(row)
-        doc.append("child_warehouse", {"warehouse": row[0]})
-    file.close()
-    doc.save()
-
-
 def get_product_warehouse_qty(item_code):
 	warehouse_dict,warehouse_dict_list = {},[]
 	warehouse_qy_list = frappe.db.sql(

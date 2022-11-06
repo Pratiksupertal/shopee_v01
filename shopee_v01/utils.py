@@ -1,6 +1,9 @@
 import logging
 import frappe
 from frappe.utils import now
+import sys
+import os
+import csv
 
 def schedular_log(msg):
     logger  = logging.getLogger()
@@ -45,3 +48,41 @@ def data_migration_901_warehouse_summary():
             print(comment)
             if counter >= 1000:
                 break
+
+#function to Add warehouse list to the 901 warehouse summary child warehouse table
+@frappe.whitelist()
+def add_warehouse(f_path=None):
+    doc = frappe.get_single("Finished901ItemQtySummary")
+    path = os.path.join(os.path.dirname(__file__), f_path)
+    file = open(path, "r")
+    csvreader = csv.reader(file)
+    header = []
+    rows = []
+    header = next(csvreader)
+    for row in csvreader:
+        rows.append(row)
+        doc.append("child_warehouse", {"warehouse": row[0]})
+    file.close()
+    doc.save()
+
+#function to Remove warehouse list to the 901 warehouse summary child warehouse table
+@frappe.whitelist()
+def remove_warehouse(f_path=None):
+    doc = frappe.get_single("Finished901ItemQtySummary")
+    path = os.path.join(os.path.dirname(__file__), f_path)
+    file = open(path, "r")
+    csvreader = csv.reader(file)
+    header = []
+    rows = []
+    header = next(csvreader)
+    for row in csvreader:
+        try:
+            print("warehouse : ",row[0])
+            warehouse_doc = frappe.get_doc("Child Warehouse",{"warehouse":row[0]})
+            warehouse_doc.delete()
+            print(f'Warehouse removed {row[0]}')
+        except Exception as e:
+            print(f'Exception Occured for {row[0]}')
+            continue
+    file.close()
+    doc.save()
