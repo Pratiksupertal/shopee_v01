@@ -135,4 +135,4 @@ def get_user(doctype, txt, searchfield, start, page_len, filters):
 
 @frappe.whitelist()
 def get_first_name(doc):
-    return frappe.db.get_list("Contact", {'name': ['like', '%{0}%'.format(doc.supplier)]}, ['first_name'])
+    return frappe.db.get_list("Contact", {'name': ['like', '%-{0}'.format(doc.supplier)]}, ['first_name'])
