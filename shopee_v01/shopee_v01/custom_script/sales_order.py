@@ -10,6 +10,12 @@ def size_filter(item_code):
     if frappe.db.exists('Item Price', {"selling":1,"item_code":item_code}):
         price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":item_code})
         item_price = price_list.price_list_rate
+    if not item_price:
+        template = item.variant_of
+        if template:
+            if frappe.db.exists('Item Price', {"selling":1,"item_code":template}):
+                price_list = frappe.get_doc('Item Price',{"selling":1,"item_code":template})
+                item_price = price_list.price_list_rate
     qty_MRI = get_value_of_quantity_of_Material_Request_Item(item_code)
     qty_SOI = get_value_of_quantity_of_Sales_Order_Item(item_code)
     if frappe.db.exists('Finished 901 Item Summary', item_code):
