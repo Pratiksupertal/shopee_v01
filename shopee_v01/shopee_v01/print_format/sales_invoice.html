@@ -121,7 +121,7 @@
   {% set tot_disc_disp =  (doc.total * doc.additional_discount_percentage)/100 %}
   {% set tot_disc =  doc.discount_amount %}
   {% set fmt_tot_disc_disp = frappe.utils.fmt_money(tot_disc_disp,currency="") %}
-  {% set dpp = doc.total - tot_disc_disp %}
+  {% set dpp = doc.net_total %}
   {% set tot_ppn = doc.grand_total - (doc.total - tot_disc) %}
   {% set fmt_total = frappe.utils.fmt_money(doc.total,currency="") %}
   {% set fmt_net_total = frappe.utils.fmt_money(doc.net_total,currency="") %}
@@ -174,7 +174,7 @@
         </tr> -->
         <tr>
           <td colspan="40%"><b>Grand Total</b></td>
-          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_total_ppn_dpp or '' }}</td>
+          <td colspan="60%">{{doc.currency}}&nbsp;{{ fmt_grand_total or '' }}</td>
         </tr>
       </table>
     </div>
