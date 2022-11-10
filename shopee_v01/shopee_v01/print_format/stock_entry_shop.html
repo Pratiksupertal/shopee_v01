@@ -8,24 +8,41 @@
     .bbh{border-bottom: hidden; }
     .f_font{font-family: Calibri, Candara, Segoe, Optima, Arial, sans-serif;}
     </style>
-    
+
     <div class="print-heading">
       <div class="row">
         <div class="col-xs-6">
           <table width="100%" style="table-layout: auto;">
             <tr>
               {% set vfrom=namespace(from="From: ") %}
+              {% set vfr=namespace(value="") %}
               {% set counter2=namespace(value=1) %}
               {% set warehouse = frappe.get_all('Stock Entry Detail', filters={'parent': doc.name}, fields=['s_warehouse']) %}
               {% for warehouse in warehouse %}
-                  {% if warehouse.s_warehouse is not none and counter2.value== 1 %}{% set vfrom.from= vfrom.from + warehouse.s_warehouse %}{% endif %}
+                  {% if warehouse.s_warehouse is not none and counter2.value== 1 %}
+                      {% set vfrom.from= vfrom.from + warehouse.s_warehouse %}
+                      {% set vfr.value= warehouse.s_warehouse %}
+                  {% endif %}
                   {% set counter2.value = counter2.value + 1 %}
               {% endfor %}
               {% set lengthvalue = vfrom.from | length %}
               {% set lengthvalue = lengthvalue - 6 %}
               {% set vfrom.from = vfrom.from[:lengthvalue] %}
-    
-              <td width="100%" style="text-align:left"><b>{{vfrom.from}}</b></td>
+
+              <td width="100%" style="text-align:left"><b>{{vfrom.from}}</b>
+                {% set warehouseaddress = frappe.get_all('Address', filters={'address_title': vfr.value}, fields=['address_line1','address_line2','city']) %}
+                {% for warehouseaddress in warehouseaddress %}
+                    {% if warehouseaddress.address_line1 is not none %}
+                      <h2 style="font-size:10px; text-align: left;">{{ warehouseaddress.address_line1 or "" }}</h2>
+                    {% endif %}
+                    {% if warehouseaddress.address_line2 is not none %}
+                      <h2 style="font-size:10px; text-align: left;">{{ warehouseaddress.address_line2 or "" }}</h2>
+                    {% endif %}
+                    {% if warehouseaddress.city is not none %}
+                      <h2 style="font-size:10px; text-align: left;">{{ warehouseaddress.city or "" }}</h2>
+                    {% endif %}
+                {% endfor %}
+              </td>
             </tr>
             <tr>
               {% set mr=namespace(material_request="") %}
@@ -34,16 +51,33 @@
                   {% if mar.material_request is not none %}{% set mr.material_request=mar.material_request %}{% endif %}
               {% endfor %}
               {% set vto=namespace(to="To: ") %}
+              {% set vt=namespace(value="") %}
               {% set counter2=namespace(value=1) %}
               {% set warehouse = frappe.get_all('Material Request Item', filters={'parent': mr.material_request}, fields=['warehouse']) %}
               {% for warehouse in warehouse %}
-                  {% if warehouse.warehouse is not none and counter2.value== 1 %}{% set vto.to = vto.to + warehouse.warehouse %}{% endif %}
+                  {% if warehouse.warehouse is not none and counter2.value== 1 %}
+                      {% set vto.to = vto.to + warehouse.warehouse %}
+                      {% set vt.value =  warehouse.warehouse %}
+                  {% endif %}
                   {% set counter2.value = counter2.value + 1 %}
               {% endfor %}
               {% set lengthvalue2 = vto.to | length %}
               {% set lengthvalue2 = lengthvalue2 - 6 %}
               {% set vto.to = vto.to[:lengthvalue2] %}
-              <td width="100%" style="text-align:left"><b>{{vto.to}}</b></td>
+              <td width="100%" style="text-align:left"><b>{{vto.to}}</b>
+                {% set transporter = frappe.get_all('Address', filters={'address_title': vt.value}, fields=['address_line1','address_line2','city']) %}
+                {% for transporter in transporter %}
+                    {% if transporter.address_line1 is not none %}
+                      <h2 style="font-size:10px; text-align: left;">{{ transporter.address_line1 or "" }}</h2>
+                    {% endif %}
+                    {% if transporter.address_line2 is not none %}
+                      <h2 style="font-size:10px; text-align: left;">{{ transporter.address_line2 or "" }}</h2>
+                    {% endif %}
+                    {% if transporter.city is not none %}
+                      <h2 style="font-size:10px; text-align: left;">{{ transporter.city or "" }}</h2>
+                    {% endif %}
+                {% endfor %}
+              </td>
             </tr>
           </table>
         </div>
@@ -53,7 +87,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="row">
       <div class="col-xs-7">
             <table width="100%" style="table-layout: fixed;" border="0px" bordercolor="#a9a9a9">
@@ -118,8 +152,8 @@
       <div class="col-xs-5">
       </div>
     </div>-->
-    
-    
+
+
     <div class="row section-break f_font">
       <div class="col-xs-12" style="overflow-x:auto;">
         <table width="100%" style="table-layout: auto;" border="1px" bordercolor="#d1d8dd">
@@ -137,7 +171,7 @@
           <tr>
               <td class="tac" width="3%">{{ row.idx or '' }}</td>
     <!-- <td class="tac" width="15%"> <img id="item_img" src= '{{ row.image }}'></td> -->
-    
+
               <td class="tac" width="39%" >{{ row.item_code or '' }}</td>
               <td class="tac" width="18%" >{{ row.item_group or '' }}</td>
               <td class="tac" width="15%" >
@@ -181,4 +215,3 @@
         </table>
       </div>
     </div>
-    
