@@ -667,19 +667,27 @@ def get_user_mapped_warehouses(user=frappe.session.user):
 def submit_stock_entry_send_to_shop(stock_entry_doc):
     items = frappe.db.get_list('Stock Entry Detail', filters={'parent': stock_entry_doc.get("name")},
                                fields=['item_name', 'item_code', 'qty', 'basic_rate', 's_warehouse'])
-
     s_warehouse = None
     lists = []
+    dict_item = {}
     for item in items:
-        current_item = {
-            "product_name": item["item_name"],
-            "variant_name": frappe.db.get_value('Item Variant Attribute', {'parent': item['item_code']},
+        if item["item_code"] in dict_item:
+            dict_item[item["item_code"]] += item["qty"]
+        else:
+            dict_item[item["item_code"]] = item["qty"]
+            current_item = {
+                "product_name": item["item_name"],
+                "variant_name": frappe.db.get_value('Item Variant Attribute', {'parent': item['item_code']},
                                                 'attribute_value'),
-            "quantity": item["qty"],
-            "price": item["basic_rate"]
-        }
-        s_warehouse = item['s_warehouse']
-        lists.append(current_item)
+                "quantity": item["qty"],
+                "price": item["basic_rate"],
+                "item_code": item["item_code"]
+            }
+            s_warehouse = item['s_warehouse']
+            lists.append(current_item)
+
+    for item in lists:
+        item["quantity"] = dict_item[item["item_code"]]
 
     """GET Material Request, Transaction Date."""
     pl_data = frappe.db.get_value(
