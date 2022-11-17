@@ -277,6 +277,6 @@ def get_value_of_quantity_of_SOI(item_code):
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
 def get_available_value(item_code):
-    doc2 = frappe.get_doc('Finished901ItemQtySummary')
-    doc2 = [x.available_items for x in doc2.total_item_count_in_warehouse if x.item_code == item_code]
-    return doc2[0] if len(doc2) > 0 else 0
+    sql = "select sum(available_qty) qty from `tabFinished 901 Item Summary` where item_code = '{0}'".format(item_code)
+    reserved_qty = frappe.db.sql(sql)
+    return flt(reserved_qty[0][0]) if reserved_qty else 0
