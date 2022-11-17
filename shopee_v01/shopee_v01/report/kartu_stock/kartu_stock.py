@@ -280,3 +280,5 @@ def get_available_value(item_code):
     sql = "select sum(available_qty) qty from `tabFinished 901 Item Summary` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
+
+
