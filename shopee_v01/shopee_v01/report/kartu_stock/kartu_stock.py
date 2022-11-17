@@ -19,6 +19,9 @@ def execute(filters=None):
     item_name = ""
     warehouse = ""
     size_group = ""
+    available_value = 0
+    actual_value = 0
+    available_actual = ""
     total = 0
     strjumlah = ""
     for d in entries:
@@ -27,29 +30,39 @@ def execute(filters=None):
                 item_name = d.item_name
                 size_group = d.size_group
                 stock_size += d.attribute_value + " = " + str(d.stock_akhir)
+                available_value = get_available_value(d.item_code)
+                actual_value = available_value - get_value_of_quantity_of_MRI(d.item_code) - get_value_of_quantity_of_SOI(d.item_code)
+                available_actual += d.attribute_value + " = " + str(available_value) + "/" + str(actual_value)
                 warehouse = d.warehouse
                 vcompare = d.compare_name
                 total += d.stock_akhir
                 count = 2
             else:
-                data.append([item_name, size_group, stock_size, total, warehouse])
+                data.append([item_name, size_group, stock_size, available_actual, total, warehouse])
                 item_name = d.item_name
                 size_group = d.size_group
                 stock_size = ""
                 stock_size += d.attribute_value + " = " + str(d.stock_akhir)
+                available_actual = ""
+                available_value = get_available_value(d.item_code)
+                actual_value = available_value - get_value_of_quantity_of_MRI(d.item_code) - get_value_of_quantity_of_SOI(d.item_code)
+                available_actual += d.attribute_value + " = " + str(available_value) + "/" + str(actual_value)
                 warehouse = d.warehouse
                 total = 0
                 total += d.stock_akhir
                 vcompare = d.compare_name
         else:
             stock_size += " | " + d.attribute_value + " = " + str(d.stock_akhir)
+            available_value = get_available_value(d.item_code)
+            actual_value = available_value - get_value_of_quantity_of_MRI(d.item_code) - get_value_of_quantity_of_SOI(d.item_code)
+            available_actual += " | " + d.attribute_value + " = " + str(available_value) + "/" + str(actual_value)
             item_name = d.item_name
             size_group = d.size_group
             total += d.stock_akhir
             warehouse = d.warehouse
             vcompare = d.compare_name
 
-    data.append([item_name, size_group, stock_size, total, warehouse])
+    data.append([item_name, size_group, stock_size, available_actual, total, warehouse])
     return columns, data
 
 def get_columns(filters):
@@ -72,7 +85,13 @@ def get_columns(filters):
             "label": _("Attribute Value"),
             "fieldname": "attribute_value",
             "fieldtype": "Data",
-            "width": 620
+            "width": 500
+        },
+        {
+            "label": _("Available Actual Value"),
+            "fieldname": "Available_Actual",
+            "fieldtype": "Data",
+            "width": 400
         },
         {
 			"label": _("Total"),
@@ -137,14 +156,7 @@ def get_entries(filters):
               conditions2 += "and 1=1 and b.warehouse like '{0}%'".format(filters.get("warehouse_name"))
            else:
               conditions2 += "and 1=1"
-    if filters.get("division_group"):
-        conditions3 = " and 1=1 and a.division_group like '%{0}'".format(filters.get("division_group"))
-    else:
-        conditions3 = " and 1=1"
-    if filters.get("retail_group"):
-        conditions4 = " and 1=1 and a.retail_group like '%{0}'".format(filters.get("retail_group"))
-    else:
-        conditions4 = " and 1=1"
+
 
     entries = frappe.db.sql("""
         select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
@@ -155,13 +167,13 @@ def get_entries(filters):
         b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c
         ON a.item_code = c.item_code LEFT JOIN `tabItem Price` d ON a.item_code = d.item_code where
         a.item_group in ('J2B','C2B','JC2C','F2B','F2C','JC2B','F2A','U2B','C2C','J2C','J2A',
-        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A','C1B','L2G','L2T','R2A','S2A','SA','SJG') {0} {1} {2}
+        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A') {0}
         group by a.item_code, b.warehouse) a where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0
         group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.price_list,a.warehouse
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
-        where iva.attribute = 'Size' {3} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions3,conditions4,conditions), as_dict=1)
+        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions), as_dict=1)
 
     return entries
 
@@ -251,3 +263,20 @@ def get_conditions(filters):
         conditions += " and ad.state = '{0}'".format(filters.get("state"))
 
     return conditions
+
+def get_value_of_quantity_of_MRI(item_code):
+    """warehouse is hard coded as per Mr. Albert's instructions"""
+    sql = "select sum(qty) qty from `tabMaterial Request Item` where item_code = '{0}'".format(item_code)
+    reserved_qty = frappe.db.sql(sql)
+    return flt(reserved_qty[0][0]) if reserved_qty else 0
+
+def get_value_of_quantity_of_SOI(item_code):
+    """warehouse is hard coded as per Mr. Albert's instructions"""
+    sql = "select sum(qty) qty from `tabSales Order Item` where item_code = '{0}'".format(item_code)
+    reserved_qty = frappe.db.sql(sql)
+    return flt(reserved_qty[0][0]) if reserved_qty else 0
+
+def get_available_value(item_code):
+    sql = "select sum(available_qty) qty from `tabFinished 901 Item Summary` where item_code = '{0}'".format(item_code)
+    reserved_qty = frappe.db.sql(sql)
+    return flt(reserved_qty[0][0]) if reserved_qty else 0
