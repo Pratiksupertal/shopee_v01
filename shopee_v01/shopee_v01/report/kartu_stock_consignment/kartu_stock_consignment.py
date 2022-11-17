@@ -159,7 +159,7 @@ def get_entries(filters):
 
 
     entries = frappe.db.sql("""
-        select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
+        select k.item_code, k.item_name,k.size_group,k.item_group,k.warehouse,k.compare_name,k.attribute_value,k.stock_akhir,k.state,k.city from (select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
         a.item_code,a.size_group,a.item_group,a.division_group,a.retail_group,a.price_list,
         sum(a.actual_qty)+sum(a.planned_qty)-sum(a.reserved_qty) as stock_akhir,replace(a.warehouse,' - ISS','') as warehouse
         from ( SELECT a.item_name ,a.item_code , a.size_group, a.item_group , a.division_group ,a.retail_group ,a.brand ,format(max(d.price_list_rate),0) as price_list,
@@ -173,7 +173,7 @@ def get_entries(filters):
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
-        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions), as_dict=1)
+        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr) k where k.item_code REGEXP '.C' or k.item_code REGEXP '.A'""".format(conditions2,conditions), as_dict=1)
 
     return entries
 
@@ -280,5 +280,3 @@ def get_available_value(item_code):
     sql = "select sum(available_qty) qty from `tabFinished 901 Item Summary` where item_code = '{0}'".format(item_code)
     reserved_qty = frappe.db.sql(sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
-
-
