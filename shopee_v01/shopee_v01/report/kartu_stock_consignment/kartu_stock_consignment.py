@@ -192,7 +192,7 @@ def get_entries(filters):
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
-        where iva.attribute = 'Size' {3} order by b.item_name,b.warehouse,b.size_group,iav.abbr) f) z where z.item_code like '%.C%' or z.item_code like '%.A%'""".format(conditions3,conditions,conditions4,conditions), as_dict=1)
+        where iva.attribute = 'Size' {3} order by b.item_name,b.warehouse,b.size_group,iav.abbr) f) z where z.item_name like '%.C%' or z.item_name like '%.A%'""".format(conditions3,conditions,conditions4,conditions), as_dict=1)
     else:
         entries = frappe.db.sql("""
         select k.item_code, k.item_name,k.size_group,k.item_group,k.warehouse,k.compare_name,k.attribute_value,k.stock_akhir,k.state,k.city from (select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
@@ -209,7 +209,7 @@ def get_entries(filters):
         order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
-        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr) k where k.item_code like '%.C%' or k.item_code like '%.A%'""".format(conditions2,conditions), as_dict=1)
+        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr) k where k.item_name like '%.C%' or k.item_name like '%.A%'""".format(conditions2,conditions), as_dict=1)
     return entries
 
 def get_child_warehouse(conditions):
