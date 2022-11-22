@@ -23,6 +23,7 @@ def execute(filters=None):
     actual_value = 0
     available_actual = ""
     total = 0
+    total2 = 0
     strjumlah = ""
     for d in entries:
         if vcompare != d.compare_name:
@@ -32,13 +33,14 @@ def execute(filters=None):
                 stock_size += d.attribute_value + " = " + str(d.stock_akhir)
                 available_value = get_available_value(d.item_code)
                 actual_value = available_value - get_value_of_quantity_of_MRI(d.item_code) - get_value_of_quantity_of_SOI(d.item_code)
-                available_actual += d.attribute_value + " = " + str(available_value) + "/" + str(actual_value)
+                available_actual += d.attribute_value + " = " + str(int(available_value)) + "/" + str(int(actual_value))
                 warehouse = d.warehouse
                 vcompare = d.compare_name
                 total += d.stock_akhir
+                total2 += actual_value
                 count = 2
             else:
-                data.append([item_name, size_group, stock_size, available_actual, total, warehouse])
+                data.append([item_name, size_group, available_actual, total2, warehouse])
                 item_name = d.item_name
                 size_group = d.size_group
                 stock_size = ""
@@ -46,23 +48,27 @@ def execute(filters=None):
                 available_actual = ""
                 available_value = get_available_value(d.item_code)
                 actual_value = available_value - get_value_of_quantity_of_MRI(d.item_code) - get_value_of_quantity_of_SOI(d.item_code)
-                available_actual += d.attribute_value + " = " + str(available_value) + "/" + str(actual_value)
+                available_actual += d.attribute_value + " = " + str(int(available_value)) + "/" + str(int(actual_value))
                 warehouse = d.warehouse
                 total = 0
+                total2 = 0;
+                total2 += actual_value
                 total += d.stock_akhir
                 vcompare = d.compare_name
         else:
             stock_size += " | " + d.attribute_value + " = " + str(d.stock_akhir)
             available_value = get_available_value(d.item_code)
             actual_value = available_value - get_value_of_quantity_of_MRI(d.item_code) - get_value_of_quantity_of_SOI(d.item_code)
-            available_actual += " | " + d.attribute_value + " = " + str(available_value) + "/" + str(actual_value)
+            available_actual += " | " + d.attribute_value + " = " + str(int(available_value)) + "/" + str(int(actual_value))
+            warehouse = d.warehouse
             item_name = d.item_name
             size_group = d.size_group
             total += d.stock_akhir
+            total2 += actual_value
             warehouse = d.warehouse
             vcompare = d.compare_name
 
-    data.append([item_name, size_group, stock_size, available_actual, total, warehouse])
+    data.append([item_name, size_group, available_actual, total2, warehouse])
     return columns, data
 
 def get_columns(filters):
@@ -82,16 +88,10 @@ def get_columns(filters):
             "width": 50
         },
         {
-            "label": _("Attribute Value"),
-            "fieldname": "attribute_value",
-            "fieldtype": "Data",
-            "width": 500
-        },
-        {
             "label": _("Available Actual Value"),
-            "fieldname": "Available_Actual",
+            "fieldname": "available_actual",
             "fieldtype": "Data",
-            "width": 400
+            "width": 660
         },
         {
 			"label": _("Total"),
@@ -104,7 +104,7 @@ def get_columns(filters):
 			"fieldname": "warehouse_name",
 			"fieldtype": "Link",
             "options": "Warehouse",
-			"width": 180
+			"width": 200
 		},
 
     ]
@@ -115,12 +115,15 @@ def get_entries(filters):
     conditions = get_conditions(filters)
     vfind = 0
     conditions2 = ""
+    conditions3 = ""
+    conditions4 = ""
     if filters.get("warehouse_name") == "All Warehouses - ISS":
         conditions2 += "and 1=1"
     elif filters.get("warehouse_name") == "[000] TRANSIT - ISS":
         conditions2 += " and 1=1 and b.warehouse like '%80000001%'"
     elif filters.get("warehouse_name") == "[901] - Finished - ISS":
-        conditions2 += " and 1=1 and b.warehouse like '901%'"
+        conditions3 += get_conditions_part("GUDANG BARANG JADI - ISS")
+        conditions4 += get_conditions_part("GUDANG BARANG JADI ONLINE - ISS")
     elif filters.get("warehouse_name") == "[903] - In Progress - ISS":
         conditions2 += " and 1=1 and b.warehouse like '903%'"
     elif filters.get("warehouse_name") == "[904] - Final Touch - ISS":
@@ -158,19 +161,49 @@ def get_entries(filters):
               conditions2 += "and 1=1"
 
 
-    entries = frappe.db.sql("""
-        select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir,ad.state,ad.city from (select a.item_name,
-        a.item_code,a.size_group,a.item_group,a.division_group,a.retail_group,a.price_list,
+    if filters.get("warehouse_name") == "[901] - Finished - ISS":
+        entries = frappe.db.sql("""select e.item_code,e.item_name,e.size_group,e.item_group,e.warehouse,e.compare_name,e.attribute_value,e.stock_akhir from (
+		select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir from (select a.item_name,
+        a.item_code,a.size_group,a.item_group,a.division_group,a.retail_group,
         sum(a.actual_qty)+sum(a.planned_qty)-sum(a.reserved_qty) as stock_akhir,replace(a.warehouse,' - ISS','') as warehouse
-        from ( SELECT a.item_name ,a.item_code , a.size_group, a.item_group , a.division_group ,a.retail_group ,a.brand ,format(max(d.price_list_rate),0) as price_list,
-        b.actual_qty ,c.delivered_qty ,b.reserved_qty as "reserved_qty",b.projected_qty ,(b.planned_qty+b.ordered_qty+b.indented_qty) as planned_qty,
-        b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code LEFT JOIN `tabSales Order Item` c
-        ON a.item_code = c.item_code LEFT JOIN `tabItem Price` d ON a.item_code = d.item_code where
+        from ( SELECT a.item_name ,a.item_code , a.size_group, a.item_group , a.division_group ,a.retail_group ,a.brand ,
+        b.actual_qty  ,b.reserved_qty as "reserved_qty",b.projected_qty ,(b.planned_qty+b.ordered_qty+b.indented_qty) as planned_qty,
+        b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code where
         a.item_group in ('J2B','C2B','JC2C','F2B','F2C','JC2B','F2A','U2B','C2C','J2C','J2A',
         'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A') {0}
         group by a.item_code, b.warehouse) a where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0
-        group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.price_list,a.warehouse
-        order by a.item_name asc) b left join `tabAddress` ad on b.warehouse = substring(ad.name,1,length(b.warehouse))
+        group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.warehouse
+        order by a.item_name asc) b
+        inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
+        inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
+        where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr) e union select f.item_code,f.item_name,f.size_group,f.item_group,f.warehouse,f.compare_name,f.attribute_value,f.stock_akhir from (
+		select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir from (select a.item_name,
+        a.item_code,a.size_group,a.item_group,a.division_group,a.retail_group,
+        sum(a.actual_qty)+sum(a.planned_qty)-sum(a.reserved_qty) as stock_akhir,replace(a.warehouse,' - ISS','') as warehouse
+        from ( SELECT a.item_name ,a.item_code , a.size_group, a.item_group , a.division_group ,a.retail_group ,a.brand ,
+        b.actual_qty ,b.reserved_qty as "reserved_qty",b.projected_qty ,(b.planned_qty+b.ordered_qty+b.indented_qty) as planned_qty,
+        b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code where
+        a.item_group in ('J2B','C2B','JC2C','F2B','F2C','JC2B','F2A','U2B','C2C','J2C','J2A',
+        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A') {2}
+        group by a.item_code, b.warehouse) a where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0
+        group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.warehouse
+        order by a.item_name asc) b
+        inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
+        inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
+        where iva.attribute = 'Size' {3} order by b.item_name,b.warehouse,b.size_group,iav.abbr) f""".format(conditions3,conditions,conditions4,conditions), as_dict=1)
+    else:
+        entries = frappe.db.sql("""
+        select b.item_code, b.item_name,b.size_group,b.item_group,b.warehouse,concat(b.item_name,b.warehouse) as compare_name,iav.abbr as attribute_value,convert(b.stock_akhir,int) stock_akhir from (select a.item_name,
+        a.item_code,a.size_group,a.item_group,a.division_group,a.retail_group,
+        sum(a.actual_qty)+sum(a.planned_qty)-sum(a.reserved_qty) as stock_akhir,replace(a.warehouse,' - ISS','') as warehouse
+        from ( SELECT a.item_name ,a.item_code , a.size_group, a.item_group , a.division_group ,a.retail_group ,a.brand ,
+        b.actual_qty ,b.reserved_qty as "reserved_qty",b.projected_qty ,(b.planned_qty+b.ordered_qty+b.indented_qty) as planned_qty,
+        b.warehouse FROM `tabItem` a LEFT JOIN `tabBin` b ON a.item_code = b.item_code where
+        a.item_group in ('J2B','C2B','JC2C','F2B','F2C','JC2B','F2A','U2B','C2C','J2C','J2A',
+        'C2A','U2A','L2C','L2B','L2A','JC2A','Y2A','GIFT','2B','2A') {0}
+        group by a.item_code, b.warehouse) a where a.reserved_qty > 0 or a.actual_qty > 0 or a.projected_qty > 0
+        group by a.item_name,a.item_code,a.item_group,a.division_group,a.retail_group,a.warehouse
+        order by a.item_name asc) b
         inner join `tabItem Variant Attribute` iva on b.item_code = iva.parent
         inner join `tabItem Attribute Value` iav on iva.attribute_value = iav.attribute_value
         where iva.attribute = 'Size' {1} order by b.item_name,b.warehouse,b.size_group,iav.abbr""".format(conditions2,conditions), as_dict=1)
@@ -198,22 +231,12 @@ def get_child_warehouse(conditions):
             parent_warehouse = "("
             warehouse_name = "("
             finish = len(entries)
-            logging.basicConfig(level=logging.DEBUG)
-            logging.debug("Checking for finish {0}".format(finish))
             while finish != 0:
                 for d in entries:
                     if d.is_group == 0:
                        warehouse_name += "'" + d.warehouse_name + " - ISS" + "',"
-                       logging.basicConfig(level=logging.DEBUG)
-                       logging.debug("Checking for pernah ke sini {0}".format(warehouse_name))
                     else:
                        parent_warehouse += "'" + d.warehouse_name + " - ISS" + "',"
-                       logging.basicConfig(level=logging.DEBUG)
-                       logging.debug("Checking for warehouse name 1 {0}".format(d.warehouse_name))
-                       logging.basicConfig(level=logging.DEBUG)
-                       logging.debug("Checking for parent_warehouseny {0}".format(parent_warehouse))
-                       logging.basicConfig(level=logging.DEBUG)
-                       logging.debug("Checking for warehouse name {0}".format(d.warehouse_name))
 
                 parent_warehouse = parent_warehouse[0:len(parent_warehouse)-1] + ")"
                 logging.basicConfig(level=logging.DEBUG)
@@ -228,19 +251,15 @@ def get_child_warehouse(conditions):
             warehouse_name = warehouse_name[0:len(warehouse_name)-1] + ")=="
         else:
             warehouse_name = ""
-        logging.basicConfig(level=logging.DEBUG)
-        logging.debug("Checking for number gudang :{0}".format(warehouse_name))
         if warehouse_name == "":
             warehouse_name = conditions
 
     logging.basicConfig(level=logging.DEBUG)
-    logging.debug("Checking for warehouse_name luar :{0}".format(warehouse_name))
+    logging.debug("Checking for testnya :{0}".format(conditions))
 
     return warehouse_name
 
 def get_child_warehouse2(conditions):
-    logging.basicConfig(level=logging.DEBUG)
-    logging.debug("Checking for conditions child warehouse 2 :{0}".format(conditions))
     entries = frappe.db.sql("""select parent_warehouse,warehouse_name,is_group from `tabWarehouse` where parent_warehouse in {0}""".format(conditions), as_dict=1)
 
     return entries
@@ -281,4 +300,34 @@ def get_available_value(item_code):
     reserved_qty = frappe.db.sql(sql)
     return flt(reserved_qty[0][0]) if reserved_qty else 0
 
+def get_conditions_part(conditions):
+    vfilter = conditions
+    vfind = 0
+    conditions2 = ""
+    try:
+       vfind = vfilter.find(" - ISS")
+    except:
+       pass
+    if vfind > 1:
+       child_warehouse = get_child_warehouse(vfilter)
+       vfind2 = 0
+       try:
+          vfind2 = child_warehouse.find("==")
+       except:
+          pass
+       if vfind2 > 1:
+          vcond = child_warehouse[0:len(child_warehouse) - 2]
+          conditions2 += "and 1=1 and b.warehouse in {0}".format(vcond)
+       else:
+          vend = len(child_warehouse)-6
+          vcond = child_warehouse[0:vend]
+          conditions2 += "and 1=1 and b.warehouse like '{0}%'".format(vcond)
+       logging.basicConfig(level=logging.DEBUG)
+       logging.debug("Conditions2 :{0}".format(conditions2))
+    else:
+       if filters.get("warehouse_name"):
+          conditions2 += "and 1=1 and b.warehouse like '{0}%'".format(filters.get("warehouse_name"))
+       else:
+          conditions2 += "and 1=1"
 
+    return conditions2
