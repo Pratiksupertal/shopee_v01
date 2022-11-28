@@ -27,7 +27,7 @@ def update_warehouse_finished901(doc,action):
                     qty = -item.qty if action == "update" else item.qty
                 if item.t_warehouse in warehouse_tuple and item.s_warehouse in warehouse_tuple:
                     qty = 0
-            item_availability = frappe.get_doc("Finished 901 Item Summary",item.item_code)
+            item_availability = frappe.get_doc("Finished 901 Item Summary",{"item_code" :item.item_code})
             pre_qty = item_availability.available_qty
             item_availability.available_qty += qty
             item_availability.modified_time = now()
